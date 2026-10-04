@@ -2,9 +2,9 @@ import streamlit as str_platform
 import os
 from openai import OpenAI
 
-# 👑 Sanifu Mipangilio ya Ukurasa wa Kifalme - Ngazi ya Enterprise Omnichannel
+# 👑 Sanifu Mipangilio ya Ukurasa wa Kifalme - Ngazi ya Edition 2 Responsive Suite
 str_platform.set_page_config(
-    page_title="LinguaAfrika AI: Ultra Premium Super Masterpiece Enterprise",
+    page_title="LinguaAfrika AI: Ultra Premium Super Masterpiece Edition 2",
     page_icon="👑",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -25,13 +25,79 @@ else:
     str_platform.error("🔒 Hitilafu ya Usalama: Ufunguo wa siri wa OpenAI (OPENAI_API_KEY) haujapatikana kwenye mifumo ya Secrets!")
     str_platform.stop()
 
-# 🏰 Muonekano wa Juu wa Jukwaa la Kimataifa (Enterprise Corporate Header)
-str_platform.markdown("<h1 style='text-align: center; color: #1E3A8A; font-family: \"Helvetica Neue\", sans-serif; font-weight: 800;'>👑 LinguaAfrika AI</h1>", unsafe_allow_html=True)
-str_platform.markdown("<h3 style='text-align: center; color: #D97706; font-family: \"Helvetica Neue\", sans-serif;'>The Ultra Premium Super Masterpiece Enterprise Edition</h3>", unsafe_allow_html=True)
-str_platform.markdown("<p style='text-align: center; font-size: 1.2rem; color: #4B5563; max-width: 800px; margin: 0 auto;'>Mfumo mkuu wa kimkakati wa akili mnemba (AI) uliosajiliwa kusanifisha sarufi, kutafsiri lugha 14, na kukagua lafudhi ya Lugha ya Kiswahili duniani kwa kiwango cha kibiashara na kiofisi.</p>", unsafe_allow_html=True)
+# 🎨 UPANDISHAJI WA RANGI ZA KIFALME (EDITION 2 ENTERPRISE CSS INJECTION)
+str_platform.markdown("""
+<style>
+    /* Badilisha font na rangi kuu za jukwaa */
+    html, body, [data-testid="stAppViewContainer"] {
+        background-color: #FAFAFA !important;
+        font-family: 'Helvetica Neue', sans-serif !important;
+    }
+    
+    /* Sanifu Mfumo wa Tabo za Kifalme */
+    button[data-testid="stMarkdownContainer"] {
+        font-weight: 700 !important;
+    }
+    div[data-testid="stTabBar"] {
+        background-color: #ffffff !important;
+        padding: 10px !important;
+        border-radius: 12px !important;
+        box-shadow: 0 4px 12px rgba(30, 58, 138, 0.08) !important;
+        margin-bottom: 20px !important;
+    }
+    button[data-testid="stTab"] {
+        color: #4B5563 !important;
+        font-size: 16px !important;
+        padding: 10px 20px !important;
+        transition: all 0.3s ease !important;
+        border-radius: 8px !important;
+    }
+    button[data-testid="stTab"][aria-selected="true"] {
+        background-color: #1E3A8A !important;
+        color: #ffffff !important;
+        font-weight: bold !important;
+        box-shadow: 0 4px 10px rgba(30, 58, 138, 0.25) !important;
+    }
+    
+    /* Sanifu Vifungo Vyote vya Programu (Streamlit Buttons) */
+    div.stButton > button {
+        background-color: #1E3A8A !important;
+        color: white !important;
+        font-weight: bold !important;
+        font-size: 16px !important;
+        padding: 12px 24px !important;
+        border-radius: 8px !important;
+        border: none !important;
+        box-shadow: 0 4px 6px rgba(30, 58, 138, 0.15) !important;
+        transition: all 0.3s ease-in-out !important;
+        width: 100% !important;
+    }
+    div.stButton > button:hover {
+        background-color: #D97706 !important;
+        color: white !important;
+        transform: translateY(-2px) !important;
+        box-shadow: 0 6px 12px rgba(217, 119, 6, 0.3) !important;
+    }
+    
+    /* Custom Styling ya Sanduku la Maandishi (Text Area) */
+    textarea {
+        border: 2px solid #E5E7EB !important;
+        border-radius: 10px !important;
+        transition: border-color 0.3s ease !important;
+    }
+    textarea:focus {
+        border-color: #1E3A8A !important;
+    }
+</style>
+""", unsafe_allow_html=True)
+
+# 🏰 Muonekano wa Juu wa Jukwaa la Kimataifa (Edition 2 Corporate Header)
+str_platform.markdown("<h1 style='text-align: center; color: #1E3A8A; font-family: \"Helvetica Neue\", sans-serif; font-weight: 800; margin-bottom: 0;'>👑 LinguaAfrika AI</h1>", unsafe_allow_html=True)
+str_platform.markdown("<h3 style='text-align: center; color: #D97706; font-family: \"Helvetica Neue\", sans-serif; font-weight: 600; margin-top: 5px;'>The Ultra Premium Super Masterpiece • Edition 2</h3>", unsafe_allow_html=True)
+str_platform.markdown("<p style='text-align: center; font-size: 1.2rem; color: #4B5563; max-width: 850px; margin: 0 auto; line-height: 1.6;'>Mfumo mkuu wa kimkakati wa akili mnemba (AI) uliosajiliwa kusanifisha sarufi, kutafsiri lugha 14, na kukagua lafudhi ya Lugha ya Kiswahili duniani kwa kiwango cha kibiashara na kiofisi.</p>", unsafe_allow_html=True)
 str_platform.write("---")
 
-# 🗺️ Undaji wa Tabo Tano Kuu za Enterprise
+# 🗺— Undaji wa Tabo Tano Kuu za Enterprise
 tab1, tab2, tab3, tab4, tab5 = str_platform.tabs([
     "📝 Mhariri wa Kiswahili Sanifu Pro", 
     "🔀 Mtafsiri wa Lugha & Muktadha Suite", 
@@ -124,40 +190,3 @@ with tab3:
                 try:
                     vocab_prompt = f"Wewe ni Kamusi Hai Kuu ya Kiswahili ya kiwango cha juu. Toa maana ya kina, asili ya neno, na mifano miwili ya sentensi kwa kutumia msamiati huu:\n\n{msamiati_input}"
                     jibu_vocab = client.chat.completions.create(
-                        model="gpt-4o",
-                        messages=[{"role": "user", "content": vocab_prompt}]
-                    )
-                    str_platform.info("Uchambuzi wa Kitaalamu wa Kamusi Kuu:")
-                    str_platform.write(jibu_vocab.choices.message.content)
-                except Exception as error_msg:
-                    str_platform.error(f"Hitilafu ya Mfumo: {error_msg}")
-
-# =====================================================================
-# TAB 4: 🔊 MTAMBO WA SAUTI (DARASA LA SAUTI)
-# =====================================================================
-with tab4:
-    str_platform.markdown("<h3 style='color: #1E3A8A;'>🔊 Mtambo wa Sauti: Darasa la Kidijitali</h3>", unsafe_allow_html=True)
-    str_platform.write("Zalisha faili za sauti za kielimu zinazoiga mifano ya darasani kati ya Mwalimu na Mwanafunzi kwa usahihi mkuu.")
-    
-    col_v1, col_v2 = str_platform.columns(2)
-    with col_v1:
-        sauti_mwalimu = str_platform.selectbox("Chagua Sauti ya Mwalimu:", ["onyx", "echo", "alloy"], key="teacher_voice_opt")
-        maandishi_mwalimu = str_platform.text_area("Andika Maelezo ya Mwalimu:", "Karibu darasani mwanafunzi wangu. Leo tutajifunza matumizi sahihi ya viambishi vya Kiswahili Sanifu.", key="teacher_text_input")
-    with col_v2:
-        sauti_mwanafunzi_opt = str_platform.selectbox("Chagua Sauti ya Mwanafunzi:", ["nova", "shimmer", "fable"], key="student_voice_opt")
-        maandishi_mwanafunzi = str_platform.text_area("Andika Majibu ya Mwanafunzi:", "Asante sana mwalimu wangu wa kifalme. Nipo tayari kabisa kusikiliza na kujifunza.", key="student_text_input")
-    
-    if str_platform.button("Zalisha Sauti za Darasa", key="tts_classroom_btn"):
-        if maandishi_mwalimu.strip() == "" or maandishi_mwanafunzi.strip() == "":
-            str_platform.warning("Tafadhali hakikisha umejaza maandishi ya mwalimu na mwanafunzi!")
-        else:
-            file_mwalimu = "sauti_mwalimu.mp3"
-            res_mwalimu = client.audio.speech.create(model="tts-1", voice=sauti_mwalimu, input=maandishi_mwalimu)
-            f_teacher = open(file_mwalimu, "wb")
-            f_teacher.write(res_mwalimu.content)
-            f_teacher.close()
-            str_platform.markdown("#### 👨‍🏫 Sauti ya Mwalimu:")
-            str_platform.audio(file_mwalimu)
-            
-            file_mwanafunzi = "sauti_mwanafunzi.mp3"
-
