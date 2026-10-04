@@ -182,4 +182,3 @@ elif chaguo_menyu == "📚 Maktaba ya Msamiati na Nahau Kuu":
     msamiati_input = str_platform.text_input("Andika neno, nahau, au methali (Mfano: 'Kitendawili', 'Kula chumvi nyingi'):", key="vocab_input_royal")
     
     if str_platform.button("Tafuta Kwenye Kamusi Kuu", key="vocab_btn_royal"):
-
