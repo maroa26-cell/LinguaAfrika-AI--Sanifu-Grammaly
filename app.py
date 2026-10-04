@@ -174,3 +174,4 @@ with tab4:
                         input=maandishi_mwanafunzi
                     )
                     res_mwanafunzi.write_to_file(file_mwanafunzi)
+
