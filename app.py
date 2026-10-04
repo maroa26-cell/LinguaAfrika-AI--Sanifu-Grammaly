@@ -181,4 +181,3 @@ elif chaguo_menyu == "🔊 Mtambo wa Sauti (Darasa la Sauti)":
 # CHAGUO 5: 🤖 AI PHONETIC ROBOT
 # =====================================================================
 elif chaguo_menyu == "🤖 AI Phonetic Robot (Ukaguzi Mkuu)":
-
