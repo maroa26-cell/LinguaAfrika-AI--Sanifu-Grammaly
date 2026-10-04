@@ -102,7 +102,7 @@ if chaguo_menyu == "📝 Mhariri wa Kiswahili Sanifu Pro":
     maandishi_mhariri = str_platform.text_area("Andika maandishi yako hapa:", height=150, key="editor_input_royal")
     if str_platform.button("Zindua Ukaguzi wa Sarufi", key="editor_btn_royal"):
         if maandishi_mhariri.strip() != "":
-            pro_prompt = f"Wewe ni mtaalamu wa Kiswahili. Kagua na usahihishe maandishi haya:\n\n{maandishi_mhariri}"
+            pro_prompt = f"Wewe ni mtaalamu wa Kiswahili Sanifu. Kagua na usahihishe sarufi na tahajia hapa:\n\n{maandishi_mhariri}"
             jibu = client.chat.completions.create(model="gpt-4o", messages=[{"role": "user", "content": pro_prompt}])
             str_platform.success("Marekebisho Yamekamilika!")
             str_platform.write(jibu.choices.message.content)
@@ -181,3 +181,4 @@ elif chaguo_menyu == "🔊 Mtambo wa Sauti (Darasa la Sauti)":
 # CHAGUO 5: 🤖 AI PHONETIC ROBOT
 # =====================================================================
 elif chaguo_menyu == "🤖 AI Phonetic Robot (Ukaguzi Mkuu)":
+
