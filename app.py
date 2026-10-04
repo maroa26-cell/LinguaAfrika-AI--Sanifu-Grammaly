@@ -33,9 +33,9 @@ str_platform.write("---")
 # 🗺️ Undaji wa Tabo Tano Kuu za Kifalme
 tab1, tab2, tab3, tab4, tab5 = str_platform.tabs([
     "📝 Mhariri wa Kiswahili Sanifu", 
-    "🔀 Mtafsiri wa Kiingereza - Kiswahili", 
+    "🔀 Mtafsiri wa Lugha & Muktadha Pro", 
     "📚 Maktaba ya Msamiati na Nahau", 
-    "🔊 Mtambo wa Sauti ya AI (Text-to-Speech)", 
+    "🔊 Mtambo wa Sauti ya AI (Darasa la Sauti)", 
     "🤖 AI Phonetic Robot (Ukaguzi wa Lafudhi)"
 ])
 
@@ -60,32 +60,51 @@ with tab1:
                         messages=[{"role": "user", "content": pro_prompt}]
                     )
                     str_platform.success("Marekebisho Yamekamilika!")
-                    str_platform.write(jibu.choices[0].message.content)
+                    str_platform.write(jibu.choices.message.content)
                 except Exception as error_msg:
                     str_platform.error(f"Hitilafu ya Seva: {error_msg}")
 
 # =====================================================================
-# TAB 2: 🔀 MTAFSIRI WA KIINGREZA - KISWAHILI
+# TAB 2: 🔀 MTAFSIRI WA LUGHA & MUKTADHA PRO (UPGRADE!)
 # =====================================================================
 with tab2:
-    str_platform.header("🔀 Mtafsiri wa Kiingereza - Kiswahili")
-    str_platform.write("Tafsiri makala, sentensi, au maneno kutoka Kiingereza kwenda Kiswahili cha Ngazi ya Juu.")
+    str_platform.header("🔀 Mtafsiri wa Lugha & Muktadha wa Kiakademia")
+    str_platform.write("Boresha tafsiri yako kwa kuchagua lugha lengwa pamoja na muktadha maalum ili kupata maana sahihi zaidi.")
     
-    maandishi_tafsiri = str_platform.text_area("Ingiza Maandishi ya Kiingereza (English Text):", height=150, key="translate_input_royal")
+    col1, col2, col3 = str_platform.columns(3)
+    with col1:
+        lugha_chanzo = str_platform.selectbox("Lugha ya Chanzo (From):", ["Kiingereza (English)", "Kiswahili", "Kifaransa (French)", "Kiarabu (Arabic)"], key="src_lang")
+    with col2:
+        lugha_lengwa = str_platform.selectbox("Lugha Lengwa (To):", ["Kiswahili", "Kiingereza (English)", "Kifaransa (French)", "Kiarabu (Arabic)"], key="tgt_lang")
+    with col3:
+        muktadha_tafsiri = str_platform.selectbox("Muktadha wa Matumizi (Context):", [
+            "Mazungumzo ya Kawaida (Casual Conversation)",
+            "Kiakademia na Shule (Academic/Educational)",
+            "Kisheria na Kiofisi (Legal/Official Documentation)",
+            "Kibiashara na Kiuchumi (Business/Finance)",
+            "Fasihi na Ushairi (Literature/Poetry)"
+        ], key="context_lang")
+        
+    maandishi_tafsiri = str_platform.text_area("Ingiza maandishi unayotaka kutafsiri hapa:", height=150, key="translate_input_pro")
     
-    if str_platform.button("Tafsiri Sasa", key="translate_btn_royal"):
+    if str_platform.button("Zindua Tafsiri ya Kitaalamu", key="translate_btn_pro"):
         if maandishi_tafsiri.strip() == "":
-            str_platform.warning("Tafadhali ingiza maandishi ya Kiingereza kwanza!")
+            str_platform.warning("Tafadhali ingiza maandishi ya kutafsiri kwanza!")
         else:
-            with str_platform.spinner("Mtafsiri wa AI anageuza lugha..."):
+            with str_platform.spinner("Mtafsiri Mkuu wa AI anachambua muktadha..."):
                 try:
-                    trans_prompt = f"Translate the following English text into native, elegant, and standard Swahili (Kiswahili Sanifu):\n\n{maandishi_tafsiri}"
+                    trans_prompt = (
+                        f"Wewe ni mtafsiri mwandamizi wa kimataifa na mtaalamu wa lugha. "
+                        f"Tafsiri maandishi yafuatayo kutoka lugha ya {lugha_chanzo} kwenda lugha ya {lugha_lengwa}. "
+                        f"Zingatia kwa makini sana muktadha wa matumizi ambao ni: {muktadha_tafsiri}. "
+                        f"Hakikisha tafsiri inakuwa ya asili, yenye mtiririko mzuri na inayofaa ngazi hiyo ya muktadha:\n\n{maandishi_tafsiri}"
+                    )
                     jibu_tafsiri = client.chat.completions.create(
                         model="gpt-4o",
                         messages=[{"role": "user", "content": trans_prompt}]
                     )
-                    str_platform.success("Tafsiri ya Kifalme:")
-                    str_platform.write(jibu_tafsiri.choices[0].message.content)
+                    str_platform.success(f"🔮 Matokeo ya Tafsiri ({muktadha_tafsiri}):")
+                    str_platform.write(jibu_tafsiri.choices.message.content)
                 except Exception as error_msg:
                     str_platform.error(f"Hitilafu ya Seva: {error_msg}")
 
@@ -110,68 +129,47 @@ with tab3:
                         messages=[{"role": "user", "content": vocab_prompt}]
                     )
                     str_platform.info("Uchambuzi wa Kamusi Kuu:")
-                    str_platform.write(jibu_vocab.choices[0].message.content)
+                    str_platform.write(jibu_vocab.choices.message.content)
                 except Exception as error_msg:
                     str_platform.error(f"Hitilafu ya Seva: {error_msg}")
 
 # =====================================================================
-# TAB 4: 🔊 MTAMBO WA SAUTI YA AI (TEXT-TO-SPEECH)
+# TAB 4: 🔊 MTAMBO WA SAUTI YA AI (DARASA LA SAUTI - MWALIMU & MWANAFUNZI - UPGRADE!)
 # =====================================================================
 with tab4:
-    str_platform.header("🔊 Mtambo wa Sauti ya AI (Text-to-Speech)")
-    str_platform.write("Badilisha maandishi yako ya Kiswahili kuwa sauti safi ya roboti wa AI anayetamka lafudhi ya Tanzania.")
+    str_platform.header("🔊 Mtambo wa Sauti ya AI: Darasa la Kidijitali")
+    str_platform.write("Zalisha sauti za kielimu zinazoiga mifano ya darasani kati ya Mwalimu anayefundisha na Mwanafunzi anayeitikia au kuuliza.")
     
-    maandishi_sauti = str_platform.text_area("Andika maandishi unayotaka yatamkwe kwa sauti:", height=100, key="tts_input_royal")
-    uchaguzi_sauti = str_platform.selectbox("Chagua Aina ya Sauti ya AI:", ["alloy", "echo", "fable", "onyx", "nova", "shimmer"], key="tts_voice_royal")
+    col_v1, col_v2 = str_platform.columns(2)
+    with col_v1:
+        sauti_mwalimu = str_platform.selectbox("Chagua Sauti ya Mwalimu (Lafudhi Nzito):", ["onyx", "echo", "alloy"], key="teacher_voice_opt")
+        maandishi_mwalimu = str_platform.text_area("Andika Maelezo/Maswali ya Mwalimu:", "Karibu darasani mwanafunzi wangu. Leo tutajifunza matumizi sahihi ya viambishi vya Kiswahili Sanifu.", key="teacher_text_input")
+        
+    with col_v2:
+        sauti_mwanafunzi_opt = str_platform.selectbox("Chagua Sauti ya Mwanafunzi (Lafudhi Laini):", ["nova", "shimmer", "fable"], key="student_voice_opt")
+        maandishi_mwanafunzi = str_platform.text_area("Andika Majibu/Itikio la Mwanafunzi:", "Asante sana mwalimu wangu wa kifalme. Nipo tayari kabisa kusikiliza na kujifunza.", key="student_text_input")
     
-    if str_platform.button("Tengeneza Sauti", key="tts_btn_royal"):
-        if maandishi_sauti.strip() == "":
-            str_platform.warning("Tafadhali andika maandishi kwanza!")
+    if str_platform.button("Zalisha Sauti za Darasa", key="tts_classroom_btn"):
+        if maandishi_mwalimu.strip() == "" or maandishi_mwanafunzi.strip() == "":
+            str_platform.warning("Tafadhali hakikisha umejaza maandishi ya mwalimu na mwanafunzi!")
         else:
-            with str_platform.spinner("Roboti wa AI anafanya mazoezi ya kuongea..."):
+            with str_platform.spinner("Mwalimu na Mwanafunzi wanaingia darasani..."):
                 try:
-                    fayli_sauti = "sauti_kifalme.mp3"
-                    response = client.audio.speech.create(
+                    # 👨‍🏫 1. Sauti ya Mwalimu
+                    file_mwalimu = "sauti_mwalimu.mp3"
+                    res_mwalimu = client.audio.speech.create(
                         model="tts-1",
-                        voice=uchaguzi_sauti,
-                        input=maandishi_sauti
+                        voice=sauti_mwalimu,
+                        input=maandishi_mwalimu
                     )
-                    response.stream_to_file(fayli_sauti)
-                    str_platform.success("Sauti ya AI Ipo Tayari!")
-                    str_platform.audio(fayli_sauti)
-                except Exception as error_msg:
-                    str_platform.error(f"Hitilafu ya Mtambo wa Sauti: {error_msg}")
-
-# =====================================================================
-# TAB 5: 🤖 AI PHONETIC ROBOT (UKAGUZI WA LAFUDHI)
-# =====================================================================
-with tab5:
-    str_platform.header("🤖 AI Phonetic Robot (Ukaguzi wa Lafudhi)")
-    str_platform.write("Mzee wangu, hapa ndipo mtambo mkuu wa sauti ulipolala. Rekodi au pakia faili la sauti (.wav/.mp3) ili AI robot akague lafudhi na usahihi wa matamshi yako ya Kiswahili.")
-    
-    sauti_mwanafunzi = str_platform.file_uploader("Pakia faili la sauti ya mazoezi hapa:", type=["wav", "mp3"], key="audio_uploader_royal")
-    
-    if sauti_mwanafunzi and str_platform.button("🤖 Ruhusu Robot Akague Sauti Yako", key="check_student_speech_btn_royal_final"):
-        with str_platform.spinner("AI Robot wa Tanzania anasikiliza lafudhi yako..."):
-            try:
-                # 🛠️ MSTARI WA 182 SOMA NA KUNAKILI AUDIO SAFU
-                trans_audio = client.audio.transcriptions.create(
-                    model="whisper-1", 
-                    file=(sauti_mwanafunzi.name, sauti_mwanafunzi.read())
-                )
-                str_platform.info(f"🗣️ Robot amekusikia ukisema: '{trans_audio.text}'")
-                
-                # Uchambuzi wa kiwango cha matamshi
-                robot_prompt = f"Mwanafunzi ametamka sentensi hii: '{trans_audio.text}'. Wewe kama mtaalamu wa fonetiki ya Kiswahili, toa ripoti fupi ya usahihi wa lafudhi yake, mpe asilimia ya alama (% Score kutoka 0-100), na mpe ushauri mmoja wa kuboresha matamshi."
-                jibu_robot = client.chat.completions.create(
-                    model="gpt-4o",
-                    messages=[{"role": "user", "content": robot_prompt}]
-                )
-                str_platform.success("🔮 Ripoti ya Ukaguzi wa Lafudhi ya Roboti:")
-                str_platform.write(jibu_robot.choices[0].message.content)
-                
-            except Exception as error_msg:
-                str_platform.error(f"Hitilafu ya Ukaguzi wa Sauti: {error_msg}")
-
-# 🏰 Maandishi ya Chini ya Mamlaka ya Kifalme
-str_platform.write("---")
+                    res_mwalimu.stream_to_file(file_mwalimu)
+                    str_platform.markdown("#### 👨‍🏫 Sauti ya Mwalimu:")
+                    str_platform.audio(file_mwalimu)
+                    
+                    # 🧑‍🎓 2. Sauti ya Mwanafunzi
+                    file_mwanafunzi = "sauti_mwanafunzi.mp3"
+                    res_mwanafunzi = client.audio.speech.create(
+                        model="tts-1",
+                        voice=sauti_mwanafunzi_opt,
+                        input=maandishi_mwanafunzi
+                    )
