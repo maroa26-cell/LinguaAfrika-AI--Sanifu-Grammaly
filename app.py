@@ -2,7 +2,7 @@ import streamlit as str_platform
 import os
 from openai import OpenAI
 
-# 👑 Sanifu Mipangilio ya Ukurasa wa Kifalme - Ngazi ya Enterprise
+# 👑 Sanifu Mipangilio ya Ukurasa wa Kifalme - Ngazi ya Enterprise Omnichannel
 str_platform.set_page_config(
     page_title="LinguaAfrika AI: Ultra Premium Super Masterpiece Enterprise",
     page_icon="👑",
