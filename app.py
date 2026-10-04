@@ -53,7 +53,6 @@ str_platform.markdown("""
     div[data-testid="stRadio"] div[aria-checked="true"] {
         background-color: #D97706 !important;
         border-radius: 6px !important;
-        padding: 2px 8px !important;
     }
     div.stButton > button {
         background-color: #1E3A8A !important;
@@ -180,3 +179,4 @@ elif chaguo_menyu == "🔊 Mtambo wa Sauti (Darasa la Sauti)":
 # CHAGUO 5: 🤖 AI PHONETIC ROBOT
 # =====================================================================
 elif chaguo_menyu == "🤖 AI Phonetic Robot (Ukaguzi Mkuu)":
+    str_platform.markdown("<h3 style='color: #1E3A8A;'>🤖 AI Phonetic Robot Enterprise Suite</h3>", unsafe_allow_html=True)
