@@ -65,7 +65,7 @@ with tab1:
                     str_platform.error(f"Hitilafu ya Seva: {error_msg}")
 
 # =====================================================================
-# TAB 2: 🔀 MTAFSIRI WA LUGHA & MUKTADHA PRO (UPGRADE!)
+# TAB 2: 🔀 MTAFSIRI WA LUGHA & MUKTADHA PRO
 # =====================================================================
 with tab2:
     str_platform.header("🔀 Mtafsiri wa Lugha & Muktadha wa Kiakademia")
@@ -134,7 +134,7 @@ with tab3:
                     str_platform.error(f"Hitilafu ya Seva: {error_msg}")
 
 # =====================================================================
-# TAB 4: 🔊 MTAMBO WA SAUTI YA AI (DARASA LA SAUTI - MWALIMU & MWANAFUNZI - UPGRADE!)
+# TAB 4: 🔊 MTAMBO WA SAUTI YA AI (DARASA LA SAUTI - MWALIMU & MWANAFUNZI)
 # =====================================================================
 with tab4:
     str_platform.header("🔊 Mtambo wa Sauti ya AI: Darasa la Kidijitali")
@@ -173,3 +173,4 @@ with tab4:
                         voice=sauti_mwanafunzi_opt,
                         input=maandishi_mwanafunzi
                     )
+                    res_mwanafunzi.stream_to_file(file_mwanafunzi)
