@@ -54,7 +54,7 @@ with tab1:
         else:
             with str_platform.spinner("AI mzawa anatafiti sarufi..."):
                 try:
-                    pro_prompt = f"Wewe ni mtaalamu mwandamizi wa lugha ya Kiswahili Sanifu. Kagua maandishi haya, sahihisha makosa yote ya sarufi and tahajia, kisha ulete majibu nadhifu yakionyesha marekebisho yaliyofanyika:\n\n{maandishi_mhariri}"
+                    pro_prompt = f"Wewe ni mtaalamu mwandamizi wa lugha ya Kiswahili Sanifu. Kagua maandishi haya, sahihisha makosa yote ya sarufi na tahajia, kisha ulete majibu nadhifu yakionyesha marekebisho yaliyofanyika:\n\n{maandishi_mhariri}"
                     jibu = client.chat.completions.create(
                         model="gpt-4o",
                         messages=[{"role": "user", "content": pro_prompt}]
@@ -162,7 +162,8 @@ with tab4:
                         voice=sauti_mwalimu,
                         input=maandishi_mwalimu
                     )
-                    res_mwalimu.write_to_file(file_mwalimu)
+                    with open(file_mwalimu, "wb") as f_teacher:
+                        f_teacher.write(res_mwalimu.content)
                     str_platform.markdown("#### 👨‍🏫 Sauti ya Mwalimu:")
                     str_platform.audio(file_mwalimu)
                     
@@ -173,4 +174,3 @@ with tab4:
                         voice=sauti_mwanafunzi_opt,
                         input=maandishi_mwanafunzi
                     )
-                    res_mwanafunzi.write_to_file(file_mwanafunzi)
