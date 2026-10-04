@@ -55,7 +55,7 @@ with tab1:
         else:
             with str_platform.spinner("AI Enterprise anachambua sarufi na tahajia..."):
                 try:
-                    pro_prompt = f"Wewe ni mtaalamu mwandamizi na mhariri mkuu wa lugha ya Kiswahili Sanifu. Kagua maandishi haya, sahihisha makosa yote ya sarufi na tahajia, kisha ulete majibu nadhifu yakionyesha marekebisho yaliyofanyika kiofisi:\n\n{maandishi_mhariri}"
+                    pro_prompt = f"Wewe ni mtaalamu mwandamizi wa lugha ya Kiswahili Sanifu. Kagua maandishi haya, sahihisha makosa yote ya sarufi na tahajia, kisha ulete majibu nadhifu yakionyesha marekebisho yaliyofanyika:\n\n{maandishi_mhariri}"
                     jibu = client.chat.completions.create(
                         model="gpt-4o",
                         messages=[{"role": "user", "content": pro_prompt}]
@@ -87,7 +87,7 @@ with tab2:
     with col3:
         muktadha_tafsiri = str_platform.selectbox("Muktadha wa Matumizi (Context):", [
             "Mazungumzo ya Kawaida (Casual Conversation)", "Kiakademia na Shule (Academic/Educational)",
-            "Kidini na Kiimani (Religous/Faith-Based)", "Kisheria na Kiofisi (Legal/Official Documentation)",
+            "Kidini na Kiimani (Religious/Faith-Based)", "Kisheria na Kiofisi (Legal/Official Documentation)",
             "Kibiashara na Kiuchumi (Business/Finance)", "Fasihi na Ushairi (Literature/Poetry)"
         ], key="context_lang")
         
@@ -100,7 +100,7 @@ with tab2:
             with str_platform.spinner("Mtafsiri Mkuu wa Enterprise anachambua lugha na muktadha..."):
                 try:
                     trans_prompt = (
-                        f"Wewe ni mtafsiri mwandamizi wa mashirika ya kimataifa na mtaalamu wa lugha. "
+                        f"Wewe ni mtafsiri mwandamizi wa kimataifa na mtaalamu wa lugha. "
                         f"Tafsiri maandishi yafuatayo kutoka lugha ya {lugha_chanzo} kwenda lugha ya {lugha_lengwa}. "
                         f"Zingatia kwa makini sana muktadha wa matumizi ambao ni: {muktadha_tafsiri}. "
                         f"Hakikisha tafsiri inakuwa ya kiwango cha juu, ya asili, yenye misamiati sahihi, na mtiririko unaofaa ngazi hiyo ya muktadha:\n\n{maandishi_tafsiri}"
@@ -129,7 +129,7 @@ with tab3:
         else:
             with str_platform.spinner("AI anatafuta kwenye hifadhidata ya kamusi kuu..."):
                 try:
-                    vocab_prompt = f"Wewe ni Kamusi Hai Kuu ya Kiswahili ya kiwango cha juu. Toa maana ya kina, asili ya neno, na mifano miwili ya sentensi za kiofisi kwa kutumia msamiati huu:\n\n{msamiati_input}"
+                    vocab_prompt = f"Wewe ni Kamusi Hai Kuu ya Kiswahili ya kiwango cha juu. Toa maana ya kina, asili ya neno, na mifano miwili ya sentensi kwa kutumia msamiati huu:\n\n{msamiati_input}"
                     jibu_vocab = client.chat.completions.create(
                         model="gpt-4o",
                         messages=[{"role": "user", "content": vocab_prompt}]
@@ -156,4 +156,3 @@ with tab4:
         maandishi_mwanafunzi = str_platform.text_area("Andika Majibu ya Mwanafunzi:", "Asante sana mwalimu wangu wa kifalme. Nipo tayari kabisa kusikiliza na kujifunza.", key="student_text_input")
     
     if str_platform.button("Zalisha Sauti za Darasa", key="tts_classroom_btn"):
-
