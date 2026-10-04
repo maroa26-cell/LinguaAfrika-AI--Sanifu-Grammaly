@@ -18,7 +18,7 @@ elif hasattr(str_platform, "secrets") and "OPENAI_API_KEY" in str_platform.secre
 else:
     api_key_source = None
 
-# Kuwasha mtambo rasmi wa OpenAI Enterprise Suite
+# Kuwasha mtambo OpenAI Suite
 if api_key_source:
     client = OpenAI(api_key=api_key_source)
 else:
@@ -31,7 +31,7 @@ str_platform.markdown("<h3 style='text-align: center; color: #D97706; font-famil
 str_platform.markdown("<p style='text-align: center; font-size: 1.2rem; color: #4B5563; max-width: 800px; margin: 0 auto;'>Mfumo mkuu wa kimkakati wa akili mnemba (AI) uliosajiliwa kusanifisha sarufi, kutafsiri lugha 14, na kukagua lafudhi ya Lugha ya Kiswahili duniani kwa kiwango cha kibiashara na kiofisi.</p>", unsafe_allow_html=True)
 str_platform.write("---")
 
-# 🗺️ Undaji wa Tabo Tano Kuu za Kifalme za Enterprise
+# 🗺️ Undaji wa Tabo Tano Kuu za Enterprise
 tab1, tab2, tab3, tab4, tab5 = str_platform.tabs([
     "📝 Mhariri wa Kiswahili Sanifu Pro", 
     "🔀 Mtafsiri wa Lugha & Muktadha Suite", 
@@ -41,12 +41,11 @@ tab1, tab2, tab3, tab4, tab5 = str_platform.tabs([
 ])
 
 # =====================================================================
-# TAB 1: 📝 MHARIRI WA KISWAHILI SANIFU PRO (GRAMMARLY ENTERPRISE)
+# TAB 1: 📝 MHARIRI WA KISWAHILI SANIFU PRO
 # =====================================================================
 with tab1:
     str_platform.markdown("<h3 style='color: #1E3A8A;'>📝 Mhariri wa Kiswahili Sanifu Pro</h3>", unsafe_allow_html=True)
     str_platform.write("Ingiza maandishi yako ya Kiswahili hapa chini ili AI ya Ngazi ya Enterprise yakubalie kurekebisha sarufi, tahajia, na mtiririko kulingana na miongozo ya Baraza la Kiswahili.")
-    
     maandishi_mhariri = str_platform.text_area("Andika maandishi yako hapa:", height=150, key="editor_input_royal")
     
     if str_platform.button("Zindua Ukaguzi wa Sarufi", key="editor_btn_royal"):
@@ -70,7 +69,7 @@ with tab1:
 # =====================================================================
 with tab2:
     str_platform.markdown("<h3 style='color: #1E3A8A;'>🔀 Mtafsiri wa Lugha & Muktadha Suite</h3>", unsafe_allow_html=True)
-    str_platform.write("Mfumo wa tafsiri ya kimataifa unaounga mkono lugha 14 za kimkakati pamoja na muktadha maalum wa kiakademia, kisheria, na kidini.")
+    str_platform.write("Mfumo wa tafsiri ya kimataifa unaounga mkono lugha 14 za kimkakati pamoja na muktadha maalum.")
     
     orodha_lugha = [
         "Kiswahili", "Kiingereza (English)", "Kichewa (Chichewa)", "Kinyarwanda", 
@@ -97,13 +96,13 @@ with tab2:
         if maandishi_tafsiri.strip() == "":
             str_platform.warning("Tafadhali ingiza maandishi ya kutafsiri kwanza!")
         else:
-            with str_platform.spinner("Mtafsiri Mkuu wa Enterprise anachambua lugha na muktadha..."):
+            with str_platform.spinner("Mtafsiri Mkuu wa Enterprise anachambua lugha..."):
                 try:
                     trans_prompt = (
                         f"Wewe ni mtafsiri mwandamizi wa kimataifa na mtaalamu wa lugha. "
                         f"Tafsiri maandishi yafuatayo kutoka lugha ya {lugha_chanzo} kwenda lugha ya {lugha_lengwa}. "
                         f"Zingatia kwa makini sana muktadha wa matumizi ambao ni: {muktadha_tafsiri}. "
-                        f"Hakikisha tafsiri inakuwa ya kiwango cha juu, ya asili, yenye misamiati sahihi, na mtiririko unaofaa ngazi hiyo ya muktadha:\n\n{maandishi_tafsiri}"
+                        f"Hakikisha tafsiri inakuwa ya kiwango cha juu, ya asili, na mtiririko unaofaa ngazi hiyo ya muktadha:\n\n{maandishi_tafsiri}"
                     )
                     jibu_tafsiri = client.chat.completions.create(
                         model="gpt-4o",
@@ -120,14 +119,13 @@ with tab2:
 with tab3:
     str_platform.markdown("<h3 style='color: #1E3A8A;'>📚 Maktaba ya Msamiati na Nahau Kuu</h3>", unsafe_allow_html=True)
     str_platform.write("Gundua na uchambue maana ya misamiati migumu, methali, nahau, na tamathali za usemi.")
-    
     msamiati_input = str_platform.text_input("Andika neno, nahau, au methali (Mfano: 'Kitendawili', 'Kula chumvi nyingi'):", key="vocab_input_royal")
     
     if str_platform.button("Tafuta Kwenye Kamusi Kuu", key="vocab_btn_royal"):
         if msamiati_input.strip() == "":
             str_platform.warning("Tafadhali andika msamiati kwanza!")
         else:
-            with str_platform.spinner("AI anatafuta kwenye hifadhidata ya kamusi kuu..."):
+            with str_platform.spinner("AI anatafuta kwenye kamusi kuu..."):
                 try:
                     vocab_prompt = f"Wewe ni Kamusi Hai Kuu ya Kiswahili ya kiwango cha juu. Toa maana ya kina, asili ya neno, na mifano miwili ya sentensi kwa kutumia msamiati huu:\n\n{msamiati_input}"
                     jibu_vocab = client.chat.completions.create(
@@ -140,20 +138,23 @@ with tab3:
                     str_platform.error(f"Hitilafu ya Mfumo: {error_msg}")
 
 # =====================================================================
-# TAB 4: 🔊 MTAMBO WA SAUTI (DARASA LA SAUTI - MWALIMU & MWANAFUNZI)
+# TAB 4: 🔊 MTAMBO WA SAUTI (DARASA LA SAUTI)
 # =====================================================================
 with tab4:
     str_platform.markdown("<h3 style='color: #1E3A8A;'>🔊 Mtambo wa Sauti: Darasa la Kidijitali</h3>", unsafe_allow_html=True)
-    str_platform.write("Zalisha faili za sauti za kielimu zinazoiga mifano ya darasani kati ya Mwalimu na Mwanafunzi kwa usahihi mkuu.")
+    str_platform.write("Zalisha faili za sauti za kielimu zinazoiga mifano ya darasani kati ya Mwalimu na Mwanafunzi.")
     
     col_v1, col_v2 = str_platform.columns(2)
     with col_v1:
-        sauti_mwalimu = str_platform.selectbox("Chagua Sauti ya Mwalimu (Lafudhi Nzito):", ["onyx", "echo", "alloy"], key="teacher_voice_opt")
+        sauti_mwalimu = str_platform.selectbox("Chagua Sauti ya Mwalimu:", ["onyx", "echo", "alloy"], key="teacher_voice_opt")
         maandishi_mwalimu = str_platform.text_area("Andika Maelezo ya Mwalimu:", "Karibu darasani mwanafunzi wangu. Leo tutajifunza matumizi sahihi ya viambishi vya Kiswahili Sanifu.", key="teacher_text_input")
-        
     with col_v2:
-        sauti_mwanafunzi_opt = str_platform.selectbox("Chagua Sauti ya Mwanafunzi (Lafudhi Laini):", ["nova", "shimmer", "fable"], key="student_voice_opt")
+        sauti_mwanafunzi_opt = str_platform.selectbox("Chagua Sauti ya Mwanafunzi:", ["nova", "shimmer", "fable"], key="student_voice_opt")
         maandishi_mwanafunzi = str_platform.text_area("Andika Majibu ya Mwanafunzi:", "Asante sana mwalimu wangu wa kifalme. Nipo tayari kabisa kusikiliza na kujifunza.", key="student_text_input")
     
     if str_platform.button("Zalisha Sauti za Darasa", key="tts_classroom_btn"):
         if maandishi_mwalimu.strip() == "" or maandishi_mwanafunzi.strip() == "":
+            str_platform.warning("Tafadhali hakikisha umejaza maandishi yote mawili!")
+        else:
+            with str_platform.spinner("Mtambo wa sauti unaoka sauti..."):
+                try:
