@@ -174,4 +174,6 @@ with tab4:
                         input=maandishi_mwanafunzi
                     )
                     res_mwanafunzi.write_to_file(file_mwanafunzi)
+         except Exception as error_msg:
+             str_platform.error(f"Hitilafu ya Ukaguzi wa Sauti: {error_msg}")
 
