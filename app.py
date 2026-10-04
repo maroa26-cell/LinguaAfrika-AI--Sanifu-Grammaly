@@ -2,7 +2,7 @@ import streamlit as str_platform
 import os
 from openai import OpenAI
 
-# 👑 Sanifu Mipangilio ya Ukurasa wa Kifalme - Ngazi ya Edition 2 Responsive Suite
+# 👑 Sanifu Mipangilio ya Ukurasa wa Kifalme - Ngazi ya Edition 2 Admin Responsive Suite
 str_platform.set_page_config(
     page_title="LinguaAfrika AI: Ultra Premium Super Masterpiece Edition 2",
     page_icon="👑",
@@ -89,7 +89,8 @@ chaguo_menyu = str_platform.sidebar.radio(
         "🔀 Mtafsiri wa Lugha & Muktadha Suite",
         "📚 Maktaba ya Msamiati na Nahau Kuu",
         "🔊 Mtambo wa Sauti (Darasa la Sauti)",
-        "🤖 AI Phonetic Robot (Ukaguzi Mkuu)"
+        "🤖 AI Phonetic Robot (Ukaguzi Mkuu)",
+        "🔐 Jopo la Msimamizi (Admin)"
     ]
 )
 
@@ -180,5 +181,3 @@ elif chaguo_menyu == "🔊 Mtambo wa Sauti (Darasa la Sauti)":
 # CHAGUO 5: 🤖 AI PHONETIC ROBOT
 # =====================================================================
 elif chaguo_menyu == "🤖 AI Phonetic Robot (Ukaguzi Mkuu)":
-    str_platform.markdown("<h3 style='color: #1E3A8A;'>🤖 AI Phonetic Robot Enterprise Suite</h3>", unsafe_allow_html=True)
-
