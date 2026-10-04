@@ -62,7 +62,7 @@ with tab1:
                 str_platform.write(jibu.choices.message.content)
 
 # =====================================================================
-# TAB 2: 🔀 MTAFSIRI WA LUGHA & MUKTADHA PRO (UPGRADE MKUU WA LUGHA 14!)
+# TAB 2: 🔀 MTAFSIRI WA LUGHA & MUKTADHA PRO (MUKTADHA WA KIDINI WA KIFALME!)
 # =====================================================================
 with tab2:
     str_platform.header("🔀 Mtafsiri wa Lugha & Muktadha wa Kiakademia")
@@ -92,9 +92,11 @@ with tab2:
     with col2:
         lugha_lengwa = str_platform.selectbox("Lugha Lengwa (To):", orodha_lugha, index=0, key="tgt_lang")
     with col3:
+        # Boresha na kuongeza muktadha wa kidini na kiimani hapa!
         muktadha_tafsiri = str_platform.selectbox("Muktadha wa Matumizi (Context):", [
             "Mazungumzo ya Kawaida (Casual Conversation)",
             "Kiakademia na Shule (Academic/Educational)",
+            "Kidini na Kiimani (Religious/Faith-Based)",
             "Kisheria na Kiofisi (Legal/Official Documentation)",
             "Kibiashara na Kiuchumi (Business/Finance)",
             "Fasihi na Ushairi (Literature/Poetry)"
@@ -111,7 +113,7 @@ with tab2:
                     f"Wewe ni mtafsiri mwandamizi wa kimataifa na mtaalamu wa lugha. "
                     f"Tafsiri maandishi yafuatayo kutoka lugha ya {lugha_chanzo} kwenda lugha ya {lugha_lengwa}. "
                     f"Zingatia kwa makini sana muktadha wa matumizi ambao ni: {muktadha_tafsiri}. "
-                    f"Hakikisha tafsiri inakuwa ya asili kabisa, yenye misamiati sahihi na mtiririko mzuri unaofaa ngazi hiyo ya muktadha:\n\n{maandishi_tafsiri}"
+                    f"Hakikisha tafsiri inakuwa ya asili kabisa, yenye misamiati sahihi, heshima ya juu, na mtiririko mzuri unaofaa ngazi hiyo ya muktadha:\n\n{maandishi_tafsiri}"
                 )
                 jibu_tafsiri = client.chat.completions.create(
                     model="gpt-4o",
@@ -178,6 +180,5 @@ with tab4:
                 f_student = open(file_mwanafunzi, "wb")
                 f_student.write(res_mwanafunzi.content)
                 f_student.close()
-                str_platform.markdown("#### 🧑‍🎓 Sauti ya Mwanafunzi:")
-                str_platform.audio(file_mwanafunzi)
+
                 
