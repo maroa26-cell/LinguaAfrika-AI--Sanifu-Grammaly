@@ -105,6 +105,8 @@ if chaguo_menyu == "📝 Mhariri wa Kiswahili Sanifu Pro":
             jibu = client.chat.completions.create(model="gpt-4o", messages=[{"role": "user", "content": pro_prompt}])
             str_platform.success("Marekebisho Yamekamilika!")
             str_platform.write(jibu.choices.message.content)
+        else:
+            str_platform.warning("Tafadhali ingiza maandishi kwanza!")
 
 # =====================================================================
 # CHAGUO 2: MTAFSIRI WA LUGHA & MUKTADHA SUITE (14 LUGHA + KIDINI)
@@ -126,6 +128,8 @@ elif chaguo_menyu == "🔀 Mtafsiri wa Lugha & Muktadha Suite":
             jibu_tafsiri = client.chat.completions.create(model="gpt-4o", messages=[{"role": "user", "content": trans_prompt}])
             str_platform.success("🔮 Matokeo ya Tafsiri ya Kitaalamu:")
             str_platform.write(jibu_tafsiri.choices.message.content)
+        else:
+            str_platform.warning("Tafadhali ingiza maandishi ya kutafsiri!")
 
 # =====================================================================
 # CHAGUO 3: MAKTABA YA MSAMIATI NA NAHAU KUU
@@ -139,6 +143,8 @@ elif chaguo_menyu == "📚 Maktaba ya Msamiati na Nahau Kuu":
             jibu_vocab = client.chat.completions.create(model="gpt-4o", messages=[{"role": "user", "content": vocab_prompt}])
             str_platform.info("Uchambuzi wa Kitaalamu wa Kamusi Kuu:")
             str_platform.write(jibu_vocab.choices.message.content)
+        else:
+            str_platform.warning("Tafadhali andika msamiati kwanza!")
 
 # =====================================================================
 # CHAGUO 4: MTAMBO WA SAUTI (DARASA LA SAUTI)
@@ -167,12 +173,11 @@ elif chaguo_menyu == "🔊 Mtambo wa Sauti (Darasa la Sauti)":
             f_student.write(res_mwanafunzi.content)
             f_student.close()
             str_platform.audio(file_mwanafunzi)
+        else:
+            str_platform.warning("Tafadhali hakikisha umejaza maandishi yote mawili!")
 
 # =====================================================================
 # CHAGUO 5: 🤖 AI PHONETIC ROBOT
 # =====================================================================
 elif chaguo_menyu == "🤖 AI Phonetic Robot (Ukaguzi Mkuu)":
     str_platform.markdown("<h3 style='color: #1E3A8A;'>🤖 AI Phonetic Robot Enterprise Suite</h3>", unsafe_allow_html=True)
-    sauti_mwanafunzi = str_platform.file_uploader("Pakia faili la sauti hapa:", type=["wav", "mp3"], key="audio_uploader_royal_final")
-    if sauti_mwanafunzi and str_platform.button("Zindua Ukaguzi Mkuu wa Roboti", key="check_student_speech_btn_royal_final"):
-        with str_platform.spinner("AI Robot wa Kimataifa anasikiliza lafudhi..."):
