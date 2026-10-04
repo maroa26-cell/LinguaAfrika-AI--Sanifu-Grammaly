@@ -99,7 +99,7 @@ chaguo_menyu = str_platform.sidebar.radio(
 # =====================================================================
 if chaguo_menyu == "📝 Mhariri wa Kiswahili Sanifu Pro":
     str_platform.markdown("<h3 style='color: #1E3A8A;'>📝 Mhariri wa Kiswahili Sanifu Pro</h3>", unsafe_allow_html=True)
-    maandishi_mhariri = str_platform.text_area("Andika maandishi yako hapa:", height=150, key="editor_input_royal")
+    maandishi_mhariri = str_platform.text_area("Andika maandishi yako hapa na ubonyeze kitufe chini yake:", height=150, key="editor_input_royal")
     if str_platform.button("Zindua Ukaguzi wa Sarufi", key="editor_btn_royal"):
         if maandishi_mhariri.strip() != "":
             pro_prompt = f"Wewe ni mtaalamu wa Kiswahili Sanifu. Kagua na usahihishe sarufi na tahajia hapa:\n\n{maandishi_mhariri}"
@@ -122,7 +122,7 @@ elif chaguo_menyu == "🔀 Mtafsiri wa Lugha & Muktadha Suite":
         lugha_lengwa = str_platform.selectbox("Lugha Lengwa (To):", orodha_lugha, index=0)
     with col3:
         muktadha_tafsiri = str_platform.selectbox("Muktadha:", ["Mazungumzo ya Kawaida", "Kiakademia", "Kidini na Kiimani", "Kisheria", "Kibiashara", "Fasihi na Ushairi"])
-    maandishi_tafsiri = str_platform.text_area("Ingiza maandishi ya kutafsiri:", height=150, key="translate_input_pro")
+    maandishi_tafsiri = str_platform.text_area("Ingiza maandishi ya kutafsiri na ubonyeze kitufe chini yake:", height=150, key="translate_input_pro")
     if str_platform.button("Zindua Tafsiri ya Kitaalamu", key="translate_btn_pro"):
         if maandishi_tafsiri.strip() != "":
             trans_prompt = f"Translate from {lugha_chanzo} to {lugha_lengwa} in a {muktadha_tafsiri} style:\n\n{maandishi_tafsiri}"
@@ -137,7 +137,7 @@ elif chaguo_menyu == "🔀 Mtafsiri wa Lugha & Muktadha Suite":
 # =====================================================================
 elif chaguo_menyu == "📚 Maktaba ya Msamiati na Nahau Kuu":
     str_platform.markdown("<h3 style='color: #1E3A8A;'>📚 Maktaba ya Msamiati na Nahau Kuu</h3>", unsafe_allow_html=True)
-    msamiati_input = str_platform.text_input("Andika neno, nahau, au methali hapa:", key="vocab_input_royal")
+    msamiati_input = str_platform.text_input("Andika neno, nahau, au methali hapa na ubonyeze kitufe chini yake:", key="vocab_input_royal")
     if str_platform.button("Tafuta Kwenye Kamusi Kuu", key="vocab_btn_royal"):
         if msamiati_input.strip() != "":
             vocab_prompt = f"Toa maana na mifano ya sentensi kwa kutumia msamiati huu wa Kiswahili: {msamiati_input}"
@@ -148,7 +148,7 @@ elif chaguo_menyu == "📚 Maktaba ya Msamiati na Nahau Kuu":
             str_platform.warning("Tafadhali andika msamiati kwanza!")
 
 # =====================================================================
-# CHAGUO 4: MTAMBO WA SAUTI (DARASA LA SAUTI - FIXED!)
+# CHAGUO 4: MTAMBO WA SAUTI (DARASA LA SAUTI)
 # =====================================================================
 elif chaguo_menyu == "🔊 Mtambo wa Sauti (Darasa la Sauti)":
     str_platform.markdown("<h3 style='color: #1E3A8A;'>🔊 Mtambo wa Sauti: Darasa la Kidijitali</h3>", unsafe_allow_html=True)
@@ -159,24 +159,24 @@ elif chaguo_menyu == "🔊 Mtambo wa Sauti (Darasa la Sauti)":
     with col_v2:
         sauti_mwanafunzi_opt = str_platform.selectbox("Sauti ya Mwanafunzi:", ["nova", "shimmer", "fable"])
         maandishi_mwanafunzi = str_platform.text_area("Mwanafunzi:", "Asante sana mwalimu wangu.", key="student_text_input")
-    
     if str_platform.button("Zalisha Sauti za Darasa", key="tts_classroom_btn"):
         if maandishi_mwalimu.strip() != "" and maandishi_mwanafunzi.strip() != "":
             file_mwalimu = "sauti_mwalimu.mp3"
             res_mwalimu = client.audio.speech.create(model="tts-1", voice=sauti_mwalimu, input=maandishi_mwalimu)
-            with open(file_mwalimu, "wb") as f_m:
-                f_m.write(res_mwalimu.content)
+            f_teacher = open(file_mwalimu, "wb")
+            f_teacher.write(res_mwalimu.content)
+            f_teacher.close()
             str_platform.audio(file_mwalimu)
             
             file_mwanafunzi = "sauti_mwanafunzi.mp3"
             res_mwanafunzi = client.audio.speech.create(model="tts-1", voice=sauti_mwanafunzi_opt, input=maandishi_mwanafunzi)
-            with open(file_mwanafunzi, "wb") as f_s:
-                f_s.write(res_mwanafunzi.content)
+            f_student = open(file_mwanafunzi, "wb")
+            f_student.write(res_mwanafunzi.content)
+            f_student.close()
             str_platform.audio(file_mwanafunzi)
         else:
             str_platform.warning("Tafadhali hakikisha umejaza maandishi yote mawili!")
 
 # =====================================================================
-# CHAGUO 5: 🤖 AI PHONETIC ROBOT (FIXED ELIF!)
+# CHAGUO 5: 🤖 AI PHONETIC ROBOT
 # =====================================================================
-elif chaguo_menyu == "🤖 AI Phonetic Robot (Ukaguzi Mkuu)":
