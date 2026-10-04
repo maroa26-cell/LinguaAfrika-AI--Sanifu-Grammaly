@@ -62,17 +62,35 @@ with tab1:
                 str_platform.write(jibu.choices.message.content)
 
 # =====================================================================
-# TAB 2: 🔀 MTAFSIRI WA LUGHA & MUKTADHA PRO
+# TAB 2: 🔀 MTAFSIRI WA LUGHA & MUKTADHA PRO (UPGRADE MKUU WA LUGHA 14!)
 # =====================================================================
 with tab2:
     str_platform.header("🔀 Mtafsiri wa Lugha & Muktadha wa Kiakademia")
     str_platform.write("Boresha tafsiri yako kwa kuchagua lugha lengwa pamoja na muktadha maalum ili kupata maana sahihi zaidi.")
     
+    # Orodha kamili ya lugha 14 kifalme
+    orodha_lugha = [
+        "Kiswahili", 
+        "Kiingereza (English)", 
+        "Kichewa (Chichewa)", 
+        "Kinyarwanda", 
+        "Kiganda (Luganda)", 
+        "Kinyanja", 
+        "Kiafrikana (Afrikaans)", 
+        "Kilingala (Lingala)", 
+        "Kiamhari (Amharic)", 
+        "Kichina (Chinese)", 
+        "Kireno (Portuguese)", 
+        "Kihindi (Hindi)",
+        "Kifaransa (French)", 
+        "Kiarabu (Arabic)"
+    ]
+    
     col1, col2, col3 = str_platform.columns(3)
     with col1:
-        lugha_chanzo = str_platform.selectbox("Lugha ya Chanzo (From):", ["Kiingereza (English)", "Kiswahili", "Kifaransa (French)", "Kiarabu (Arabic)"], key="src_lang")
+        lugha_chanzo = str_platform.selectbox("Lugha ya Chanzo (From):", orodha_lugha, index=1, key="src_lang")
     with col2:
-        lugha_lengwa = str_platform.selectbox("Lugha Lengwa (To):", ["Kiswahili", "Kiingereza (English)", "Kifaransa (French)", "Kiarabu (Arabic)"], key="tgt_lang")
+        lugha_lengwa = str_platform.selectbox("Lugha Lengwa (To):", orodha_lugha, index=0, key="tgt_lang")
     with col3:
         muktadha_tafsiri = str_platform.selectbox("Muktadha wa Matumizi (Context):", [
             "Mazungumzo ya Kawaida (Casual Conversation)",
@@ -88,18 +106,18 @@ with tab2:
         if maandishi_tafsiri.strip() == "":
             str_platform.warning("Tafadhali ingiza maandishi ya kutafsiri kwanza!")
         else:
-            with str_platform.spinner("Mtafsiri Mkuu wa AI anachambua muktadha..."):
+            with str_platform.spinner("Mtafsiri Mkuu wa AI anachambua muktadha wa lugha..."):
                 trans_prompt = (
                     f"Wewe ni mtafsiri mwandamizi wa kimataifa na mtaalamu wa lugha. "
                     f"Tafsiri maandishi yafuatayo kutoka lugha ya {lugha_chanzo} kwenda lugha ya {lugha_lengwa}. "
                     f"Zingatia kwa makini sana muktadha wa matumizi ambao ni: {muktadha_tafsiri}. "
-                    f"Hakikisha tafsiri inakuwa ya asili, yenye mtiririko mzuri na inayofaa ngazi hiyo ya muktadha:\n\n{maandishi_tafsiri}"
+                    f"Hakikisha tafsiri inakuwa ya asili kabisa, yenye misamiati sahihi na mtiririko mzuri unaofaa ngazi hiyo ya muktadha:\n\n{maandishi_tafsiri}"
                 )
                 jibu_tafsiri = client.chat.completions.create(
                     model="gpt-4o",
                     messages=[{"role": "user", "content": trans_prompt}]
                 )
-                str_platform.success(f"🔮 Matokeo ya Tafsiri ({muktadha_tafsiri}):")
+                str_platform.success(f"🔮 Matokeo ya Tafsiri kutoka {lugha_chanzo} kwenda {lugha_lengwa} ({muktadha_tafsiri}):")
                 str_platform.write(jibu_tafsiri.choices.message.content)
 
 # =====================================================================
@@ -163,10 +181,3 @@ with tab4:
                 str_platform.markdown("#### 🧑‍🎓 Sauti ya Mwanafunzi:")
                 str_platform.audio(file_mwanafunzi)
                 
-                str_platform.success("👑 Darasa la Sauti limekamilika kwa ufanisi wa 100%!")
-
-# =====================================================================
-# TAB 5: 🤖 AI PHONETIC ROBOT (UKAGUZI WA LAFUDHI)
-# =====================================================================
-with tab5:
-    str_platform.header("🤖 AI Phonetic Robot (Ukaguzi wa Lafudhi)")
