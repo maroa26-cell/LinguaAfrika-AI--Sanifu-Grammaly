@@ -92,12 +92,11 @@ str_platform.markdown("<h3 style='text-align: center; color: #D97706; font-famil
 str_platform.write("---")
 
 # =====================================================================
-# 🧭 USANIFU WA MENYU YA SIDEBAR KULINGANA NA HALI YA LOGGED IN
+# 🧭 USANIFU WA MENYU YA SIDEBAR KULINGANA NA HALI YA USER STATUS
 # =====================================================================
-str_platform.sidebar.markdown("<h2 style='color: #ffffff; text-align: center; font-weight: bold;'>LinguaAfrika AI</h2>", unsafe_allow_html=True)
-
 if str_platform.session_state["user_status"] == "admin":
-    str_platform.sidebar.markdown("<p style='color: #25D366; text-align: center;'>👑 Administrator Mode</p>", unsafe_allow_html=True)
+    str_platform.sidebar.markdown("<h2 style='color: #ffffff; text-align: center; font-weight: bold;'>LinguaAfrika AI</h2>", unsafe_allow_html=True)
+    str_platform.sidebar.markdown("<p style='color: #25D366; text-align: center; font-weight: bold;'>👑 Administrator Mode</p>", unsafe_allow_html=True)
     chaguo_menyu = str_platform.sidebar.radio(
         "DASHBOARD YA USIMAMIZI:",
         [
@@ -108,10 +107,11 @@ if str_platform.session_state["user_status"] == "admin":
         ]
     )
 else:
+    str_platform.sidebar.markdown("<h2 style='color: #ffffff; text-align: center; font-weight: bold;'>LinguaAfrika AI</h2>", unsafe_allow_html=True)
     if str_platform.session_state["user_status"] == "standard_premium":
-        str_platform.sidebar.markdown("<p style='color: #D97706; text-align: center;'>💎 Premium Member</p>", unsafe_allow_html=True)
+        str_platform.sidebar.markdown("<p style='color: #D97706; text-align: center; font-weight: bold;'>💎 Premium Member</p>", unsafe_allow_html=True)
     else:
-        str_platform.sidebar.markdown("<p style='color: #9CA3AF; text-align: center;'>👤 Guest Mode (Free)</p>", unsafe_allow_html=True)
+        str_platform.sidebar.markdown("<p style='color: #9CA3AF; text-align: center; font-weight: bold;'>👤 Guest Mode (Free)</p>", unsafe_allow_html=True)
         
     chaguo_menyu = str_platform.sidebar.radio(
         "CHAGUA HUDUMA KUU:",
@@ -173,6 +173,8 @@ elif chaguo_menyu == "📚 Maktaba ya Msamiati na Kamusi":
             jibu_vocab = client.chat.completions.create(model="gpt-4o", messages=[{"role": "user", "content": vocab_prompt}])
             str_platform.info("Uchambuzi wa Kitaalamu wa Kamusi Kuu:")
             str_platform.write(jibu_vocab.choices.message.content)
+        else:
+            str_platform.warning("Tafadhali andika msamiati kwanza!")
 
 # 4. MTAMBO WA SAUTI (MTEGO WA MALIPO)
 elif chaguo_menyu == "🔊 Mtambo wa Sauti (Darasa la Sauti)":
@@ -185,6 +187,3 @@ elif chaguo_menyu == "🔊 Mtambo wa Sauti (Darasa la Sauti)":
             sauti_mwalimu = str_platform.selectbox("Sauti ya Mwalimu:", ["onyx", "echo", "alloy"])
             maandishi_mwalimu = str_platform.text_area("Mwalimu:", "Karibu darasani mwanafunzi wangu.", key="teacher_text_input")
         with col_v2:
-            sauti_mwanafunzi_opt = str_platform.selectbox("Sauti ya Mwanafunzi:", ["nova", "shimmer", "fable"])
-            maandishi_mwanafunzi = str_platform.text_area("Mwanafunzi:", "Asante sana mwalimu wangu.", key="student_text_input")
-
