@@ -155,21 +155,18 @@ with tab4:
         else:
             with str_platform.spinner("Mwalimu na Mwanafunzi wanaingia darasani..."):
                 try:
+                    # 👨‍🏫 1. Sauti ya Mwalimu
                     file_mwalimu = "sauti_mwalimu.mp3"
-                    res_mwalimu = client.audio.speech.create(
-                        model="tts-1",
-                        voice=sauti_mwalimu,
-                        input=maandishi_mwalimu
-                    )
-                    with open(file_mwalimu, "wb") as f_teacher:
-                        f_teacher.write(res_mwalimu.content)
+                    res_mwalimu = client.audio.speech.create(model="tts-1", voice=sauti_mwalimu, input=maandishi_mwalimu)
+                    f_teacher = open(file_mwalimu, "wb")
+                    f_teacher.write(res_mwalimu.content)
+                    f_teacher.close()
                     str_platform.markdown("#### 👨‍🏫 Sauti ya Mwalimu:")
                     str_platform.audio(file_mwalimu)
                     
+                    # 🧑‍🎓 2. Sauti ya Mwanafunzi
                     file_mwanafunzi = "sauti_mwanafunzi.mp3"
-                    res_mwanafunzi = client.audio.speech.create(
-                        model="tts-1",
-                        voice=sauti_mwanafunzi_opt,
-                        input=maandishi_mwanafunzi
-                    )
-                    with open(file_mwanafunzi, "wb") as f_student:
+                    res_mwanafunzi = client.audio.speech.create(model="tts-1", voice=sauti_mwanafunzi_opt, input=maandishi_mwanafunzi)
+                    f_student = open(file_mwanafunzi, "wb")
+                    f_student.write(res_mwanafunzi.content)
+                    f_student.close()
