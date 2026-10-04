@@ -148,7 +148,7 @@ elif chaguo_menyu == "📚 Maktaba ya Msamiati na Nahau Kuu":
             str_platform.warning("Tafadhali andika msamiati kwanza!")
 
 # =====================================================================
-# CHAGUO 4: MTAMBO WA SAUTI (DARASA LA SAUTI - NO BUTTON INDENT BUG!)
+# CHAGUO 4: MTAMBO WA SAUTI (DARASA LA SAUTI - FIXED!)
 # =====================================================================
 elif chaguo_menyu == "🔊 Mtambo wa Sauti (Darasa la Sauti)":
     str_platform.markdown("<h3 style='color: #1E3A8A;'>🔊 Mtambo wa Sauti: Darasa la Kidijitali</h3>", unsafe_allow_html=True)
@@ -160,25 +160,23 @@ elif chaguo_menyu == "🔊 Mtambo wa Sauti (Darasa la Sauti)":
         sauti_mwanafunzi_opt = str_platform.selectbox("Sauti ya Mwanafunzi:", ["nova", "shimmer", "fable"])
         maandishi_mwanafunzi = str_platform.text_area("Mwanafunzi:", "Asante sana mwalimu wangu.", key="student_text_input")
     
-    # Kurekebisha utendaji safi kwa kuondoa indent blocks ngumu
-    if maandishi_mwalimu.strip() != "" and maandishi_mwanafunzi.strip() != "":
-        file_mwalimu = "sauti_mwalimu.mp3"
-        res_mwalimu = client.audio.speech.create(model="tts-1", voice=sauti_mwalimu, input=maandishi_mwalimu)
-        f_teacher = open(file_mwalimu, "wb")
-        f_teacher.write(res_mwalimu.content)
-        f_teacher.close()
-        str_platform.markdown("👨‍🏫 **Sauti ya Mwalimu:**")
-        str_platform.audio(file_mwalimu)
-        
-        file_mwanafunzi = "sauti_mwanafunzi.mp3"
-        res_mwanafunzi = client.audio.speech.create(model="tts-1", voice=sauti_mwanafunzi_opt, input=maandishi_mwanafunzi)
-        f_student = open(file_mwanafunzi, "wb")
-        f_student.write(res_mwanafunzi.content)
-        f_student.close()
-        str_platform.markdown("🧑‍🎓 **Sauti ya Mwanafunzi:**")
-        str_platform.audio(file_mwanafunzi)
+    if str_platform.button("Zalisha Sauti za Darasa", key="tts_classroom_btn"):
+        if maandishi_mwalimu.strip() != "" and maandishi_mwanafunzi.strip() != "":
+            file_mwalimu = "sauti_mwalimu.mp3"
+            res_mwalimu = client.audio.speech.create(model="tts-1", voice=sauti_mwalimu, input=maandishi_mwalimu)
+            with open(file_mwalimu, "wb") as f_m:
+                f_m.write(res_mwalimu.content)
+            str_platform.audio(file_mwalimu)
+            
+            file_mwanafunzi = "sauti_mwanafunzi.mp3"
+            res_mwanafunzi = client.audio.speech.create(model="tts-1", voice=sauti_mwanafunzi_opt, input=maandishi_mwanafunzi)
+            with open(file_mwanafunzi, "wb") as f_s:
+                f_s.write(res_mwanafunzi.content)
+            str_platform.audio(file_mwanafunzi)
+        else:
+            str_platform.warning("Tafadhali hakikisha umejaza maandishi yote mawili!")
 
 # =====================================================================
-# CHAGUO 5: 🤖 AI PHONETIC ROBOT (FLAWLESS AUTO-TRIGGER FRAMEWORK)
+# CHAGUO 5: 🤖 AI PHONETIC ROBOT (FIXED ELIF!)
 # =====================================================================
 elif chaguo_menyu == "🤖 AI Phonetic Robot (Ukaguzi Mkuu)":
