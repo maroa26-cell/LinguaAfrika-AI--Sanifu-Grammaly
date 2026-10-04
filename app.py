@@ -2,7 +2,7 @@ import streamlit as str_platform
 import os
 from openai import OpenAI
 
-# 👑 Sanifu Mipangilio ya Ukurasa wa Kifalme - Ngazi ya Edition 2 Responsive Suite
+# 👑 Sanifu Mipangilio ya Ukurasa wa Kifalme - Ngazi ya Enterprise Omnichannel Suite
 str_platform.set_page_config(
     page_title="LinguaAfrika AI: Ultra Premium Super Masterpiece Edition 2",
     page_icon="👑",
@@ -28,38 +28,10 @@ else:
 # 🎨 UPANDISHAJI WA RANGI ZA KIFALME (EDITION 2 ENTERPRISE CSS INJECTION)
 str_platform.markdown("""
 <style>
-    /* Badilisha font na rangi kuu za jukwaa */
     html, body, [data-testid="stAppViewContainer"] {
         background-color: #FAFAFA !important;
         font-family: 'Helvetica Neue', sans-serif !important;
     }
-    
-    /* Sanifu Mfumo wa Tabo za Kifalme */
-    button[data-testid="stMarkdownContainer"] {
-        font-weight: 700 !important;
-    }
-    div[data-testid="stTabBar"] {
-        background-color: #ffffff !important;
-        padding: 10px !important;
-        border-radius: 12px !important;
-        box-shadow: 0 4px 12px rgba(30, 58, 138, 0.08) !important;
-        margin-bottom: 20px !important;
-    }
-    button[data-testid="stTab"] {
-        color: #4B5563 !important;
-        font-size: 16px !important;
-        padding: 10px 20px !important;
-        transition: all 0.3s ease !important;
-        border-radius: 8px !important;
-    }
-    button[data-testid="stTab"][aria-selected="true"] {
-        background-color: #1E3A8A !important;
-        color: #ffffff !important;
-        font-weight: bold !important;
-        box-shadow: 0 4px 10px rgba(30, 58, 138, 0.25) !important;
-    }
-    
-    /* Sanifu Vifungo Vyote vya Programu (Streamlit Buttons) */
     div.stButton > button {
         background-color: #1E3A8A !important;
         color: white !important;
@@ -78,15 +50,9 @@ str_platform.markdown("""
         transform: translateY(-2px) !important;
         box-shadow: 0 6px 12px rgba(217, 119, 6, 0.3) !important;
     }
-    
-    /* Custom Styling ya Sanduku la Maandishi (Text Area) */
-    textarea {
+    textarea, input {
         border: 2px solid #E5E7EB !important;
         border-radius: 10px !important;
-        transition: border-color 0.3s ease !important;
-    }
-    textarea:focus {
-        border-color: #1E3A8A !important;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -97,19 +63,23 @@ str_platform.markdown("<h3 style='text-align: center; color: #D97706; font-famil
 str_platform.markdown("<p style='text-align: center; font-size: 1.2rem; color: #4B5563; max-width: 850px; margin: 0 auto; line-height: 1.6;'>Mfumo mkuu wa kimkakati wa akili mnemba (AI) uliosajiliwa kusanifisha sarufi, kutafsiri lugha 14, na kukagua lafudhi ya Lugha ya Kiswahili duniani kwa kiwango cha kibiashara na kiofisi.</p>", unsafe_allow_html=True)
 str_platform.write("---")
 
-# 🗺️ Undaji wa Tabo Tano Kuu za Enterprise
-tab1, tab2, tab3, tab4, tab5 = str_platform.tabs([
-    "📝 Mhariri wa Kiswahili Sanifu Pro", 
-    "🔀 Mtafsiri wa Lugha & Muktadha Suite", 
-    "📚 Maktaba ya Msamiati na Nahau Kuu", 
-    "🔊 Mtambo wa Sauti (Darasa la Sauti)", 
-    "🤖 AI Phonetic Robot (Ukaguzi Mkuu)"
-])
+# 🧭 UNDAJI WA MENYI YA PEMBENI YA KIFALME (SIDEBAR OMNICHANNEL SUITE)
+str_platform.sidebar.markdown("<h2 style='color: #1E3A8A; font-weight: bold;'>🏰 Menyu Kuu</h2>", unsafe_allow_html=True)
+chaguo_menyu = str_platform.sidebar.radio(
+    "Chagua Huduma Unayohitaji:",
+    [
+        "📝 Mhariri wa Kiswahili Sanifu Pro",
+        "🔀 Mtafsiri wa Lugha & Muktadha Suite",
+        "📚 Maktaba ya Msamiati na Nahau Kuu",
+        "🔊 Mtambo wa Sauti (Darasa la Sauti)",
+        "🤖 AI Phonetic Robot (Ukaguzi Mkuu)"
+    ]
+)
 
 # =====================================================================
-# TAB 1: 📝 MHARIRI WA KISWAHILI SANIFU PRO
+# CHAGUO 1: MHARIRI WA KISWAHILI SANIFU PRO
 # =====================================================================
-with tab1:
+if chaguo_menyu == "📝 Mhariri wa Kiswahili Sanifu Pro":
     str_platform.markdown("<h3 style='color: #1E3A8A;'>📝 Mhariri wa Kiswahili Sanifu Pro</h3>", unsafe_allow_html=True)
     str_platform.write("Ingiza maandishi yako ya Kiswahili hapa chini ili AI ya Ngazi ya Enterprise yakubalie kurekebisha sarufi, tahajia, na mtiririko kulingana na miongozo ya Baraza la Kiswahili.")
     maandishi_mhariri = str_platform.text_area("Andika maandishi yako hapa:", height=150, key="editor_input_royal")
@@ -125,9 +95,9 @@ with tab1:
                 str_platform.write(jibu.choices.message.content)
 
 # =====================================================================
-# TAB 2: 🔀 MTAFSIRI WA LUGHA & MUKTADHA SUITE (14 LUGHA + KIDINI)
+# CHAGUO 2: MTAFSIRI WA LUGHA & MUKTADHA SUITE (14 LUGHA + KIDINI)
 # =====================================================================
-with tab2:
+elif chaguo_menyu == "🔀 Mtafsiri wa Lugha & Muktadha Suite":
     str_platform.markdown("<h3 style='color: #1E3A8A;'>🔀 Mtafsiri wa Lugha & Muktadha Suite</h3>", unsafe_allow_html=True)
     str_platform.write("Mfumo wa tafsiri ya kimataifa unaounga mkono lugha 14 za kimkakati pamoja na muktadha maalum.")
     
@@ -159,9 +129,9 @@ with tab2:
                 str_platform.write(jibu_tafsiri.choices.message.content)
 
 # =====================================================================
-# TAB 3: 📚 MAKTABA YA MSAMIATI NA NAHAU KUU
+# CHAGUO 3: MAKTABA YA MSAMIATI NA NAHAU KUU
 # =====================================================================
-with tab3:
+elif chaguo_menyu == "📚 Maktaba ya Msamiati na Nahau Kuu":
     str_platform.markdown("<h3 style='color: #1E3A8A;'>📚 Maktaba ya Msamiati na Nahau Kuu</h3>", unsafe_allow_html=True)
     str_platform.write("Gundua na uchambue maana ya misamiati migumu, methali, nahau, na tamathali za usemi.")
     msamiati_input = str_platform.text_input("Andika neno, nahau, au methali (Mfano: 'Kitendawili', 'Kula chumvi nyingi'):", key="vocab_input_royal")
@@ -177,10 +147,18 @@ with tab3:
                 str_platform.write(jibu_vocab.choices.message.content)
 
 # =====================================================================
-# TAB 4: 🔊 MTAMBO WA SAUTI (DARASA LA SAUTI)
+# CHAGUO 4: MTAMBO WA SAUTI (DARASA LA SAUTI)
 # =====================================================================
-with tab4:
+elif chaguo_menyu == "🔊 Mtambo wa Sauti (Darasa la Sauti)":
     str_platform.markdown("<h3 style='color: #1E3A8A;'>🔊 Mtambo wa Sauti: Darasa la Kidijitali</h3>", unsafe_allow_html=True)
     str_platform.write("Zalisha faili za sauti za kielimu zinazoiga mifano ya darasani kati ya Mwalimu na Mwanafunzi kwa usahihi mkuu.")
+    
+    col_v1, col_v2 = str_platform.columns(2)
+    with col_v1:
+        sauti_mwalimu = str_platform.selectbox("Chagua Sauti ya Mwalimu:", ["onyx", "echo", "alloy"], key="teacher_voice_opt")
+        maandishi_mwalimu = str_platform.text_area("Andika Maelezo ya Mwalimu:", "Karibu darasani mwanafunzi wangu. Leo tutajifunza matumizi sahihi ya viambishi vya Kiswahili Sanifu.", key="teacher_text_input")
+    with col_v2:
+        sauti_mwanafunzi_opt = str_platform.selectbox("Chagua Sauti ya Mwanafunzi:", ["nova", "shimmer", "fable"], key="student_voice_opt")
+        maandishi_mwanafunzi = str_platform.text_area("Andika Majibu ya Mwanafunzi:", "Asante sana mwalimu wangu wa kifalme. Nipo tayari kabisa kusikiliza na kujifunza.", key="student_text_input")
     
 
