@@ -97,7 +97,7 @@ str_platform.markdown("<h3 style='text-align: center; color: #D97706; font-famil
 str_platform.markdown("<p style='text-align: center; font-size: 1.2rem; color: #4B5563; max-width: 850px; margin: 0 auto; line-height: 1.6;'>Mfumo mkuu wa kimkakati wa akili mnemba (AI) uliosajiliwa kusanifisha sarufi, kutafsiri lugha 14, na kukagua lafudhi ya Lugha ya Kiswahili duniani kwa kiwango cha kibiashara na kiofisi.</p>", unsafe_allow_html=True)
 str_platform.write("---")
 
-# 🗺— Undaji wa Tabo Tano Kuu za Enterprise
+# 🗺️ Undaji wa Tabo Tano Kuu za Enterprise
 tab1, tab2, tab3, tab4, tab5 = str_platform.tabs([
     "📝 Mhariri wa Kiswahili Sanifu Pro", 
     "🔀 Mtafsiri wa Lugha & Muktadha Suite", 
@@ -121,10 +121,7 @@ with tab1:
             with str_platform.spinner("AI Enterprise anachambua sarufi..."):
                 try:
                     pro_prompt = f"Wewe ni mtaalamu mwandamizi wa lugha ya Kiswahili Sanifu. Kagua maandishi haya, sahihisha makosa yote ya sarufi na tahajia, kisha ulete majibu nadhifu yakionyesha marekebisho yaliyofanyika:\n\n{maandishi_mhariri}"
-                    jibu = client.chat.completions.create(
-                        model="gpt-4o",
-                        messages=[{"role": "user", "content": pro_prompt}]
-                    )
+                    jibu = client.chat.completions.create(model="gpt-4o", messages=[{"role": "user", "content": pro_prompt}])
                     str_platform.success("Marekebisho ya Kiofisi Yamekamilika!")
                     str_platform.write(jibu.choices.message.content)
                 except Exception as error_msg:
@@ -165,10 +162,7 @@ with tab2:
             with str_platform.spinner("Mtafsiri Mkuu wa Enterprise anachambua lugha..."):
                 try:
                     trans_prompt = f"Tafsiri kutoka {lugha_chanzo} kwenda {lugha_lengwa} katika muktadha wa {muktadha_tafsiri}:\n\n{maandishi_tafsiri}"
-                    jibu_tafsiri = client.chat.completions.create(
-                        model="gpt-4o",
-                        messages=[{"role": "user", "content": trans_prompt}]
-                    )
+                    jibu_tafsiri = client.chat.completions.create(model="gpt-4o", messages=[{"role": "user", "content": trans_prompt}])
                     str_platform.success(f"🔮 Matokeo ya Tafsiri ya Kiwango cha Juu ({muktadha_tafsiri}):")
                     str_platform.write(jibu_tafsiri.choices.message.content)
                 except Exception as error_msg:
@@ -188,5 +182,6 @@ with tab3:
         else:
             with str_platform.spinner("AI anatafuta kwenye kamusi kuu..."):
                 try:
-                    vocab_prompt = f"Wewe ni Kamusi Hai Kuu ya Kiswahili ya kiwango cha juu. Toa maana ya kina, asili ya neno, na mifano miwili ya sentensi kwa kutumia msamiati huu:\n\n{msamiati_input}"
-                    jibu_vocab = client.chat.completions.create(
+                    vocab_prompt = f"Wewe ni Kamusi Hai Kuu ya Kiswahili ya kiwango cha juu. Toa maana ya kina, asili ya neno, na mifano miwili ya sentensi kwa kutumia msamiati huu: {msamiati_input}"
+                    jibu_vocab = client.chat.completions.create(model="gpt-4o", messages=[{"role": "user", "content": vocab_prompt}])
+                    str_platform.info("Uchambuzi wa Kitaalamu wa Kamusi Kuu:")
