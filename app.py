@@ -162,7 +162,7 @@ with tab4:
                         voice=sauti_mwalimu,
                         input=maandishi_mwalimu
                     )
-                    res_mwalimu.stream_to_file(file_mwalimu)
+                    res_mwalimu.write_to_file(file_mwalimu)
                     str_platform.markdown("#### 👨‍🏫 Sauti ya Mwalimu:")
                     str_platform.audio(file_mwalimu)
                     
@@ -173,4 +173,4 @@ with tab4:
                         voice=sauti_mwanafunzi_opt,
                         input=maandishi_mwanafunzi
                     )
-                    res_mwanafunzi.stream_to_file(file_mwanafunzi)
+                    res_mwanafunzi.write_to_file(file_mwanafunzi)
