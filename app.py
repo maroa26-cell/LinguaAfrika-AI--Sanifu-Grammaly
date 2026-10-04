@@ -177,7 +177,6 @@ elif chaguo_menyu == "🔊 Mtambo wa Sauti (Darasa la Sauti)":
             str_platform.warning("Tafadhali hakikisha umejaza maandishi yote mawili!")
 
 # =====================================================================
-# CHAGUO 5: 🤖 AI PHONETIC ROBOT
+# CHAGUO 5: 🤖 AI PHONETIC ROBOT (UPGRADE YA KIWANGO CHA JUU)
 # =====================================================================
 elif chaguo_menyu == "🤖 AI Phonetic Robot (Ukaguzi Mkuu)":
-    str_platform.markdown("<h3 style='color: #1E3A8A;'>🤖 AI Phonetic Robot Enterprise Suite</h3>", unsafe_allow_html=True)
