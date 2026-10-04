@@ -1,182 +1,177 @@
-import streamlit as st
-from openai import OpenAI
+import streamlit as str_platform
 import os
-from dotenv import load_dotenv
+from openai import OpenAI
 
-# 1. UPAYAJI WA FUNGUO ZA SIRI NA USALAMA MAALUM (Enterprise Security)
-load_dotenv()
+# 👑 Sanifu Mipangilio ya Ukurasa wa Kifalme
+str_platform.set_page_config(
+    page_title="LinguaAfrika AI: The Ultimate Premium Masterpiece",
+    page_icon="👑",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
 
-st.set_page_config(page_title="LinguaAfrika AI", page_icon="👑", layout="wide")
-st.title("👑 LinguaAfrika AI: The Ultimate Premium Masterpiece")
-st.markdown("🔒 *Privacy Guard Active: Data zote zinasindikwa kwenye RAM na hazitumiwi kufundishia mifumo ya nje ya AI (No AI-Training Policy).*")
-st.markdown("---")
+# 🔒 Kichocheo cha Usalama wa Siri (.env / Streamlit Secrets)
+if "OPENAI_API_KEY" in os.environ:
+    api_key_source = os.environ["OPENAI_API_KEY"]
+elif hasattr(str_platform, "secrets") and "OPENAI_API_KEY" in str_platform.secrets:
+    api_key_source = str_platform.secrets["OPENAI_API_KEY"]
+else:
+    api_key_source = None
 
-api_key = os.getenv("OPENAI_API_KEY")
-if not api_key:
-    st.sidebar.header("🔑 Usalama wa Mfumo")
-    api_key = st.sidebar.text_input("Ingiza OpenAI API Key yako hapa kwa usalama:", type="password")
+# Kuwasha mtambo rasmi wa OpenAI
+if api_key_source:
+    client = OpenAI(api_key=api_key_source)
+else:
+    str_platform.error("🔒 Hitilafu: Ufunguo wa siri wa OpenAI (OPENAI_API_KEY) haujapatikana kwenye mifumo ya Secrets!")
+    str_platform.stop()
 
-if not api_key:
-    st.sidebar.info("Tafadhali weka OpenAI API Key yako hapa kuanza.")
-    st.stop()
+# 🏰 Muonekano wa Juu wa Jukwaa (Header)
+str_platform.markdown("<h1 style='text-align: center; color: #1E3A8A;'>👑 LinguaAfrika AI: The Ultimate Premium Masterpiece</h1>", unsafe_allow_html=True)
+str_platform.markdown("<p style='text-align: center; font-size: 1.2rem; color: #4B5563;'>Mfumo mkuu wa akili mnemba wa kusanifisha, kutafsiri, na kukagua lafudhi ya Lugha ya Kiswahili duniani.</p>", unsafe_allow_html=True)
+str_platform.write("---")
 
-client = OpenAI(api_key=api_key)
-
-# 2. MIFUMO YA TABO TANO KATI KATI YA SKRINI (Linear Stable Build)
-tab1, tab2, tab3, tab4, tab5 = st.tabs([
-    "📄 Studio ya Mtafsiri Pacha (Global)", 
-    "🎙️ AI Transcriber (Mahojiano & Tafiti)", 
-    "📖 Kamusi ya Kiakademia & Ngeli", 
-    "📝 Live Sanifu Grammarly Prompts",
-    "🗣️ AI Phonetic Robot: Darasa la Lahaja"
+# 🗺️ Undaji wa Tabo Tano Kuu za Kifalme
+tab1, tab2, tab3, tab4, tab5 = str_platform.tabs([
+    "📝 Mhariri wa Kiswahili Sanifu", 
+    "🔀 Mtafsiri wa Kiingereza - Kiswahili", 
+    "📚 Maktaba ya Msamiati na Nahau", 
+    "🔊 Mtambo wa Sauti ya AI (Text-to-Speech)", 
+    "🤖 AI Phonetic Robot (Ukaguzi wa Lafudhi)"
 ])
 
 # =====================================================================
-# TAB 1: WORKSPACE (Side-by-Side Global Context Engine)
+# TAB 1: 📝 MHARIRI WA KISWAHILI SANIFU (GRAMMARLY PRO)
 # =====================================================================
 with tab1:
-    st.header("📄 Studio ya Mtafsiri wa Kimataifa (Global Live Workspace)")
-    st.caption("Tafsiri kwa muktadha thabiti kulingana na mpango kazi wetu wa kimkakati.")
+    str_platform.header("📝 Mhariri wa Kiswahili Sanifu (Grammarly Pro)")
+    str_platform.write("Ingiza maandishi yako ya Kiswahili hapa chini ili AI yakubalie kurekebisha sarufi, tahajia, na mtiririko wa maneno kulingana na Kamusi Kuu.")
     
-    col1, col2 = st.columns(2)
-    with col1:
-        st.subheader("📝 Matini ya Awali (Source Text)")
-        text_to_translate = st.text_area("Andika au bandika (paste) maandishi yako hapa:", height=200, key="input_area")
-        
-        ORODHA_YA_LUGHA = [
-            "Kiswahili", "Kiingereza", "Kifaransa", "Kireno", "Kiarabu", "Kichina", "Hindi", 
-            "Kijapani", "Kihispania", "Kichewa", "Kinyanja", "Kinyarwanda", "Kiganda", "Kilingala", "Kizulu", "Kiafrikana"
-        ]
-        col_lang1, col_lang2 = st.columns(2)
-        with col_lang1:
-            lugha_chanzo = st.selectbox("Kutoka Lugha Gani (From):", ORODHA_YA_LUGHA, index=1)
-        with col_lang2:
-            lugha_lengwa = st.selectbox("Kwenda Lugha Gani (To):", ORODHA_YA_LUGHA, index=0)
-            
-        muktadha_sekta = st.selectbox(
-            "Mtafsiri, unataka kufanya mradi wa aina gani leo?",
-            ["Kawaida / Mazungumzo ya Jamii (General)",
-             "Maandiko Matakatifu (Biblia, Quran au Kitheolojia)", 
-             "Kisheria ya Mahakama na Mikataba (Legal/Contracts)", 
-             "Vitabu vya Hadithi na Riwaya (Creative Fiction/Storytelling)",
-             "Teknolojia, Uchumi na Tehama (Modern Tech/Finance)",
-             "Kitiba, Sayansi na Afya (Medical/Sciences)"]
-        )
-        mtindo_lugha = st.selectbox("Sauti ya Mwandishi (Persona):", ["Ripoti Rasmi ya Kitaaluma", "Fasihi ya Ndani na Sanaa", "Lugha Rahisi ya Kuelimisha Jamii"])
-        eneo_soko = st.selectbox("Chapa ya Kiswahili (Kama Kiswahili kipo):", ["Tanzania (Kiswahili Sanifu - BAKITA)", "Kenya (KICD Compliant)", "DRC / Congo Swahili"])
-        faharasa_input = st.text_area("🔑 Faharasa ya Kudumu ya Mradi (Project Glossary):", value="Mungu=God\nMkataba=Contract", height=60)
-
-    with col2:
-        st.subheader("✏️ Matokeo ya Tafsiri ya Kimataifa (Inayoharirika)")
-        if st.button("🔮 Anza Tafsiri ya Kiwango cha Dunia", key="doc_trans_btn"):
-            if not text_to_translate.strip():
-                st.warning("Tafadhali weka maandishi kwanza.")
-            else:
-                with st.spinner("LinguaAfrika AI inatafsiri kwa kufuata misingi ya mradi..."):
-                    try:
-                        instruction = f"Tafsiri kutoka {lugha_chanzo} kwenda {lugha_lengwa}. Mtindo: {mtindo_lugha}. Sekta: {muktadha_sekta}. Hakikisha upatanisho wa Ngeli ni 100% sahihi kwa Tanzania Swahili."
-                        response = client.chat.completions.create(
-                            model="gpt-4o",
-                            messages=[{"role": "system", "content": instruction}, {"role": "user", "content": text_to_translate}],
-                            temperature=0.0
-                        )
-                        st.session_state["raw_translation"] = response.choices.message.content
-                    except Exception as e:
-                        st.error(f"Hitilafu: {e}")
-                        
-        if "raw_translation" in st.session_state:
-            st.text_area("Matokeo ya Tafsiri Safi:", value=st.session_state["raw_translation"], height=220, key="output_area_static")
+    maandishi_mhariri = str_platform.text_area("Andika maandishi yako hapa:", height=150, key="editor_input_royal")
+    
+    if str_platform.button("Kagua na Sahihisha", key="editor_btn_royal"):
+        if maandishi_mhariri.strip() == "":
+            str_platform.warning("Tafadhali ingiza maandishi kwanza!")
+        else:
+            with str_platform.spinner("AI mzawa anatafiti sarufi..."):
+                try:
+                    pro_prompt = f"Wewe ni mtaalamu mwandamizi wa lugha ya Kiswahili Sanifu. Kagua maandishi haya, sahihisha makosa yote ya sarufi na tahajia, kisha ulete majibu nadhifu yakionyesha marekebisho yaliyofanyika:\n\n{maandishi_mhariri}"
+                    jibu = client.chat.completions.create(
+                        model="gpt-4o",
+                        messages=[{"role": "user", "content": pro_prompt}]
+                    )
+                    str_platform.success("Marekebisho Yamekamilika!")
+                    str_platform.write(jibu.choices[0].message.content)
+                except Exception as error_msg:
+                    str_platform.error(f"Hitilafu ya Seva: {error_msg}")
 
 # =====================================================================
-# TAB 2: TRANSCRIBER
+# TAB 2: 🔀 MTAFSIRI WA KIINGREZA - KISWAHILI
 # =====================================================================
 with tab2:
-    st.header("2. AI Transcriber (Kusikiliza Sauti Kuwa Maandishi)")
-    uploaded_file = st.file_uploader("Pandisha faili la sauti ya mahojiano au utafiti (mp3, wav, m4a):", type=["mp3", "wav", "m4a"])
-    if uploaded_file and st.button("🚀 Anza Kuandika Sauti"):
-        with st.spinner("AI Inasikiliza sauti..."):
-            try:
-                transcription = client.audio.transcriptions.create(model="whisper-1", file=(uploaded_file.name, uploaded_file.read()))
-                st.write(transcription.text)
-                st.success("Sauti imeandikwa kikamilifu!")
-            except Exception as e:
-                st.error(f"Hitilafu ya sauti: {e}")
+    str_platform.header("🔀 Mtafsiri wa Kiingereza - Kiswahili")
+    str_platform.write("Tafsiri makala, sentensi, au maneno kutoka Kiingereza kwenda Kiswahili cha Ngazi ya Juu.")
+    
+    maandishi_tafsiri = str_platform.text_area("Ingiza Maandishi ya Kiingereza (English Text):", height=150, key="translate_input_royal")
+    
+    if str_platform.button("Tafsiri Sasa", key="translate_btn_royal"):
+        if maandishi_tafsiri.strip() == "":
+            str_platform.warning("Tafadhali ingiza maandishi ya Kiingereza kwanza!")
+        else:
+            with str_platform.spinner("Mtafsiri wa AI anageuza lugha..."):
+                try:
+                    trans_prompt = f"Translate the following English text into native, elegant, and standard Swahili (Kiswahili Sanifu):\n\n{maandishi_tafsiri}"
+                    jibu_tafsiri = client.chat.completions.create(
+                        model="gpt-4o",
+                        messages=[{"role": "user", "content": trans_prompt}]
+                    )
+                    str_platform.success("Tafsiri ya Kifalme:")
+                    str_platform.write(jibu_tafsiri.choices[0].message.content)
+                except Exception as error_msg:
+                    str_platform.error(f"Hitilafu ya Seva: {error_msg}")
 
 # =====================================================================
-# TAB 3: KAMUSI YA KIAKADEMIA & MATAMSHI SANIFU
+# TAB 3: 📚 MAKTABA YA MSAMIATI NA NAHAU
 # =====================================================================
 with tab3:
-    st.header("3. Kamusi Kuu ya Kiakademia na Mchambuzi wa Msamiati")
-    word_to_lookup = st.text_input("Ingiza neno la Kiswahili kulichambua (Mfano: 'Mkataba'):", key="t3_input_word")
-    if st.button("🔍 Chambua Neno", key="dict_btn") or word_to_lookup:
-        if word_to_lookup.strip():
-            with st.spinner("AI Inachimbua lugha na Ngeli..."):
+    str_platform.header("📚 Maktaba ya Msamiati na Nahau")
+    str_platform.write("Gundua maana ya misamiati migumu, methali, nahau, na tamathali za usemi za Kiswahili.")
+    
+    msamiati_input = str_platform.text_input("Andika neno, nahau, au methali (Mfano: 'Kitendawili', 'Kula chumvi nyingi'):", key="vocab_input_royal")
+    
+    if str_platform.button("Tafuta Maana", key="vocab_btn_royal"):
+        if msamiati_input.strip() == "":
+            str_platform.warning("Tafadhali andika msamiati kwanza!")
+        else:
+            with str_platform.spinner("AI anafungua kamusi za siri..."):
                 try:
-                    prompt = f"Chambua neno '{word_to_lookup}' kwa kutoa Ngeli sahihi ya Tanzania, Maana ya Jumla, Visawe vya Kitaaluma, na asili ya neno (Etymology)."
-                    response = client.chat.completions.create(
+                    vocab_prompt = f"Wewe ni Kamusi Hai ya Kiswahili. Toa maana ya kina, asili ya neno, na mifano miwili ya sentensi kwa kutumia msamiati huu:\n\n{msamiati_input}"
+                    jibu_vocab = client.chat.completions.create(
                         model="gpt-4o",
-                        messages=[{"role": "user", "content": prompt}],
-                        temperature=0.0
+                        messages=[{"role": "user", "content": vocab_prompt}]
                     )
-                    st.session_state["dict_result_text"] = response.choices.message.content
-                    st.session_state["searched_dict_word"] = word_to_lookup
-                except Exception as e:
-                    st.error(f"Hitilafu ya kamusi: {e}")
-
-    if "dict_result_text" in st.session_state:
-        st.markdown(st.session_state["dict_result_text"])
-        st.markdown("---")
-        st.subheader("🔊 Matamshi Sanifu (Standard Pronunciation)")
-        if st.button("🎙️ Cheza Sauti ya Neno Hili", key="play_dict_word_audio"):
-            with st.spinner("AI Inatayarisha matamshi safi..."):
-                try:
-                    speech_word = client.audio.speech.create(
-                        model="tts-1",
-                        voice="nova",
-                        input=f"Neno lenyewe linatamkwa hivi: {st.session_state['searched_dict_word']}"
-                    )
-                    st.audio(speech_word.content, format="audio/mp3")
-                except Exception as e:
-                    st.error(f"Tatizo la sauti: {e}")
+                    str_platform.info("Uchambuzi wa Kamusi Kuu:")
+                    str_platform.write(jibu_vocab.choices[0].message.content)
+                except Exception as error_msg:
+                    str_platform.error(f"Hitilafu ya Seva: {error_msg}")
 
 # =====================================================================
-# TAB 4: LIVE AUTONOMOUS SANIFU GRAMMARLY
+# TAB 4: 🔊 MTAMBO WA SAUTI YA AI (TEXT-TO-SPEECH)
 # =====================================================================
 with tab4:
-    st.header("📝 Live Sanifu Grammarly Prompts")
-    st.caption("Mfumo wa kwanza wa Autonomous Real-Time Prompts kwa ajili ya Kiswahili Sanifu cha Tanzania (BAKITA).")
-    matini_ya_kukagua = st.text_area("Andika au bandika maandishi yako hapa (AI itakagua yenyewe kiotomatiki chini ikimaliza kusoma):", height=150, key="grammarly_input")
+    str_platform.header("🔊 Mtambo wa Sauti ya AI (Text-to-Speech)")
+    str_platform.write("Badilisha maandishi yako ya Kiswahili kuwa sauti safi ya roboti wa AI anayetamka lafudhi ya Tanzania.")
     
-    if matini_ya_kukagua.strip():
-        with st.spinner("Sanifu Grammarly inachambua Ngeli na sarufi papo hapo..."):
-            try:
-                grammarly_prompt = f"Wewe ni mfumo wa 'Sanifu Grammarly' kwa Kiswahili rasmi cha Tanzania (BAKITA). Kagua makosa ya sarufi na Ngeli katika matini hii: {matini_ya_kukagua}."
-                response = client.chat.completions.create(
-                    model="gpt-4o",
-                    messages=[{"role": "user", "content": grammarly_prompt}],
-                    temperature=0.0
-                )
-                st.info("💡 Mapendekezo ya Papo kwa Papo (Live Grammarly Prompt):")
-                st.markdown(response.choices.message.content)
-            except Exception as e:
-                st.error(f"Hitilafu: {e}")
+    maandishi_sauti = str_platform.text_area("Andika maandishi unayotaka yatamkwe kwa sauti:", height=100, key="tts_input_royal")
+    uchaguzi_sauti = str_platform.selectbox("Chagua Aina ya Sauti ya AI:", ["alloy", "echo", "fable", "onyx", "nova", "shimmer"], key="tts_voice_royal")
+    
+    if str_platform.button("Tengeneza Sauti", key="tts_btn_royal"):
+        if maandishi_sauti.strip() == "":
+            str_platform.warning("Tafadhali andika maandishi kwanza!")
+        else:
+            with str_platform.spinner("Roboti wa AI anafanya mazoezi ya kuongea..."):
+                try:
+                    fayli_sauti = "sauti_kifalme.mp3"
+                    response = client.audio.speech.create(
+                        model="tts-1",
+                        voice=uchaguzi_sauti,
+                        input=maandishi_sauti
+                    )
+                    response.stream_to_file(fayli_sauti)
+                    str_platform.success("Sauti ya AI Ipo Tayari!")
+                    str_platform.audio(fayli_sauti)
+                except Exception as error_msg:
+                    str_platform.error(f"Hitilafu ya Mtambo wa Sauti: {error_msg}")
 
 # =====================================================================
-# TAB 5: MABORESHO YA KIFALME - SIDE-BY-SIDE GRID (Inajionyesha 100%)
+# TAB 5: 🤖 AI PHONETIC ROBOT (UKAGUZI WA LAFUDHI)
 # =====================================================================
 with tab5:
-    st.header("🗣️ AI Phonetic Robot: Darasa la Matamshi na Lahaja ya Tanzania")
-    st.caption("Jifunze mkazo na jinsi Kiswahili kinavyozungumzwa mtaani na wazawa wa Tanzania.")
-    st.markdown("---")
+    str_platform.header("🤖 AI Phonetic Robot (Ukaguzi wa Lafudhi)")
+    str_platform.write("Mzee wangu, hapa ndipo mtambo mkuu wa sauti ulipolala. Rekodi au pakia faili la sauti (.wav/.mp3) ili AI robot akague lafudhi na usahihi wa matamshi yako ya Kiswahili.")
     
-    col_t5_kushoto, col_t5_kulia = st.columns(2)
+    sauti_mwanafunzi = str_platform.file_uploader("Pakia faili la sauti ya mazoezi hapa:", type=["wav", "mp3"], key="audio_uploader_royal")
     
-    with col_t5_kushoto:
-        st.subheader("🎙️ Sehemu ya Mwanafunzi")
-        st.caption("Rekodi sauti yako hapa chini, kisha bofya kitufe cha kukagua.")
-        sauti_mwanafunzi = st.audio_input("Bofya mic uanze kuongea:", key="unique_mic_t5_royal")
-        
-        if sauti_mwanafunzi and st.button("🤖 Ruhusu Robot Akague Sauti Yako", key="check_student_speech_btn_royal"):
-            with st.spinner("AI Robot wa Tanzania anasikiliza lafudhi yako..."):
-                try:
-                    trans_audio = client.audio.transcriptions.create(model="whisper-1", file=("mwanafunzi.wav", sauti_mwanafunzi.read()))
+    if sauti_mwanafunzi and str_platform.button("🤖 Ruhusu Robot Akague Sauti Yako", key="check_student_speech_btn_royal_final"):
+        with str_platform.spinner("AI Robot wa Tanzania anasikiliza lafudhi yako..."):
+            try:
+                # 🛠️ MSTARI WA 182 SOMA NA KUNAKILI AUDIO SAFU
+                trans_audio = client.audio.transcriptions.create(
+                    model="whisper-1", 
+                    file=(sauti_mwanafunzi.name, sauti_mwanafunzi.read())
+                )
+                str_platform.info(f"🗣️ Robot amekusikia ukisema: '{trans_audio.text}'")
+                
+                # Uchambuzi wa kiwango cha matamshi
+                robot_prompt = f"Mwanafunzi ametamka sentensi hii: '{trans_audio.text}'. Wewe kama mtaalamu wa fonetiki ya Kiswahili, toa ripoti fupi ya usahihi wa lafudhi yake, mpe asilimia ya alama (% Score kutoka 0-100), na mpe ushauri mmoja wa kuboresha matamshi."
+                jibu_robot = client.chat.completions.create(
+                    model="gpt-4o",
+                    messages=[{"role": "user", "content": robot_prompt}]
+                )
+                str_platform.success("🔮 Ripoti ya Ukaguzi wa Lafudhi ya Roboti:")
+                str_platform.write(jibu_robot.choices[0].message.content)
+                
+            except Exception as error_msg:
+                str_platform.error(f"Hitilafu ya Ukaguzi wa Sauti: {error_msg}")
+
+# 🏰 Maandishi ya Chini ya Mamlaka ya Kifalme
+str_platform.write("---")
