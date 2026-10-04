@@ -53,7 +53,7 @@ with tab1:
         if maandishi_mhariri.strip() == "":
             str_platform.warning("Tafadhali ingiza maandishi kwanza!")
         else:
-            with str_platform.spinner("AI Enterprise anachambua sarufi na tahajia..."):
+            with str_platform.spinner("AI Enterprise anachambua sarufi..."):
                 try:
                     pro_prompt = f"Wewe ni mtaalamu mwandamizi wa lugha ya Kiswahili Sanifu. Kagua maandishi haya, sahihisha makosa yote ya sarufi na tahajia, kisha ulete majibu nadhifu yakionyesha marekebisho yaliyofanyika:\n\n{maandishi_mhariri}"
                     jibu = client.chat.completions.create(
@@ -156,3 +156,4 @@ with tab4:
         maandishi_mwanafunzi = str_platform.text_area("Andika Majibu ya Mwanafunzi:", "Asante sana mwalimu wangu wa kifalme. Nipo tayari kabisa kusikiliza na kujifunza.", key="student_text_input")
     
     if str_platform.button("Zalisha Sauti za Darasa", key="tts_classroom_btn"):
+        if maandishi_mwalimu.strip() == "" or maandishi_mwanafunzi.strip() == "":
