@@ -119,13 +119,10 @@ with tab1:
             str_platform.warning("Tafadhali ingiza maandishi kwanza!")
         else:
             with str_platform.spinner("AI Enterprise anachambua sarufi..."):
-                try:
-                    pro_prompt = f"Wewe ni mtaalamu mwandamizi wa lugha ya Kiswahili Sanifu. Kagua maandishi haya, sahihisha makosa yote ya sarufi na tahajia, kisha ulete majibu nadhifu yakionyesha marekebisho yaliyofanyika:\n\n{maandishi_mhariri}"
-                    jibu = client.chat.completions.create(model="gpt-4o", messages=[{"role": "user", "content": pro_prompt}])
-                    str_platform.success("Marekebisho ya Kiofisi Yamekamilika!")
-                    str_platform.write(jibu.choices.message.content)
-                except Exception as error_msg:
-                    str_platform.error(f"Hitilafu ya Mfumo: {error_msg}")
+                pro_prompt = f"Wewe ni mtaalamu mwandamizi wa lugha ya Kiswahili Sanifu. Kagua maandishi haya, sahihisha makosa yote ya sarufi na tahajia, kisha ulete majibu nadhifu yakionyesha marekebisho yaliyofanyika:\n\n{maandishi_mhariri}"
+                jibu = client.chat.completions.create(model="gpt-4o", messages=[{"role": "user", "content": pro_prompt}])
+                str_platform.success("Marekebisho ya Kiofisi Yamekamilika!")
+                str_platform.write(jibu.choices.message.content)
 
 # =====================================================================
 # TAB 2: 🔀 MTAFSIRI WA LUGHA & MUKTADHA SUITE (14 LUGHA + KIDINI)
@@ -147,11 +144,7 @@ with tab2:
     with col2:
         lugha_lengwa = str_platform.selectbox("Lugha Lengwa (To):", orodha_lugha, index=0, key="tgt_lang")
     with col3:
-        muktadha_tafsiri = str_platform.selectbox("Muktadha wa Matumizi (Context):", [
-            "Mazungumzo ya Kawaida (Casual Conversation)", "Kiakademia na Shule (Academic/Educational)",
-            "Kidini na Kiimani (Religious/Faith-Based)", "Kisheria na Kiofisi (Legal/Official Documentation)",
-            "Kibiashara na Kiuchumi (Business/Finance)", "Fasihi na Ushairi (Literature/Poetry)"
-        ], key="context_lang")
+        muktadha_tafsiri = str_platform.selectbox("Muktadha wa Matumizi (Context):", ["Mazungumzo ya Kawaida", "Kiakademia na Shule", "Kidini na Kiimani", "Kisheria na Kiofisi", "Kibiashara", "Fasihi na Ushairi"], key="context_lang")
         
     maandishi_tafsiri = str_platform.text_area("Ingiza maandishi unayotaka kutafsiri hapa:", height=150, key="translate_input_pro")
     
@@ -160,13 +153,10 @@ with tab2:
             str_platform.warning("Tafadhali ingiza maandishi kwanza!")
         else:
             with str_platform.spinner("Mtafsiri Mkuu wa Enterprise anachambua lugha..."):
-                try:
-                    trans_prompt = f"Tafsiri kutoka {lugha_chanzo} kwenda {lugha_lengwa} katika muktadha wa {muktadha_tafsiri}:\n\n{maandishi_tafsiri}"
-                    jibu_tafsiri = client.chat.completions.create(model="gpt-4o", messages=[{"role": "user", "content": trans_prompt}])
-                    str_platform.success(f"🔮 Matokeo ya Tafsiri ya Kiwango cha Juu ({muktadha_tafsiri}):")
-                    str_platform.write(jibu_tafsiri.choices.message.content)
-                except Exception as error_msg:
-                    str_platform.error(f"Hitilafu ya Mfumo: {error_msg}")
+                trans_prompt = f"Tafsiri kutoka {lugha_chanzo} kwenda {lugha_lengwa} katika muktadha wa {muktadha_tafsiri}:\n\n{maandishi_tafsiri}"
+                jibu_tafsiri = client.chat.completions.create(model="gpt-4o", messages=[{"role": "user", "content": trans_prompt}])
+                str_platform.success(f"🔮 Matokeo ya Tafsiri ya Kiwango cha Juu ({muktadha_tafsiri}):")
+                str_platform.write(jibu_tafsiri.choices.message.content)
 
 # =====================================================================
 # TAB 3: 📚 MAKTABA YA MSAMIATI NA NAHAU KUU
@@ -181,7 +171,16 @@ with tab3:
             str_platform.warning("Tafadhali andika msamiati kwanza!")
         else:
             with str_platform.spinner("AI anatafuta kwenye kamusi kuu..."):
-                try:
-                    vocab_prompt = f"Wewe ni Kamusi Hai Kuu ya Kiswahili ya kiwango cha juu. Toa maana ya kina, asili ya neno, na mifano miwili ya sentensi kwa kutumia msamiati huu: {msamiati_input}"
-                    jibu_vocab = client.chat.completions.create(model="gpt-4o", messages=[{"role": "user", "content": vocab_prompt}])
-                    str_platform.info("Uchambuzi wa Kitaalamu wa Kamusi Kuu:")
+                vocab_prompt = f"Wewe ni Kamusi Hai Kuu ya Kiswahili ya kiwango cha juu. Toa maana ya kina, asili ya neno, na mifano miwili ya sentensi kwa kutumia msamiati huu: {msamiati_input}"
+                jibu_vocab = client.chat.completions.create(model="gpt-4o", messages=[{"role": "user", "content": vocab_prompt}])
+                str_platform.info("Uchambuzi wa Kitaalamu wa Kamusi Kuu:")
+                str_platform.write(jibu_vocab.choices.message.content)
+
+# =====================================================================
+# TAB 4: 🔊 MTAMBO WA SAUTI (DARASA LA SAUTI)
+# =====================================================================
+with tab4:
+    str_platform.markdown("<h3 style='color: #1E3A8A;'>🔊 Mtambo wa Sauti: Darasa la Kidijitali</h3>", unsafe_allow_html=True)
+    str_platform.write("Zalisha faili za sauti za kielimu zinazoiga mifano ya darasani kati ya Mwalimu na Mwanafunzi kwa usahihi mkuu.")
+    
+
