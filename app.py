@@ -82,9 +82,9 @@ str_platform.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# Kuanzisha kumbukumbu ya siri ya mtambo (Session State) kwa ajili ya Walioingia (Sign In)
+# Kuanzisha kumbukumbu ya siri ya mtambo (Session State)
 if "user_status" not in str_platform.session_state:
-    str_platform.session_state["user_status"] = "guest"  # Inaweza kuwa: guest, standard_premium, or admin
+    str_platform.session_state["user_status"] = "guest"
 
 # 🏰 Muonekano wa Juu wa Jukwaa la Kimataifa
 str_platform.markdown("<h1 style='text-align: center; color: #1E3A8A; font-family: sans-serif; font-weight: 900; margin-bottom: 0;'>👑 LinguaAfrika AI</h1>", unsafe_allow_html=True)
@@ -96,7 +96,6 @@ str_platform.write("---")
 # =====================================================================
 str_platform.sidebar.markdown("<h2 style='color: #ffffff; text-align: center; font-weight: bold;'>LinguaAfrika AI</h2>", unsafe_allow_html=True)
 
-# Kama aliyeingia ni Admin, mpe menyu ya usimamizi pekee
 if str_platform.session_state["user_status"] == "admin":
     str_platform.sidebar.markdown("<p style='color: #25D366; text-align: center;'>👑 Administrator Mode</p>", unsafe_allow_html=True)
     chaguo_menyu = str_platform.sidebar.radio(
@@ -107,9 +106,8 @@ if str_platform.session_state["user_status"] == "admin":
             "📢 Ujumbe wa Mbele",
             "🚪 Toka Kwenye Mfumo (Logout)"
         ]
-)
+    )
 else:
-    # Kama ni Guest au Mtumiaji wa Kawaida, mpe menyu ya huduma zote
     if str_platform.session_state["user_status"] == "standard_premium":
         str_platform.sidebar.markdown("<p style='color: #D97706; text-align: center;'>💎 Premium Member</p>", unsafe_allow_html=True)
     else:
@@ -176,15 +174,17 @@ elif chaguo_menyu == "📚 Maktaba ya Msamiati na Kamusi":
             str_platform.info("Uchambuzi wa Kitaalamu wa Kamusi Kuu:")
             str_platform.write(jibu_vocab.choices.message.content)
 
-# 4. MTAMBO WA SAUTI (MTEGO WA MALIPO - PAYWALL INTERCEPT)
+# 4. MTAMBO WA SAUTI (MTEGO WA MALIPO)
 elif chaguo_menyu == "🔊 Mtambo wa Sauti (Darasa la Sauti)":
     str_platform.markdown("<h3 style='color: #1E3A8A;'>🔊 Mtambo wa Sauti: Darasa la Kidijitali</h3>", unsafe_allow_html=True)
     if str_platform.session_state["user_status"] == "guest":
-        str_platform.warning("👑 Kipengele hiki ni cha kulipia (Premium feature). Tafadhali bofya '🔐 Jisajili / Ingia (Sign In)' upande wa menyu ya kushoto ili kuanza kifurushi cha kiofisi.")
+        str_platform.warning("👑 Kipengele hiki ni cha kulipia (Premium feature). Tafadhali bofya '🔐 Jisajili / Ingia (Sign In)' upande wa menyu ya kushoto ili kuanza kifurushi.")
     else:
         col_v1, col_v2 = str_platform.columns(2)
         with col_v1:
             sauti_mwalimu = str_platform.selectbox("Sauti ya Mwalimu:", ["onyx", "echo", "alloy"])
             maandishi_mwalimu = str_platform.text_area("Mwalimu:", "Karibu darasani mwanafunzi wangu.", key="teacher_text_input")
         with col_v2:
+            sauti_mwanafunzi_opt = str_platform.selectbox("Sauti ya Mwanafunzi:", ["nova", "shimmer", "fable"])
+            maandishi_mwanafunzi = str_platform.text_area("Mwanafunzi:", "Asante sana mwalimu wangu.", key="student_text_input")
 
