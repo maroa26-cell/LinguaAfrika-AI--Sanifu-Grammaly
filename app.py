@@ -1,6 +1,8 @@
+
 import streamlit as str_platform
 import os
 from openai import OpenAI
+from audiorecorder import audiorecorder
 
 # 👑 Sanifu Mipangilio ya Ukurasa wa Kifalme
 str_platform.set_page_config(
@@ -36,7 +38,7 @@ tab1, tab2, tab3, tab4, tab5 = str_platform.tabs([
     "🔀 Mtafsiri wa Lugha & Muktadha Pro", 
     "📚 Maktaba ya Msamiati na Nahau", 
     "🔊 Mtambo wa Sauti ya AI (Darasa la Sauti)", 
-    "🤖 AI Phonetic Robot (Ukaguzi wa Lafudhi)"
+    "🤖 AI Phonetic Robot (Live Recorder Pro)"
 ])
 
 # =====================================================================
@@ -62,28 +64,17 @@ with tab1:
                 str_platform.write(jibu.choices.message.content)
 
 # =====================================================================
-# TAB 2: 🔀 MTAFSIRI WA LUGHA & MUKTADHA PRO (MUKTADHA WA KIDINI WA KIFALME!)
+# TAB 2: 🔀 MTAFSIRI WA LUGHA & MUKTADHA PRO
 # =====================================================================
 with tab2:
     str_platform.header("🔀 Mtafsiri wa Lugha & Muktadha wa Kiakademia")
     str_platform.write("Boresha tafsiri yako kwa kuchagua lugha lengwa pamoja na muktadha maalum ili kupata maana sahihi zaidi.")
     
-    # Orodha kamili ya lugha 14 kifalme
     orodha_lugha = [
-        "Kiswahili", 
-        "Kiingereza (English)", 
-        "Kichewa (Chichewa)", 
-        "Kinyarwanda", 
-        "Kiganda (Luganda)", 
-        "Kinyanja", 
-        "Kiafrikana (Afrikaans)", 
-        "Kilingala (Lingala)", 
-        "Kiamhari (Amharic)", 
-        "Kichina (Chinese)", 
-        "Kireno (Portuguese)", 
-        "Kihindi (Hindi)",
-        "Kifaransa (French)", 
-        "Kiarabu (Arabic)"
+        "Kiswahili", "Kiingereza (English)", "Kichewa (Chichewa)", "Kinyarwanda", 
+        "Kiganda (Luganda)", "Kinyanja", "Kiafrikana (Afrikaans)", "Kilingala (Lingala)", 
+        "Kiamhari (Amharic)", "Kichina (Chinese)", "Kireno (Portuguese)", "Kihindi (Hindi)",
+        "Kifaransa (French)", "Kiarabu (Arabic)"
     ]
     
     col1, col2, col3 = str_platform.columns(3)
@@ -92,14 +83,10 @@ with tab2:
     with col2:
         lugha_lengwa = str_platform.selectbox("Lugha Lengwa (To):", orodha_lugha, index=0, key="tgt_lang")
     with col3:
-        # Boresha na kuongeza muktadha wa kidini na kiimani hapa!
         muktadha_tafsiri = str_platform.selectbox("Muktadha wa Matumizi (Context):", [
-            "Mazungumzo ya Kawaida (Casual Conversation)",
-            "Kiakademia na Shule (Academic/Educational)",
-            "Kidini na Kiimani (Religious/Faith-Based)",
-            "Kisheria na Kiofisi (Legal/Official Documentation)",
-            "Kibiashara na Kiuchumi (Business/Finance)",
-            "Fasihi na Ushairi (Literature/Poetry)"
+            "Mazungumzo ya Kawaida (Casual Conversation)", "Kiakademia na Shule (Academic/Educational)",
+            "Kidini na Kiimani (Religious/Faith-Based)", "Kisheria na Kiofisi (Legal/Official Documentation)",
+            "Kibiashara na Kiuchumi (Business/Finance)", "Fasihi na Ushairi (Literature/Poetry)"
         ], key="context_lang")
         
     maandishi_tafsiri = str_platform.text_area("Ingiza maandishi unayotaka kutafsiri hapa:", height=150, key="translate_input_pro")
@@ -165,7 +152,6 @@ with tab4:
             str_platform.warning("Tafadhali hakikisha umejaza maandishi ya mwalimu na mwanafunzi!")
         else:
             with str_platform.spinner("Mwalimu na Mwanafunzi wanaingia darasani..."):
-                # 👨‍🏫 1. Sauti ya Mwalimu
                 file_mwalimu = "sauti_mwalimu.mp3"
                 res_mwalimu = client.audio.speech.create(model="tts-1", voice=sauti_mwalimu, input=maandishi_mwalimu)
                 f_teacher = open(file_mwalimu, "wb")
@@ -174,11 +160,14 @@ with tab4:
                 str_platform.markdown("#### 👨‍🏫 Sauti ya Mwalimu:")
                 str_platform.audio(file_mwalimu)
                 
-                # 🧑‍🎓 2. Sauti ya Mwanafunzi
                 file_mwanafunzi = "sauti_mwanafunzi.mp3"
                 res_mwanafunzi = client.audio.speech.create(model="tts-1", voice=sauti_mwanafunzi_opt, input=maandishi_mwanafunzi)
                 f_student = open(file_mwanafunzi, "wb")
                 f_student.write(res_mwanafunzi.content)
                 f_student.close()
-
+                str_platform.markdown("#### 🧑‍🎓 Sauti ya Mwanafunzi:")
+                str_platform.audio(file_mwanafunzi)
                 
+                str_platform.success("👑 Darasa la Sauti limekamilika kwa ufanisi wa 100%!")
+
+# =====================================================================
