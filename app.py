@@ -94,8 +94,9 @@ str_platform.write("---")
 # =====================================================================
 # 🧭 USANIFU WA MENYU YA SIDEBAR KULINGANA NA HALI YA USER STATUS
 # =====================================================================
+str_platform.sidebar.markdown("<h2 style='color: #ffffff; text-align: center; font-weight: bold;'>LinguaAfrika AI</h2>", unsafe_allow_html=True)
+
 if str_platform.session_state["user_status"] == "admin":
-    str_platform.sidebar.markdown("<h2 style='color: #ffffff; text-align: center; font-weight: bold;'>LinguaAfrika AI</h2>", unsafe_allow_html=True)
     str_platform.sidebar.markdown("<p style='color: #25D366; text-align: center; font-weight: bold;'>👑 Administrator Mode</p>", unsafe_allow_html=True)
     chaguo_menyu = str_platform.sidebar.radio(
         "DASHBOARD YA USIMAMIZI:",
@@ -107,7 +108,6 @@ if str_platform.session_state["user_status"] == "admin":
         ]
     )
 else:
-    str_platform.sidebar.markdown("<h2 style='color: #ffffff; text-align: center; font-weight: bold;'>LinguaAfrika AI</h2>", unsafe_allow_html=True)
     if str_platform.session_state["user_status"] == "standard_premium":
         str_platform.sidebar.markdown("<p style='color: #D97706; text-align: center; font-weight: bold;'>💎 Premium Member</p>", unsafe_allow_html=True)
     else:
@@ -146,13 +146,9 @@ if chaguo_menyu == "📝 Mhariri wa Kiswahili Sanifu Pro":
 elif chaguo_menyu == "🔀 Mtafsiri wa Lugha Suite":
     str_platform.markdown("<h3 style='color: #1E3A8A;'>🔀 Mtafsiri wa Lugha & Muktadha Suite</h3>", unsafe_allow_html=True)
     orodha_lugha = ["Kiswahili", "Kiingereza (English)", "Kichewa (Chichewa)", "Kinyarwanda", "Kiganda (Luganda)", "Kinyanja", "Kiafrikana (Afrikaans)", "Kilingala (Lingala)", "Kiamhari (Amharic)", "Kichina (Chinese)", "Kireno (Portuguese)", "Kihindi (Hindi)", "Kifaransa (French)", "Kiarabu (Arabic)"]
-    col1, col2, col3 = str_platform.columns(3)
-    with col1:
-        lugha_chanzo = str_platform.selectbox("Lugha ya Chanzo (From):", orodha_lugha, index=1)
-    with col2:
-        lugha_lengwa = str_platform.selectbox("Lugha Lengwa (To):", orodha_lugha, index=0)
-    with col3:
-        muktadha_tafsiri = str_platform.selectbox("Muktadha:", ["Mazungumzo ya Kawaida", "Kiakademia", "Kidini na Kiimani", "Kisheria", "Kibiashara", "Fasihi na Ushairi"])
+    lugha_chanzo = str_platform.selectbox("Lugha ya Chanzo (From):", orodha_lugha, index=1)
+    lugha_lengwa = str_platform.selectbox("Lugha Lengwa (To):", orodha_lugha, index=0)
+    muktadha_tafsiri = str_platform.selectbox("Muktadha:", ["Mazungumzo ya Kawaida", "Kiakademia", "Kidini na Kiimani", "Kisheria", "Kibiashara", "Fasihi na Ushairi"])
     maandishi_tafsiri = str_platform.text_area("Ingiza maandishi ya kutafsiri:", height=150, key="translate_input_pro")
     if str_platform.button("Zindua Tafsiri ya Kitaalamu", key="translate_btn_pro"):
         if maandishi_tafsiri.strip() != "":
@@ -182,8 +178,8 @@ elif chaguo_menyu == "🔊 Mtambo wa Sauti (Darasa la Sauti)":
     if str_platform.session_state["user_status"] == "guest":
         str_platform.warning("👑 Kipengele hiki ni cha kulipia (Premium feature). Tafadhali bofya '🔐 Jisajili / Ingia (Sign In)' upande wa menyu ya kushoto ili kuanza kifurushi.")
     else:
-        col_v1, col_v2 = str_platform.columns(2)
-        with col_v1:
-            sauti_mwalimu = str_platform.selectbox("Sauti ya Mwalimu:", ["onyx", "echo", "alloy"])
-            maandishi_mwalimu = str_platform.text_area("Mwalimu:", "Karibu darasani mwanafunzi wangu.", key="teacher_text_input")
-        with col_v2:
+        sauti_mwalimu = str_platform.selectbox("Sauti ya Mwalimu:", ["onyx", "echo", "alloy"])
+        maandishi_mwalimu = str_platform.text_area("Mwalimu:", "Karibu darasani mwanafunzi wangu.", key="teacher_text_input")
+        sauti_mwanafunzi_opt = str_platform.selectbox("Sauti ya Mwanafunzi:", ["nova", "shimmer", "fable"])
+        maandishi_mwanafunzi = str_platform.text_area("Mwanafunzi:", "Asante sana mwalimu wangu.", key="student_text_input")
+        if str_platform.button("Zalisha Sauti za Darasa", key="tts_classroom_btn"):
