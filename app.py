@@ -53,16 +53,13 @@ with tab1:
             str_platform.warning("Tafadhali ingiza maandishi kwanza!")
         else:
             with str_platform.spinner("AI mzawa anatafiti sarufi..."):
-                try:
-                    pro_prompt = f"Wewe ni mtaalamu mwandamizi wa lugha ya Kiswahili Sanifu. Kagua maandishi haya, sahihisha makosa yote ya sarufi na tahajia, kisha ulete majibu nadhifu yakionyesha marekebisho yaliyofanyika:\n\n{maandishi_mhariri}"
-                    jibu = client.chat.completions.create(
-                        model="gpt-4o",
-                        messages=[{"role": "user", "content": pro_prompt}]
-                    )
-                    str_platform.success("Marekebisho Yamekamilika!")
-                    str_platform.write(jibu.choices.message.content)
-                except Exception as error_msg:
-                    str_platform.error(f"Hitilafu ya Seva: {error_msg}")
+                pro_prompt = f"Wewe ni mtaalamu mwandamizi wa lugha ya Kiswahili Sanifu. Kagua maandishi haya, sahihisha makosa yote ya sarufi na tahajia, kisha ulete majibu nadhifu yakionyesha marekebisho yaliyofanyika:\n\n{maandishi_mhariri}"
+                jibu = client.chat.completions.create(
+                    model="gpt-4o",
+                    messages=[{"role": "user", "content": pro_prompt}]
+                )
+                str_platform.success("Marekebisho Yamekamilika!")
+                str_platform.write(jibu.choices.message.content)
 
 # =====================================================================
 # TAB 2: 🔀 MTAFSIRI WA LUGHA & MUKTADHA PRO
@@ -92,21 +89,18 @@ with tab2:
             str_platform.warning("Tafadhali ingiza maandishi ya kutafsiri kwanza!")
         else:
             with str_platform.spinner("Mtafsiri Mkuu wa AI anachambua muktadha..."):
-                try:
-                    trans_prompt = (
-                        f"Wewe ni mtafsiri mwandamizi wa kimataifa na mtaalamu wa lugha. "
-                        f"Tafsiri maandishi yafuatayo kutoka lugha ya {lugha_chanzo} kwenda lugha ya {lugha_lengwa}. "
-                        f"Zingatia kwa makini sana muktadha wa matumizi ambao ni: {muktadha_tafsiri}. "
-                        f"Hakikisha tafsiri inakuwa ya asili, yenye mtiririko mzuri na inayofaa ngazi hiyo ya muktadha:\n\n{maandishi_tafsiri}"
-                    )
-                    jibu_tafsiri = client.chat.completions.create(
-                        model="gpt-4o",
-                        messages=[{"role": "user", "content": trans_prompt}]
-                    )
-                    str_platform.success(f"🔮 Matokeo ya Tafsiri ({muktadha_tafsiri}):")
-                    str_platform.write(jibu_tafsiri.choices.message.content)
-                except Exception as error_msg:
-                    str_platform.error(f"Hitilafu ya Seva: {error_msg}")
+                trans_prompt = (
+                    f"Wewe ni mtafsiri mwandamizi wa kimataifa na mtaalamu wa lugha. "
+                    f"Tafsiri maandishi yafuatayo kutoka lugha ya {lugha_chanzo} kwenda lugha ya {lugha_lengwa}. "
+                    f"Zingatia kwa makini sana muktadha wa matumizi ambao ni: {muktadha_tafsiri}. "
+                    f"Hakikisha tafsiri inakuwa ya asili, yenye mtiririko mzuri na inayofaa ngazi hiyo ya muktadha:\n\n{maandishi_tafsiri}"
+                )
+                jibu_tafsiri = client.chat.completions.create(
+                    model="gpt-4o",
+                    messages=[{"role": "user", "content": trans_prompt}]
+                )
+                str_platform.success(f"🔮 Matokeo ya Tafsiri ({muktadha_tafsiri}):")
+                str_platform.write(jibu_tafsiri.choices.message.content)
 
 # =====================================================================
 # TAB 3: 📚 MAKTABA YA MSAMIATI NA NAHAU
@@ -122,16 +116,13 @@ with tab3:
             str_platform.warning("Tafadhali andika msamiati kwanza!")
         else:
             with str_platform.spinner("AI anafungua kamusi za siri..."):
-                try:
-                    vocab_prompt = f"Wewe ni Kamusi Hai ya Kiswahili. Toa maana ya kina, asili ya neno, na mifano miwili ya sentensi kwa kutumia msamiati huu:\n\n{msamiati_input}"
-                    jibu_vocab = client.chat.completions.create(
-                        model="gpt-4o",
-                        messages=[{"role": "user", "content": vocab_prompt}]
-                    )
-                    str_platform.info("Uchambuzi wa Kamusi Kuu:")
-                    str_platform.write(jibu_vocab.choices.message.content)
-                except Exception as error_msg:
-                    str_platform.error(f"Hitilafu ya Seva: {error_msg}")
+                vocab_prompt = f"Wewe ni Kamusi Hai ya Kiswahili. Toa maana ya kina, asili ya neno, na mifano miwili ya sentensi kwa kutumia msamiati huu:\n\n{msamiati_input}"
+                jibu_vocab = client.chat.completions.create(
+                    model="gpt-4o",
+                    messages=[{"role": "user", "content": vocab_prompt}]
+                )
+                str_platform.info("Uchambuzi wa Kamusi Kuu:")
+                str_platform.write(jibu_vocab.choices.message.content)
 
 # =====================================================================
 # TAB 4: 🔊 MTAMBO WA SAUTI YA AI (DARASA LA SAUTI - MWALIMU & MWANAFUNZI)
@@ -154,19 +145,28 @@ with tab4:
             str_platform.warning("Tafadhali hakikisha umejaza maandishi ya mwalimu na mwanafunzi!")
         else:
             with str_platform.spinner("Mwalimu na Mwanafunzi wanaingia darasani..."):
-                try:
-                    # 👨‍🏫 1. Sauti ya Mwalimu
-                    file_mwalimu = "sauti_mwalimu.mp3"
-                    res_mwalimu = client.audio.speech.create(model="tts-1", voice=sauti_mwalimu, input=maandishi_mwalimu)
-                    f_teacher = open(file_mwalimu, "wb")
-                    f_teacher.write(res_mwalimu.content)
-                    f_teacher.close()
-                    str_platform.markdown("#### 👨‍🏫 Sauti ya Mwalimu:")
-                    str_platform.audio(file_mwalimu)
-                    
-                    # 🧑‍🎓 2. Sauti ya Mwanafunzi
-                    file_mwanafunzi = "sauti_mwanafunzi.mp3"
-                    res_mwanafunzi = client.audio.speech.create(model="tts-1", voice=sauti_mwanafunzi_opt, input=maandishi_mwanafunzi)
-                    f_student = open(file_mwanafunzi, "wb")
-                    f_student.write(res_mwanafunzi.content)
-                    f_student.close()
+                # 👨‍🏫 1. Sauti ya Mwalimu
+                file_mwalimu = "sauti_mwalimu.mp3"
+                res_mwalimu = client.audio.speech.create(model="tts-1", voice=sauti_mwalimu, input=maandishi_mwalimu)
+                f_teacher = open(file_mwalimu, "wb")
+                f_teacher.write(res_mwalimu.content)
+                f_teacher.close()
+                str_platform.markdown("#### 👨‍🏫 Sauti ya Mwalimu:")
+                str_platform.audio(file_mwalimu)
+                
+                # 🧑‍🎓 2. Sauti ya Mwanafunzi
+                file_mwanafunzi = "sauti_mwanafunzi.mp3"
+                res_mwanafunzi = client.audio.speech.create(model="tts-1", voice=sauti_mwanafunzi_opt, input=maandishi_mwanafunzi)
+                f_student = open(file_mwanafunzi, "wb")
+                f_student.write(res_mwanafunzi.content)
+                f_student.close()
+                str_platform.markdown("#### 🧑‍🎓 Sauti ya Mwanafunzi:")
+                str_platform.audio(file_mwanafunzi)
+                
+                str_platform.success("👑 Darasa la Sauti limekamilika kwa ufanisi wa 100%!")
+
+# =====================================================================
+# TAB 5: 🤖 AI PHONETIC ROBOT (UKAGUZI WA LAFUDHI)
+# =====================================================================
+with tab5:
+    str_platform.header("🤖 AI Phonetic Robot (Ukaguzi wa Lafudhi)")
