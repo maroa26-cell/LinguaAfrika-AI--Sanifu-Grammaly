@@ -156,4 +156,5 @@ with tab4:
         if maandishi_mwalimu.strip() == "" or maandishi_mwanafunzi.strip() == "":
             str_platform.warning("Tafadhali hakikisha umejaza maandishi yote mawili!")
         else:
-            file_mwalimu = "sauti_mwalimu.mp3"
+            with str_platform.spinner("Mtambo wa sauti unaoka sauti..."):
+                try:
