@@ -163,15 +163,11 @@ elif chaguo_menyu == "🔊 Mtambo wa Sauti (Darasa la Sauti)":
         if maandishi_mwalimu.strip() != "" and maandishi_mwanafunzi.strip() != "":
             file_mwalimu = "sauti_mwalimu.mp3"
             res_mwalimu = client.audio.speech.create(model="tts-1", voice=sauti_mwalimu, input=maandishi_mwalimu)
-            f_teacher = open(file_mwalimu, "wb")
-            f_teacher.write(res_mwalimu.content)
-            f_teacher.close()
+            with open(file_mwalimu, "wb") as f_m: f_m.write(res_mwalimu.content)
             str_platform.audio(file_mwalimu)
             file_mwanafunzi = "sauti_mwanafunzi.mp3"
             res_mwanafunzi = client.audio.speech.create(model="tts-1", voice=sauti_mwanafunzi_opt, input=maandishi_mwanafunzi)
-            f_student = open(file_mwanafunzi, "wb")
-            f_student.write(res_mwanafunzi.content)
-            f_student.close()
+            with open(file_mwanafunzi, "wb") as f_s: f_s.write(res_mwanafunzi.content)
             str_platform.audio(file_mwanafunzi)
         else:
             str_platform.warning("Tafadhali hakikisha umejaza maandishi yote mawili!")
@@ -180,3 +176,4 @@ elif chaguo_menyu == "🔊 Mtambo wa Sauti (Darasa la Sauti)":
 # CHAGUO 5: 🤖 AI PHONETIC ROBOT
 # =====================================================================
 elif chaguo_menyu == "🤖 AI Phonetic Robot (Ukaguzi Mkuu)":
+    str_platform.markdown("<h3 style='color: #1E3A8A;'>🤖 AI Phonetic Robot Enterprise Suite</h3>", unsafe_allow_html=True)
