@@ -54,7 +54,7 @@ with tab1:
         else:
             with str_platform.spinner("AI mzawa anatafiti sarufi..."):
                 try:
-                    pro_prompt = f"Wewe ni mtaalamu mwandamizi wa lugha ya Kiswahili Sanifu. Kagua maandishi haya, sahihisha makosa yote ya sarufi na tahajia, kisha ulete majibu nadhifu yakionyesha marekebisho yaliyofanyika:\n\n{maandishi_mhariri}"
+                    pro_prompt = f"Wewe ni mtaalamu mwandamizi wa lugha ya Kiswahili Sanifu. Kagua maandishi haya, sahihisha makosa yote ya sarufi and tahajia, kisha ulete majibu nadhifu yakionyesha marekebisho yaliyofanyika:\n\n{maandishi_mhariri}"
                     jibu = client.chat.completions.create(
                         model="gpt-4o",
                         messages=[{"role": "user", "content": pro_prompt}]
@@ -174,6 +174,3 @@ with tab4:
                         input=maandishi_mwanafunzi
                     )
                     res_mwanafunzi.write_to_file(file_mwanafunzi)
-         except Exception as error_msg:
-             str_platform.error(f"Hitilafu ya Ukaguzi wa Sauti: {error_msg}")
-
