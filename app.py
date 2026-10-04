@@ -2,7 +2,7 @@ import streamlit as str_platform
 import os
 from openai import OpenAI
 
-# 👑 Sanifu Mipangilio ya Ukurasa wa Kifalme - Ngazi ya Enterprise Omnichannel Suite
+# 👑 Sanifu Mipangilio ya Ukurasa wa Kifalme - Ngazi ya Edition 2 Responsive Suite
 str_platform.set_page_config(
     page_title="LinguaAfrika AI: Ultra Premium Super Masterpiece Edition 2",
     page_icon="👑",
@@ -76,6 +76,7 @@ str_platform.markdown("""
 # 🏰 Muonekano wa Juu wa Jukwaa la Kimataifa (Edition 2 Corporate Header)
 str_platform.markdown("<h1 style='text-align: center; color: #1E3A8A; font-family: sans-serif; font-weight: 800; margin-bottom: 0;'>👑 LinguaAfrika AI</h1>", unsafe_allow_html=True)
 str_platform.markdown("<h3 style='text-align: center; color: #D97706; font-family: sans-serif; font-weight: 600; margin-top: 5px;'>The Ultra Premium Super Masterpiece • Edition 2</h3>", unsafe_allow_html=True)
+str_platform.markdown("<p style='text-align: center; font-size: 1.2rem; color: #4B5563; max-width: 850px; margin: 0 auto; line-height: 1.6;'>Mfumo mkuu wa kimkakati wa akili mnemba (AI) uliosajiliwa kusanifisha sarufi, kutafsiri lugha 14, na kukagua lafudhi ya Lugha ya Kiswahili duniani kwa kiwango cha kibiashara na kiofisi.</p>", unsafe_allow_html=True)
 str_platform.write("---")
 
 # 🧭 UNDAJI WA MENYI YA PEMBENI YA KIFALME
@@ -99,9 +100,11 @@ chaguo_menyu = str_platform.sidebar.radio(
 if chaguo_menyu == "📝 Mhariri wa Kiswahili Sanifu Pro":
     str_platform.markdown("<h3 style='color: #1E3A8A;'>📝 Mhariri wa Kiswahili Sanifu Pro</h3>", unsafe_allow_html=True)
     maandishi_mhariri = str_platform.text_area("Andika maandishi yako hapa:", height=150, key="editor_input_royal")
-    if maandishi_mhariri.strip() != "":
-        with str_platform.spinner("AI Enterprise anachambua sarufi..."):
-            pro_prompt = f"Wewe ni mtaalamu wa Kiswahili. Kagua na usahihishe maandishi haya:\n\n{maandishi_mhariri}"
+    if str_platform.button("Zindua Ukaguzi wa Sarufi", key="editor_btn_royal"):
+        if maandishi_mhariri.strip() == "":
+            str_platform.warning("Tafadhali ingiza maandishi kwanza!")
+        else:
+            pro_prompt = f"Wewe ni mtaalamu wa Kiswahili. Kagua na usahihishe sarufi na tahajia hapa:\n\n{maandishi_mhariri}"
             jibu = client.chat.completions.create(model="gpt-4o", messages=[{"role": "user", "content": pro_prompt}])
             str_platform.success("Marekebisho Yamekamilika!")
             str_platform.write(jibu.choices.message.content)
@@ -120,8 +123,10 @@ elif chaguo_menyu == "🔀 Mtafsiri wa Lugha & Muktadha Suite":
     with col3:
         muktadha_tafsiri = str_platform.selectbox("Muktadha:", ["Mazungumzo ya Kawaida", "Kiakademia", "Kidini na Kiimani", "Kisheria", "Kibiashara", "Fasihi na Ushairi"])
     maandishi_tafsiri = str_platform.text_area("Ingiza maandishi ya kutafsiri:", height=150, key="translate_input_pro")
-    if maandishi_tafsiri.strip() != "":
-        with str_platform.spinner("Mtafsiri anachambua..."):
+    if str_platform.button("Zindua Tafsiri ya Kitaalamu", key="translate_btn_pro"):
+        if maandishi_tafsiri.strip() == "":
+            str_platform.warning("Tafadhali ingiza maandishi ya kutafsiri!")
+        else:
             trans_prompt = f"Translate from {lugha_chanzo} to {lugha_lengwa} in a {muktadha_tafsiri} style:\n\n{maandishi_tafsiri}"
             jibu_tafsiri = client.chat.completions.create(model="gpt-4o", messages=[{"role": "user", "content": trans_prompt}])
             str_platform.success("🔮 Matokeo ya Tafsiri ya Kitaalamu:")
@@ -133,8 +138,10 @@ elif chaguo_menyu == "🔀 Mtafsiri wa Lugha & Muktadha Suite":
 elif chaguo_menyu == "📚 Maktaba ya Msamiati na Nahau Kuu":
     str_platform.markdown("<h3 style='color: #1E3A8A;'>📚 Maktaba ya Msamiati na Nahau Kuu</h3>", unsafe_allow_html=True)
     msamiati_input = str_platform.text_input("Andika neno, nahau, au methali hapa:", key="vocab_input_royal")
-    if msamiati_input.strip() != "":
-        with str_platform.spinner("AI anatafuta kwenye kamusi kuu..."):
+    if str_platform.button("Tafuta Kwenye Kamusi Kuu", key="vocab_btn_royal"):
+        if msamiati_input.strip() == "":
+            str_platform.warning("Tafadhali andika msamiati kwanza!")
+        else:
             vocab_prompt = f"Toa maana na mifano ya sentensi kwa kutumia msamiati huu wa Kiswahili: {msamiati_input}"
             jibu_vocab = client.chat.completions.create(model="gpt-4o", messages=[{"role": "user", "content": vocab_prompt}])
             str_platform.info("Uchambuzi wa Kitaalamu wa Kamusi Kuu:")
@@ -153,7 +160,9 @@ elif chaguo_menyu == "🔊 Mtambo wa Sauti (Darasa la Sauti)":
         sauti_mwanafunzi_opt = str_platform.selectbox("Sauti ya Mwanafunzi:", ["nova", "shimmer", "fable"])
         maandishi_mwanafunzi = str_platform.text_area("Mwanafunzi:", "Asante sana mwalimu wangu.", key="student_text_input")
     if str_platform.button("Zalisha Sauti za Darasa", key="tts_classroom_btn"):
-        if maandishi_mwalimu.strip() != "" and maandishi_mwanafunzi.strip() != "":
+        if maandishi_mwalimu.strip() == "" or maandishi_mwanafunzi.strip() == "":
+            str_platform.warning("Tafadhali hakikisha umejaza maandishi yote mawili!")
+        else:
             file_mwalimu = "sauti_mwalimu.mp3"
             res_mwalimu = client.audio.speech.create(model="tts-1", voice=sauti_mwalimu, input=maandishi_mwalimu)
             f_teacher = open(file_mwalimu, "wb")
@@ -167,13 +176,4 @@ elif chaguo_menyu == "🔊 Mtambo wa Sauti (Darasa la Sauti)":
             f_student.write(res_mwanafunzi.content)
             f_student.close()
             str_platform.audio(file_mwanafunzi)
-
-# =====================================================================
-# CHAGUO 5: 🤖 AI PHONETIC ROBOT (ENTERPRISE MASTERPIECE MKUBWA!)
-# =====================================================================
-elif chaguo_menyu == "🤖 AI Phonetic Robot (Ukaguzi Mkuu)":
-    str_platform.markdown("<h3 style='color: #1E3A8A;'>🤖 AI Phonetic Robot Enterprise Suite</h3>", unsafe_allow_html=True)
-    sauti_mwanafunzi = str_platform.file_uploader("Pakia faili la sauti hapa:", type=["wav", "mp3"], key="audio_uploader_royal_final")
-    if sauti_mwanafunzi:
-        with str_platform.spinner("AI Robot wa Kimataifa anasikiliza na kuchambua lafudhi ya fonetiki..."):
 
