@@ -25,13 +25,54 @@ else:
     str_platform.error("🔒 Hitilafu ya Usalama: Ufunguo wa siri wa OpenAI (OPENAI_API_KEY) haujapatikana kwenye mifumo ya Secrets!")
     str_platform.stop()
 
-# 🎨 UPANDISHAJI WA RANGI ZA KIFALME (EDITION 2 ENTERPRISE CSS INJECTION)
+# 🎨 UPANDISHAJI WA MUONEKANO NA RANGI (EDITION 2 ENTERPRISE CSS INJECTION)
 str_platform.markdown("""
 <style>
+    /* Muonekano wa Jukwaa Mkuu */
     html, body, [data-testid="stAppViewContainer"] {
         background-color: #FAFAFA !important;
         font-family: 'Helvetica Neue', sans-serif !important;
     }
+    
+    /* 🏰 USANIFU WA KIFALME WA MENYU YA PEMBENI (SIDEBAR ULTRA UPGRADE) */
+    [data-testid="stSidebar"] {
+        background-color: #1E3A8A !important;
+        color: #ffffff !important;
+        border-right: 3px solid #D97706 !important;
+    }
+    
+    /* Maandishi yote ya ndani ya Sidebar yawe meupe safi */
+    [data-testid="stSidebar"] p, [data-testid="stSidebar"] label, [data-testid="stSidebar"] span {
+        color: #ffffff !important;
+        font-size: 16px !important;
+        font-weight: 600 !important;
+    }
+    
+    /* Sanifu Vifungo vya Radio Buttons vya Ndani ya Sidebar ya Enterprise */
+    div[data-testid="stRadio"] > label {
+        background-color: rgba(255, 255, 255, 0.05) !important;
+        padding: 12px 15px !important;
+        border-radius: 8px !important;
+        margin-bottom: 8px !important;
+        transition: all 0.3s ease-in-out !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        cursor: pointer !important;
+    }
+    
+    /* Mihemko ya Vifungo vya Menyu pindi Vinapoguswa (Hover) */
+    div[data-testid="stRadio"] > label:hover {
+        background-color: rgba(217, 119, 6, 0.15) !important;
+        border-color: #D97706 !important;
+    }
+    
+    /* Kitufe Kilichochaguliwa Kilipuke kwa Dhahabu ya Kifalme */
+    div[data-testid="stRadio"] div[aria-checked="true"] {
+        background-color: #D97706 !important;
+        border-radius: 6px !important;
+        padding: 2px 8px !important;
+    }
+    
+    /* Sanifu Vifungo Vyote vya Programu Katikati ya Skrini */
     div.stButton > button {
         background-color: #1E3A8A !important;
         color: white !important;
@@ -63,10 +104,14 @@ str_platform.markdown("<h3 style='text-align: center; color: #D97706; font-famil
 str_platform.markdown("<p style='text-align: center; font-size: 1.2rem; color: #4B5563; max-width: 850px; margin: 0 auto; line-height: 1.6;'>Mfumo mkuu wa kimkakati wa akili mnemba (AI) uliosajiliwa kusanifisha sarufi, kutafsiri lugha 14, na kukagua lafudhi ya Lugha ya Kiswahili duniani kwa kiwango cha kibiashara na kiofisi.</p>", unsafe_allow_html=True)
 str_platform.write("---")
 
-# 🧭 UNDAJI WA MENYI YA PEMBENI YA KIFALME (SIDEBAR OMNICHANNEL SUITE)
-str_platform.sidebar.markdown("<h2 style='color: #1E3A8A; font-weight: bold;'>🏰 Menyu Kuu</h2>", unsafe_allow_html=True)
+# 🧭 UNDAJI WA MENYI YA PEMBENI YA KIFALME (PREMIUM SideBar SUITE)
+str_platform.sidebar.markdown("<h1 style='color: #ffffff; text-align: center; font-size: 28px; margin-bottom: 0;'>👑</h1>", unsafe_allow_html=True)
+str_platform.sidebar.markdown("<h2 style='color: #ffffff; text-align: center; font-weight: bold; margin-top: 0; font-size: 22px;'>LinguaAfrika AI</h2>", unsafe_allow_html=True)
+str_platform.sidebar.markdown("<p style='color: #E5E7EB; text-align: center; font-size: 12px; font-style: italic;'>Enterprise Menu Suite</p>", unsafe_allow_html=True)
+str_platform.sidebar.write("---")
+
 chaguo_menyu = str_platform.sidebar.radio(
-    "Chagua Huduma Unayohitaji:",
+    "CHAGUA HUDUMA KUU:",
     [
         "📝 Mhariri wa Kiswahili Sanifu Pro",
         "🔀 Mtafsiri wa Lugha & Muktadha Suite",
@@ -137,28 +182,4 @@ elif chaguo_menyu == "📚 Maktaba ya Msamiati na Nahau Kuu":
     msamiati_input = str_platform.text_input("Andika neno, nahau, au methali (Mfano: 'Kitendawili', 'Kula chumvi nyingi'):", key="vocab_input_royal")
     
     if str_platform.button("Tafuta Kwenye Kamusi Kuu", key="vocab_btn_royal"):
-        if msamiati_input.strip() == "":
-            str_platform.warning("Tafadhali andika msamiati kwanza!")
-        else:
-            with str_platform.spinner("AI anatafuta kwenye kamusi kuu..."):
-                vocab_prompt = f"Wewe ni Kamusi Hai Kuu ya Kiswahili ya kiwango cha juu. Toa maana ya kina, asili ya neno, na mifano miwili ya sentensi kwa kutumia msamiati huu: {msamiati_input}"
-                jibu_vocab = client.chat.completions.create(model="gpt-4o", messages=[{"role": "user", "content": vocab_prompt}])
-                str_platform.info("Uchambuzi wa Kitaalamu wa Kamusi Kuu:")
-                str_platform.write(jibu_vocab.choices.message.content)
-
-# =====================================================================
-# CHAGUO 4: MTAMBO WA SAUTI (DARASA LA SAUTI)
-# =====================================================================
-elif chaguo_menyu == "🔊 Mtambo wa Sauti (Darasa la Sauti)":
-    str_platform.markdown("<h3 style='color: #1E3A8A;'>🔊 Mtambo wa Sauti: Darasa la Kidijitali</h3>", unsafe_allow_html=True)
-    str_platform.write("Zalisha faili za sauti za kielimu zinazoiga mifano ya darasani kati ya Mwalimu na Mwanafunzi kwa usahihi mkuu.")
-    
-    col_v1, col_v2 = str_platform.columns(2)
-    with col_v1:
-        sauti_mwalimu = str_platform.selectbox("Chagua Sauti ya Mwalimu:", ["onyx", "echo", "alloy"], key="teacher_voice_opt")
-        maandishi_mwalimu = str_platform.text_area("Andika Maelezo ya Mwalimu:", "Karibu darasani mwanafunzi wangu. Leo tutajifunza matumizi sahihi ya viambishi vya Kiswahili Sanifu.", key="teacher_text_input")
-    with col_v2:
-        sauti_mwanafunzi_opt = str_platform.selectbox("Chagua Sauti ya Mwanafunzi:", ["nova", "shimmer", "fable"], key="student_voice_opt")
-        maandishi_mwanafunzi = str_platform.text_area("Andika Majibu ya Mwanafunzi:", "Asante sana mwalimu wangu wa kifalme. Nipo tayari kabisa kusikiliza na kujifunza.", key="student_text_input")
-    
 
