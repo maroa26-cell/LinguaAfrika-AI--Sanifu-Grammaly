@@ -1,9 +1,8 @@
-
 import streamlit as str_platform
 import os
 from openai import OpenAI
 
-# 👑 Sanifu Mipangilio ya Ukurasa wa Kifalme - Ngazi ya Edition 2 Responsive Suite
+# 👑 Sanifu Mipangilio ya Ukurasa wa Kifalme - Ngazi ya Enterprise Omnichannel Suite
 str_platform.set_page_config(
     page_title="LinguaAfrika AI: Ultra Premium Super Masterpiece Edition 2",
     page_icon="👑",
@@ -29,27 +28,20 @@ else:
 # 🎨 UPANDISHAJI WA MUONEKANO NA RANGI (EDITION 2 ENTERPRISE CSS INJECTION)
 str_platform.markdown("""
 <style>
-    /* Muonekano wa Jukwaa Mkuu */
     html, body, [data-testid="stAppViewContainer"] {
         background-color: #FAFAFA !important;
         font-family: 'Helvetica Neue', sans-serif !important;
     }
-    
-    /* 🏰 USANIFU WA KIFALME WA MENYU YA PEMBENI (SIDEBAR ULTRA UPGRADE) */
     [data-testid="stSidebar"] {
         background-color: #1E3A8A !important;
         color: #ffffff !important;
         border-right: 3px solid #D97706 !important;
     }
-    
-    /* Maandishi yote ya ndani ya Sidebar yawe meupe safi */
     [data-testid="stSidebar"] p, [data-testid="stSidebar"] label, [data-testid="stSidebar"] span {
         color: #ffffff !important;
         font-size: 16px !important;
         font-weight: 600 !important;
     }
-    
-    /* Sanifu Vifungo vya Radio Buttons vya Ndani ya Sidebar ya Enterprise */
     div[data-testid="stRadio"] > label {
         background-color: rgba(255, 255, 255, 0.05) !important;
         padding: 12px 15px !important;
@@ -57,23 +49,12 @@ str_platform.markdown("""
         margin-bottom: 8px !important;
         transition: all 0.3s ease-in-out !important;
         border: 1px solid rgba(255, 255, 255, 0.1) !important;
-        cursor: pointer !important;
     }
-    
-    /* Mihemko ya Vifungo vya Menyu pindi Vinapoguswa (Hover) */
-    div[data-testid="stRadio"] > label:hover {
-        background-color: rgba(217, 119, 6, 0.15) !important;
-        border-color: #D97706 !important;
-    }
-    
-    /* Kitufe Kilichochaguliwa Kilipuke kwa Dhahabu ya Kifalme */
     div[data-testid="stRadio"] div[aria-checked="true"] {
         background-color: #D97706 !important;
         border-radius: 6px !important;
         padding: 2px 8px !important;
     }
-    
-    /* Sanifu Vifungo Vyote vya Programu Katikati ya Skrini */
     div.stButton > button {
         background-color: #1E3A8A !important;
         color: white !important;
@@ -83,14 +64,12 @@ str_platform.markdown("""
         border-radius: 8px !important;
         border: none !important;
         box-shadow: 0 4px 6px rgba(30, 58, 138, 0.15) !important;
-        transition: all 0.3s ease-in-out !important;
         width: 100% !important;
     }
     div.stButton > button:hover {
         background-color: #D97706 !important;
         color: white !important;
         transform: translateY(-2px) !important;
-        box-shadow: 0 6px 12px rgba(217, 119, 6, 0.3) !important;
     }
     textarea, input {
         border: 2px solid #E5E7EB !important;
@@ -111,7 +90,6 @@ str_platform.sidebar.markdown("<h2 style='color: #ffffff; text-align: center; fo
 str_platform.sidebar.markdown("<p style='color: #E5E7EB; text-align: center; font-size: 12px; font-style: italic;'>Enterprise Menu Suite</p>", unsafe_allow_html=True)
 str_platform.sidebar.write("---")
 
-# Hapa majina yamenyooshwa kwa usahihi mkuu kuzuia skrini kuwa tupu
 chaguo_menyu = str_platform.sidebar.radio(
     "CHAGUA HUDUMA KUU:",
     [
@@ -135,14 +113,10 @@ if chaguo_menyu == "📝 Mhariri wa Kiswahili Sanifu Pro":
         if maandishi_mhariri.strip() == "":
             str_platform.warning("Tafadhali ingiza maandishi kwanza!")
         else:
-            with str_platform.spinner("AI Enterprise anachambua sarufi..."):
-                try:
-                    pro_prompt = f"Wewe ni mtaalamu mwandamizi wa lugha ya Kiswahili Sanifu. Kagua maandishi haya, sahihisha makosa yote ya sarufi na tahajia, kisha ulete majibu nadhifu yakionyesha marekebisho yaliyofanyika:\n\n{maandishi_mhariri}"
-                    jibu = client.chat.completions.create(model="gpt-4o", messages=[{"role": "user", "content": pro_prompt}])
-                    str_platform.success("Marekebisho ya Kiofisi Yamekamilika!")
-                    str_platform.write(jibu.choices.message.content)
-                except Exception as error_msg:
-                    str_platform.error(f"Hitilafu ya Mfumo: {error_msg}")
+            pro_prompt = f"Wewe ni mtaalamu mwandamizi wa lugha ya Kiswahili Sanifu. Kagua maandishi haya, sahihisha makosa yote ya sarufi na tahajia, kisha ulete majibu nadhifu yakionyesha marekebisho yaliyofanyika:\n\n{maandishi_mhariri}"
+            jibu = client.chat.completions.create(model="gpt-4o", messages=[{"role": "user", "content": pro_prompt}])
+            str_platform.success("Marekebisho ya Kiofisi Yamekamilika!")
+            str_platform.write(jibu.choices.message.content)
 
 # =====================================================================
 # CHAGUO 2: MTAFSIRI WA LUGHA & MUKTADHA SUITE (14 LUGHA + KIDINI)
@@ -172,17 +146,30 @@ elif chaguo_menyu == "🔀 Mtafsiri wa Lugha & Muktadha Suite":
         if maandishi_tafsiri.strip() == "":
             str_platform.warning("Tafadhali ingiza maandishi kwanza!")
         else:
-            with str_platform.spinner("Mtafsiri Mkuu wa Enterprise anachambua lugha..."):
-                try:
-                    trans_prompt = f"Tafsiri kutoka {lugha_chanzo} kwenda {lugha_lengwa} katika muktadha wa {muktadha_tafsiri}:\n\n{maandishi_tafsiri}"
-                    jibu_tafsiri = client.chat.completions.create(model="gpt-4o", messages=[{"role": "user", "content": trans_prompt}])
-                    str_platform.success(f"🔮 Matokeo ya Tafsiri ya Kiwango cha Juu ({muktadha_tafsiri}):")
-                    str_platform.write(jibu_tafsiri.choices.message.content)
-                except Exception as error_msg:
-                    str_platform.error(f"Hitilafu ya Mfumo: {error_msg}")
+            trans_prompt = f"Tafsiri kutoka {lugha_chanzo} kwenda {lugha_lengwa} katika muktadha wa {muktadha_tafsiri}:\n\n{maandishi_tafsiri}"
+            jibu_tafsiri = client.chat.completions.create(model="gpt-4o", messages=[{"role": "user", "content": trans_prompt}])
+            str_platform.success(f"🔮 Matokeo ya Tafsiri ya Kiwango cha Juu ({muktadha_tafsiri}):")
+            str_platform.write(jibu_tafsiri.choices.message.content)
 
 # =====================================================================
 # CHAGUO 3: MAKTABA YA MSAMIATI NA NAHAU KUU
 # =====================================================================
 elif chaguo_menyu == "📚 Maktaba ya Msamiati na Nahau Kuu":
     str_platform.markdown("<h3 style='color: #1E3A8A;'>📚 Maktaba ya Msamiati na Nahau Kuu</h3>", unsafe_allow_html=True)
+    str_platform.write("Gundua na uchambue maana ya misamiati migumu, methali, nahau, na tamathali za usemi.")
+    msamiati_input = str_platform.text_input("Andika neno, nahau, au methali (Mfano: 'Kitendawili', 'Kula chumvi nyingi'):", key="vocab_input_royal")
+    
+    if str_platform.button("Tafuta Kwenye Kamusi Kuu", key="vocab_btn_royal"):
+        if msamiati_input.strip() == "":
+            str_platform.warning("Tafadhali andika msamiati kwanza!")
+        else:
+            vocab_prompt = f"Wewe ni Kamusi Hai Kuu ya Kiswahili ya kiwango cha juu. Toa maana ya kina, asili ya neno, na mifano miwili ya sentensi kwa kutumia msamiati huu: {msamiati_input}"
+            jibu_vocab = client.chat.completions.create(model="gpt-4o", messages=[{"role": "user", "content": vocab_prompt}])
+            str_platform.info("Uchambuzi wa Kitaalamu wa Kamusi Kuu:")
+            str_platform.write(jibu_vocab.choices.message.content)
+
+# =====================================================================
+# CHAGUO 4: MTAMBO WA SAUTI (DARASA LA SAUTI)
+# =====================================================================
+elif chaguo_menyu == "🔊 Mtambo wa Sauti (Darasa la Sauti)":
+    str_platform.markdown("<h3 style='color: #1E3A8A;'>🔊 Mtambo wa Sauti: Darasa la Kidijitali</h3>", unsafe_allow_html=True)
