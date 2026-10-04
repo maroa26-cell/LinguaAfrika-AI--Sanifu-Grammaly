@@ -1,4 +1,3 @@
-
 import streamlit as str_platform
 import os
 from openai import OpenAI
@@ -139,7 +138,7 @@ with tab3:
                     str_platform.error(f"Hitilafu ya Mfumo: {error_msg}")
 
 # =====================================================================
-# TAB 4: 🔊 MTAMBO WA SAUTI (DARASA LA SAUTI)
+# TAB 4: 🔊 MTAMBO WA SAUTI (DARASA LA SAUTI - NO TRY BLOCK!)
 # =====================================================================
 with tab4:
     str_platform.markdown("<h3 style='color: #1E3A8A;'>🔊 Mtambo wa Sauti: Darasa la Kidijitali</h3>", unsafe_allow_html=True)
@@ -158,4 +157,3 @@ with tab4:
             str_platform.warning("Tafadhali hakikisha umejaza maandishi yote mawili!")
         else:
             with str_platform.spinner("Mtambo wa sauti unaoka sauti..."):
-                try:
