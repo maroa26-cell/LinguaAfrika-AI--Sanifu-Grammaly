@@ -167,7 +167,6 @@ elif chaguo_menyu == "🔊 Mtambo wa Sauti (Darasa la Sauti)":
             f_teacher.write(res_mwalimu.content)
             f_teacher.close()
             str_platform.audio(file_mwalimu)
-            
             file_mwanafunzi = "sauti_mwanafunzi.mp3"
             res_mwanafunzi = client.audio.speech.create(model="tts-1", voice=sauti_mwanafunzi_opt, input=maandishi_mwanafunzi)
             f_student = open(file_mwanafunzi, "wb")
