@@ -94,7 +94,9 @@ chaguo_menyu = str_platform.sidebar.radio(
     ]
 )
 
-# 🛠️ UTENGENEZAJI WA KAZI ZA NDANI YA KILA UKURASA (CLEAN SYSTEM RUN)
+# =====================================================================
+# CHAGUO 1: MHARIRI WA KISWAHILI SANIFU PRO
+# =====================================================================
 if chaguo_menyu == "📝 Mhariri wa Kiswahili Sanifu Pro":
     str_platform.markdown("<h3 style='color: #1E3A8A;'>📝 Mhariri wa Kiswahili Sanifu Pro</h3>", unsafe_allow_html=True)
     maandishi_mhariri = str_platform.text_area("Andika maandishi yako hapa:", height=150, key="editor_input_royal")
@@ -107,7 +109,10 @@ if chaguo_menyu == "📝 Mhariri wa Kiswahili Sanifu Pro":
         else:
             str_platform.warning("Tafadhali ingiza maandishi kwanza!")
 
-if chaguo_menyu == "🔀 Mtafsiri wa Lugha & Muktadha Suite":
+# =====================================================================
+# CHAGUO 2: MTAFSIRI WA LUGHA & MUKTADHA SUITE (14 LUGHA + KIDINI)
+# =====================================================================
+elif chaguo_menyu == "🔀 Mtafsiri wa Lugha & Muktadha Suite":
     str_platform.markdown("<h3 style='color: #1E3A8A;'>🔀 Mtafsiri wa Lugha & Muktadha Suite</h3>", unsafe_allow_html=True)
     orodha_lugha = ["Kiswahili", "Kiingereza (English)", "Kichewa (Chichewa)", "Kinyarwanda", "Kiganda (Luganda)", "Kinyanja", "Kiafrikana (Afrikaans)", "Kilingala (Lingala)", "Kiamhari (Amharic)", "Kichina (Chinese)", "Kireno (Portuguese)", "Kihindi (Hindi)", "Kifaransa (French)", "Kiarabu (Arabic)"]
     col1, col2, col3 = str_platform.columns(3)
@@ -127,7 +132,10 @@ if chaguo_menyu == "🔀 Mtafsiri wa Lugha & Muktadha Suite":
         else:
             str_platform.warning("Tafadhali ingiza maandishi ya kutafsiri!")
 
-if chaguo_menyu == "📚 Maktaba ya Msamiati na Nahau Kuu":
+# =====================================================================
+# CHAGUO 3: MAKTABA YA MSAMIATI NA NAHAU KUU
+# =====================================================================
+elif chaguo_menyu == "📚 Maktaba ya Msamiati na Nahau Kuu":
     str_platform.markdown("<h3 style='color: #1E3A8A;'>📚 Maktaba ya Msamiati na Nahau Kuu</h3>", unsafe_allow_html=True)
     msamiati_input = str_platform.text_input("Andika neno, nahau, au methali hapa:", key="vocab_input_royal")
     if str_platform.button("Tafuta Kwenye Kamusi Kuu", key="vocab_btn_royal"):
@@ -139,7 +147,10 @@ if chaguo_menyu == "📚 Maktaba ya Msamiati na Nahau Kuu":
         else:
             str_platform.warning("Tafadhali andika msamiati kwanza!")
 
-if chaguo_menyu == "🔊 Mtambo wa Sauti (Darasa la Sauti)":
+# =====================================================================
+# CHAGUO 4: MTAMBO WA SAUTI (DARASA LA SAUTI)
+# =====================================================================
+elif chaguo_menyu == "🔊 Mtambo wa Sauti (Darasa la Sauti)":
     str_platform.markdown("<h3 style='color: #1E3A8A;'>🔊 Mtambo wa Sauti: Darasa la Kidijitali</h3>", unsafe_allow_html=True)
     col_v1, col_v2 = str_platform.columns(2)
     with col_v1:
@@ -152,21 +163,20 @@ if chaguo_menyu == "🔊 Mtambo wa Sauti (Darasa la Sauti)":
         if maandishi_mwalimu.strip() != "" and maandishi_mwanafunzi.strip() != "":
             file_mwalimu = "sauti_mwalimu.mp3"
             res_mwalimu = client.audio.speech.create(model="tts-1", voice=sauti_mwalimu, input=maandishi_mwalimu)
-            with open(file_mwalimu, "wb") as f_m: f_m.write(res_mwalimu.content)
+            f_teacher = open(file_mwalimu, "wb")
+            f_teacher.write(res_mwalimu.content)
+            f_teacher.close()
             str_platform.audio(file_mwalimu)
             file_mwanafunzi = "sauti_mwanafunzi.mp3"
             res_mwanafunzi = client.audio.speech.create(model="tts-1", voice=sauti_mwanafunzi_opt, input=maandishi_mwanafunzi)
-            with open(file_mwanafunzi, "wb") as f_s: f_s.write(res_mwanafunzi.content)
+            f_student = open(file_mwanafunzi, "wb")
+            f_student.write(res_mwanafunzi.content)
+            f_student.close()
             str_platform.audio(file_mwanafunzi)
         else:
             str_platform.warning("Tafadhali hakikisha umejaza maandishi yote mawili!")
 
-if chaguo_menyu == "🤖 AI Phonetic Robot (Ukaguzi Mkuu)":
-    str_platform.markdown("<h3 style='color: #1E3A8A;'>🤖 AI Phonetic Robot Enterprise Suite</h3>", unsafe_allow_html=True)
-    sauti_mwanafunzi = str_platform.file_uploader("Pakia faili la sauti hapa:", type=["wav", "mp3"], key="audio_uploader_royal_final")
-    if sauti_mwanafunzi:
-        if str_platform.button("Zindua Ukaguzi Mkuu wa Roboti", key="check_student_speech_btn_royal_final"):
-            trans_audio = client.audio.transcriptions.create(model="whisper-1", file=(sauti_mwanafunzi.name, sauti_mwanafunzi.read()))
-            str_platform.info(f"🗣️ Robot amekusikia ukisema: '{trans_audio.text}'")
-            robot_prompt = f"Wewe ni mtaalamu wa fonetiki ya Kiswahili Kiswahili Sanifu. Mwanafunzi ametamka sentensi hii: '{trans_audio.text}'. Toa ripoti rasmi ya kiofisi iliyogawanyika katika mada nizi: 1.Ripoti ya fonetiki 2.Alama ya asilimia (0-100%) 3.Makosa ya sauti 4.Ushauri wa kuboresha."
-            jibu_robot = client.chat.completions.create(model="gpt-4o", messages=[{"role": "user", "content": robot_prompt}])
+# =====================================================================
+# CHAGUO 5: 🤖 AI PHONETIC ROBOT
+# =====================================================================
+elif chaguo_menyu == "🤖 AI Phonetic Robot (Ukaguzi Mkuu)":
