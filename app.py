@@ -52,16 +52,17 @@ with tab1:
         if maandishi_mhariri.strip() == "":
             str_platform.warning("Tafadhali ingiza maandishi kwanza!")
         else:
-            try:
-                pro_prompt = f"Wewe ni mtaalamu mwandamizi wa lugha ya Kiswahili Sanifu. Kagua maandishi haya, sahihisha makosa yote ya sarufi na tahajia, kisha ulete majibu nadhifu yakionyesha marekebisho yaliyofanyika:\n\n{maandishi_mhariri}"
-                jibu = client.chat.completions.create(
-                    model="gpt-4o",
-                    messages=[{"role": "user", "content": pro_prompt}]
-                )
-                str_platform.success("Marekebisho ya Kiofisi Yamekamilika!")
-                str_platform.write(jibu.choices.message.content)
-            except Exception as error_msg:
-                str_platform.error(f"Hitilafu ya Mfumo: {error_msg}")
+            with str_platform.spinner("AI Enterprise anachambua sarufi..."):
+                try:
+                    pro_prompt = f"Wewe ni mtaalamu mwandamizi wa lugha ya Kiswahili Sanifu. Kagua maandishi haya, sahihisha makosa yote ya sarufi na tahajia, kisha ulete majibu nadhifu yakionyesha marekebisho yaliyofanyika:\n\n{maandishi_mhariri}"
+                    jibu = client.chat.completions.create(
+                        model="gpt-4o",
+                        messages=[{"role": "user", "content": pro_prompt}]
+                    )
+                    str_platform.success("Marekebisho ya Kiofisi Yamekamilika!")
+                    str_platform.write(jibu.choices.message.content)
+                except Exception as error_msg:
+                    str_platform.error(f"Hitilafu ya Mfumo: {error_msg}")
 
 # =====================================================================
 # TAB 2: 🔀 MTAFSIRI WA LUGHA & MUKTADHA SUITE (14 LUGHA + KIDINI)
@@ -95,21 +96,22 @@ with tab2:
         if maandishi_tafsiri.strip() == "":
             str_platform.warning("Tafadhali ingiza maandishi ya kutafsiri kwanza!")
         else:
-            try:
-                trans_prompt = (
-                    f"Wewe ni mtafsiri mwandamizi wa kimataifa na mtaalamu wa lugha. "
-                    f"Tafsiri maandishi yafuatayo kutoka lugha ya {lugha_chanzo} kwenda lugha ya {lugha_lengwa}. "
-                    f"Zingatia kwa makini sana muktadha wa matumizi ambao ni: {muktadha_tafsiri}. "
-                    f"Hakikisha tafsiri inakuwa ya kiwango cha juu, ya asili, na mtiririko unaofaa ngazi hiyo ya muktadha:\n\n{maandishi_tafsiri}"
-                )
-                jibu_tafsiri = client.chat.completions.create(
-                    model="gpt-4o",
-                    messages=[{"role": "user", "content": trans_prompt}]
-                )
-                str_platform.success(f"🔮 Matokeo ya Tafsiri ya Kiwango cha Juu ({muktadha_tafsiri}):")
-                str_platform.write(jibu_tafsiri.choices.message.content)
-            except Exception as error_msg:
-                str_platform.error(f"Hitilafu ya Mfumo: {error_msg}")
+            with str_platform.spinner("Mtafsiri Mkuu wa Enterprise anachambua lugha..."):
+                try:
+                    trans_prompt = (
+                        f"Wewe ni mtafsiri mwandamizi wa kimataifa na mtaalamu wa lugha. "
+                        f"Tafsiri maandishi yafuatayo kutoka lugha ya {lugha_chanzo} kwenda lugha ya {lugha_lengwa}. "
+                        f"Zingatia kwa makini sana muktadha wa matumizi ambao ni: {muktadha_tafsiri}. "
+                        f"Hakikisha tafsiri inakuwa ya kiwango cha juu, ya asili, na mtiririko unaofaa ngazi hiyo ya muktadha:\n\n{maandishi_tafsiri}"
+                    )
+                    jibu_tafsiri = client.chat.completions.create(
+                        model="gpt-4o",
+                        messages=[{"role": "user", "content": trans_prompt}]
+                    )
+                    str_platform.success(f"🔮 Matokeo ya Tafsiri ya Kiwango cha Juu ({muktadha_tafsiri}):")
+                    str_platform.write(jibu_tafsiri.choices.message.content)
+                except Exception as error_msg:
+                    str_platform.error(f"Hitilafu ya Mfumo: {error_msg}")
 
 # =====================================================================
 # TAB 3: 📚 MAKTABA YA MSAMIATI NA NAHAU KUU
@@ -123,19 +125,20 @@ with tab3:
         if msamiati_input.strip() == "":
             str_platform.warning("Tafadhali andika msamiati kwanza!")
         else:
-            try:
-                vocab_prompt = f"Wewe ni Kamusi Hai Kuu ya Kiswahili ya kiwango cha juu. Toa maana ya kina, asili ya neno, na mifano miwili ya sentensi kwa kutumia msamiati huu:\n\n{msamiati_input}"
-                jibu_vocab = client.chat.completions.create(
-                    model="gpt-4o",
-                    messages=[{"role": "user", "content": vocab_prompt}]
-                )
-                str_platform.info("Uchambuzi wa Kitaalamu wa Kamusi Kuu:")
-                str_platform.write(jibu_vocab.choices.message.content)
-            except Exception as error_msg:
-                str_platform.error(f"Hitilafu ya Mfumo: {error_msg}")
+            with str_platform.spinner("AI anatafuta kwenye kamusi kuu..."):
+                try:
+                    vocab_prompt = f"Wewe ni Kamusi Hai Kuu ya Kiswahili ya kiwango cha juu. Toa maana ya kina, asili ya neno, na mifano miwili ya sentensi kwa kutumia msamiati huu:\n\n{msamiati_input}"
+                    jibu_vocab = client.chat.completions.create(
+                        model="gpt-4o",
+                        messages=[{"role": "user", "content": vocab_prompt}]
+                    )
+                    str_platform.info("Uchambuzi wa Kitaalamu wa Kamusi Kuu:")
+                    str_platform.write(jibu_vocab.choices.message.content)
+                except Exception as error_msg:
+                    str_platform.error(f"Hitilafu ya Mfumo: {error_msg}")
 
 # =====================================================================
-# TAB 4: 🔊 MTAMBO WA SAUTI (DARASA LA SAUTI - NO TRY & NO SPINNER BLOCK!)
+# TAB 4: 🔊 MTAMBO WA SAUTI (DARASA LA SAUTI)
 # =====================================================================
 with tab4:
     str_platform.markdown("<h3 style='color: #1E3A8A;'>🔊 Mtambo wa Sauti: Darasa la Kidijitali</h3>", unsafe_allow_html=True)
@@ -154,11 +157,3 @@ with tab4:
             str_platform.warning("Tafadhali hakikisha umejaza maandishi yote mawili!")
         else:
             file_mwalimu = "sauti_mwalimu.mp3"
-            res_mwalimu = client.audio.speech.create(model="tts-1", voice=sauti_mwalimu, input=maandishi_mwalimu)
-            f_teacher = open(file_mwalimu, "wb")
-            f_teacher.write(res_mwalimu.content)
-            f_teacher.close()
-            str_platform.markdown("#### 👨‍🏫 Sauti ya Mwalimu:")
-            str_platform.audio(file_mwalimu)
-            
-            file_mwanafunzi = "sauti_mwanafunzi.mp3"
