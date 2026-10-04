@@ -179,7 +179,7 @@ elif chaguo_menyu == "🔊 Mtambo wa Sauti (Darasa la Sauti)":
         str_platform.warning("👑 Kipengele hiki ni cha kulipia (Premium feature). Tafadhali bofya '🔐 Jisajili / Ingia (Sign In)' upande wa menyu ya kushoto ili kuanza kifurushi.")
     else:
         sauti_mwalimu = str_platform.selectbox("Sauti ya Mwalimu:", ["onyx", "echo", "alloy"])
-        maandishi_mwalimu = str_platform.text_area("Mwalimu:", "Karibu darasani mwanafunzi wangu.", key="teacher_text_input")
+        maandishi_mwalimu = str_platform.text_area("Mwalimu Maelezo:", "Karibu darasani mwanafunzi wangu.", key="teacher_text_input")
         sauti_mwanafunzi_opt = str_platform.selectbox("Sauti ya Mwanafunzi:", ["nova", "shimmer", "fable"])
-        maandishi_mwanafunzi = str_platform.text_area("Mwanafunzi:", "Asante sana mwalimu wangu.", key="student_text_input")
-        if str_platform.button("Zalisha Sauti za Darasa", key="tts_classroom_btn"):
+        maandishi_mwanafunzi = str_platform.text_area("Mwanafunzi Maelezo:", "Asante sana mwalimu wangu.", key="student_text_input")
+        if str_platform.button("Zalisha Sauti za Darasa", key="generate_audio_btn"):
