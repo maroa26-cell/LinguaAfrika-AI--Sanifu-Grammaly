@@ -1,0 +1,13 @@
+import streamlit as str_platform
+
+def initialize_nervous_pathways():
+    """Spurs systemic state memory flags if missing from current runtime node frames."""
+    if "user_status" not in str_platform.session_state:
+        str_platform.session_state["user_status"] = "guest"
+    if "immunity_cache" not in str_platform.session_state:
+        str_platform.session_state["immunity_cache"] = {}
+
+def update_endocrine_signal(new_status):
+    """Fires internal balance overrides across operational states."""
+    str_platform.session_state["user_status"] = new_status
+    str_platform.rerun()
