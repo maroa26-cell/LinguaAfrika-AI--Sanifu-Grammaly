@@ -1,0 +1,26 @@
+import os
+import time
+import gc
+
+def trigger_garbage_excretion():
+    """Flushes active RAM leaks by triggering manual Python memory sweeps."""
+    collected = gc.collect()
+    return f"🧼 Memory Excretory System: Swept and released {collected} zombie application object threads."
+
+def flush_cache_excrement():
+    """Purges physical workspace waste by removing stale audio tracking files over 30 seconds old."""
+    current_directory = os.getcwd()
+    all_files = os.listdir(current_directory)
+    now = time.time()
+    purged_count = 0
+    
+    for current_file in all_files:
+        if current_file.endswith(".mp3") or current_file.endswith(".wav"):
+            file_path = os.path.join(current_directory, current_file)
+            if now - os.path.getmtime(file_path) > 30:
+                try:
+                    os.remove(file_path)
+                    purged_count += 1
+                except Exception:
+                    pass
+    return f"🧹 Cleansing System: Safely evicted {purged_count} temporary media file blocks from the cluster host."
