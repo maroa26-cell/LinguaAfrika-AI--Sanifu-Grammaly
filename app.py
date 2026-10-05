@@ -182,4 +182,4 @@ elif chaguo_menyu == "🔊 Mtambo wa Sauti (Darasa la Sauti)":
         maandishi_mwalimu = str_platform.text_area("Mwalimu Maelezo:", "Karibu darasani mwanafunzi wangu.", key="teacher_text_input")
         sauti_mwanafunzi_opt = str_platform.selectbox("Sauti ya Mwanafunzi:", ["nova", "shimmer", "fable"])
         maandishi_mwanafunzi = str_platform.text_area("Mwanafunzi Maelezo:", "Asante sana mwalimu wangu.", key="student_text_input")
-        if maandishi_mwalimu.strip() != "" and maandishi_mwanafunzi.strip() != "":
+        if str_platform.button("Zindua Mtambo wa Sauti"):
