@@ -27,3 +27,4 @@ def rekebisha_matini_ya_spaces(matini):
     if not matini:
         return ""
     return " ".join(matini.split())
+
