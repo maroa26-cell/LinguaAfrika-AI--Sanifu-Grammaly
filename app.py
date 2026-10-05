@@ -10,7 +10,7 @@ str_platform.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# 🔒 KUUNGANISHA NA SYSTEM SETTINGS & SECRET KEY (STREAMLIT SECRETS INTEGRATION)
+# 🔒 KUUNGANISHA NA SYSTEM SETTINGS & SECRET KEY
 if "OPENAI_API_KEY" in os.environ:
     api_key_source = os.environ["OPENAI_API_KEY"]
 elif hasattr(str_platform, "secrets") and "OPENAI_API_KEY" in str_platform.secrets:
@@ -18,7 +18,6 @@ elif hasattr(str_platform, "secrets") and "OPENAI_API_KEY" in str_platform.secre
 else:
     api_key_source = None
 
-# Kuwasha mtambo OpenAI Suite kwa usalama wa hali ya juu
 if api_key_source:
     client = OpenAI(api_key=api_key_source)
 else:
@@ -127,14 +126,13 @@ else:
     )
 
 # =====================================================================
-# CHAKULA CHA MAUDHUI YA NDANI (FLAWLESS NO-INDENT STRUCTURE)
+# CHAKULA CHA MAUDHUI YA NDANI (BUSINESS LOGIC EXECUTION)
 # =====================================================================
 
-# 0. MALENGO NA DIRA YA TAASISI (MPYA - ENTERPRISE MISSION CONTROL)
+# 0. MALENGO NA DIRA YA TAASISI (ENTERPRISE MISSION CONTROL)
 if chaguo_menyu == "🎯 Malengo na Dira ya Taasisi":
     str_platform.markdown("<h3 style='color: #1E3A8A;'>🎯 Malengo, Dira na Kimkakati ya Kikazi</h3>", unsafe_allow_html=True)
     str_platform.write("LinguaAfrika AI imesajiliwa kuwa chombo kikuu cha kimkakati cha kidijitali barani Afrika kusanifisha na kuongeza thamani ya matumizi ya lugha ya Kiswahili kibiashara, kiakademia, na kiofisi.")
-    
     col_m1, col_m2 = str_platform.columns(2)
     with col_m1:
         str_platform.info("🚀 **Dira Yetu (Our Vision)**\n\nKuwa kitovu namba moja duniani cha Akili Mnemba (AI) kinachosanifisha sarufi, tahajia, na matamshi ya lafudhi ya Kiswahili kwa kutumia teknolojia za kisasa za OpenAI.")
@@ -182,3 +180,6 @@ elif chaguo_menyu == "📚 Maktaba ya Msamiati na Kamusi":
             str_platform.info("Uchambuzi wa Kitaalamu wa Kamusi Kuu:")
             str_platform.write(jibu_vocab.choices.message.content)
         else:
+            str_platform.warning("Tafadhali andika msamiati kwanza!")
+
+
