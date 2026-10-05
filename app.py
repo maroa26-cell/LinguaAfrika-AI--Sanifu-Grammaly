@@ -2,15 +2,15 @@ import streamlit as str_platform
 import os
 from openai import OpenAI
 
-# 👑 Sanifu Mipangilio ya Ukurasa Mkuu - Oxford Freemium Framework
+# 👑 Sanifu Mipangilio ya Ukurasa Mkuu - Oxford Freemium Framework Edition 3
 str_platform.set_page_config(
-    page_title="LinguaAfrika AI: Oxford Freemium Suite",
+    page_title="LinguaAfrika AI: Oxford Premium Freemium Platform",
     page_icon="👑",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# 🔒 KUUNGANISHA NA SYSTEM SETTINGS & SECRET KEY
+# 🔒 KUUNGANISHA NA SYSTEM SETTINGS & SECRET KEY (STREAMLIT SECRETS INTEGRATION)
 if "OPENAI_API_KEY" in os.environ:
     api_key_source = os.environ["OPENAI_API_KEY"]
 elif hasattr(str_platform, "secrets") and "OPENAI_API_KEY" in str_platform.secrets:
@@ -18,13 +18,14 @@ elif hasattr(str_platform, "secrets") and "OPENAI_API_KEY" in str_platform.secre
 else:
     api_key_source = None
 
+# Kuwasha mtambo OpenAI Suite kwa usalama wa hali ya juu
 if api_key_source:
     client = OpenAI(api_key=api_key_source)
 else:
     str_platform.error("🔒 Hitilafu ya Usalama: Secret Key (OPENAI_API_KEY) haujapatikana kwenye seva!")
     str_platform.stop()
 
-# 🎨 UPANDISHAJI WA MUONEKANO NA RANGI (EDITION 3 LUXURY SKIN)
+# 🎨 UPANDISHAJI WA MUONEKANO NA RANGI (EDITION 3 LUXURY CSS INJECTION)
 str_platform.markdown("""
 <style>
     html, body, [data-testid="stAppViewContainer"] {
@@ -91,15 +92,20 @@ str_platform.markdown("<h3 style='text-align: center; color: #D97706; font-famil
 str_platform.write("---")
 
 # =====================================================================
-# 🧭 USANIFU WA SIDEBAR KULINGANA NA HALI YA USALAMA (OXFORD FRAMEWORK)
+# 🧭 USANIFU WA SIDEBAR CONTROL PANEL (OXFORD FREEMIUM FRAMEWORK)
 # =====================================================================
-str_platform.sidebar.markdown("<h2 style='text-align: center; color: #ffffff;'>Menyu Kuu</h2>", unsafe_allow_html=True)
+str_platform.sidebar.markdown("<h2 style='text-align: center; color: #ffffff; font-weight: bold;'>LinguaAfrika AI</h2>", unsafe_allow_html=True)
 
 if str_platform.session_state["user_status"] == "admin":
-    str_platform.sidebar.markdown("<p style='color: #25D366; text-align: center; font-weight: bold;'>👑 Dashboard ya Admin</p>", unsafe_allow_html=True)
+    str_platform.sidebar.markdown("<p style='color: #25D366; text-align: center; font-weight: bold;'>👑 Administrator Mode</p>", unsafe_allow_html=True)
     chaguo_menyu = str_platform.sidebar.radio(
         "DASHBOARD YA USIMAMIZI:",
-        ["📊 Ripoti Kuu ya Utendaji", "⚙️ Mipangilio & Secret Keys", "📢 Ujumbe wa Mbele", "🚪 Toka Kwenye Mfumo (Logout)"]
+        [
+            "📊 Ripoti Kuu ya Utendaji",
+            "⚙️ Mipangilio & Secret Keys",
+            "📢 Ujumbe wa Mbele",
+            "🚪 Toka Kwenye Mfumo (Logout)"
+        ]
     )
 else:
     if str_platform.session_state["user_status"] == "standard_premium":
@@ -110,6 +116,7 @@ else:
     chaguo_menyu = str_platform.sidebar.radio(
         "CHAGUA HUDUMA KUU:",
         [
+            "🎯 Malengo na Dira ya Taasisi",
             "📝 Mhariri wa Kiswahili Sanifu Pro",
             "🔀 Mtafsiri wa Lugha Suite",
             "📚 Maktaba ya Msamiati na Kamusi",
@@ -120,11 +127,22 @@ else:
     )
 
 # =====================================================================
-# MANTIKI YA NDANI YA OPERATIONS (FLAWLESS NO-INDENT STRUCTURE)
+# CHAKULA CHA MAUDHUI YA NDANI (FLAWLESS NO-INDENT STRUCTURE)
 # =====================================================================
 
+# 0. MALENGO NA DIRA YA TAASISI (MPYA - ENTERPRISE MISSION CONTROL)
+if chaguo_menyu == "🎯 Malengo na Dira ya Taasisi":
+    str_platform.markdown("<h3 style='color: #1E3A8A;'>🎯 Malengo, Dira na Kimkakati ya Kikazi</h3>", unsafe_allow_html=True)
+    str_platform.write("LinguaAfrika AI imesajiliwa kuwa chombo kikuu cha kimkakati cha kidijitali barani Afrika kusanifisha na kuongeza thamani ya matumizi ya lugha ya Kiswahili kibiashara, kiakademia, na kiofisi.")
+    
+    col_m1, col_m2 = str_platform.columns(2)
+    with col_m1:
+        str_platform.info("🚀 **Dira Yetu (Our Vision)**\n\nKuwa kitovu namba moja duniani cha Akili Mnemba (AI) kinachosanifisha sarufi, tahajia, na matamshi ya lafudhi ya Kiswahili kwa kutumia teknolojia za kisasa za OpenAI.")
+    with col_m2:
+        str_platform.info("📈 **Malengo ya Kikazi (Our Objectives)**\n\n• Kutoa zana za bure za kusaidia jamii kuhariri na kutafsiri lugha 14 tofauti.\n\n• Kujenga mitambo ya kulipia ya sauti na ripoti za fonetiki kwa ajili ya shule na mashirika ya kimataifa.")
+
 # 1. MHARIRI PRO (BURE KWA WOTE)
-if chaguo_menyu == "📝 Mhariri wa Kiswahili Sanifu Pro":
+elif chaguo_menyu == "📝 Mhariri wa Kiswahili Sanifu Pro":
     str_platform.markdown("<h3 style='color: #1E3A8A;'>📝 Mhariri wa Kiswahili Sanifu Pro</h3>", unsafe_allow_html=True)
     maandishi_mhariri = str_platform.text_area("Andika maandishi yako hapa:", height=150, key="editor_input_royal")
     if str_platform.button("Zindua Ukaguzi wa Sarufi", key="editor_btn_royal"):
@@ -150,6 +168,8 @@ elif chaguo_menyu == "🔀 Mtafsiri wa Lugha Suite":
             jibu_tafsiri = client.chat.completions.create(model="gpt-4o", messages=[{"role": "user", "content": trans_prompt}])
             str_platform.success("🔮 Matokeo ya Tafsiri ya Kitaalamu:")
             str_platform.write(jibu_tafsiri.choices.message.content)
+        else:
+            str_platform.warning("Tafadhali ingiza maandishi ya kutafsiri!")
 
 # 3. KAMUSI PRO (BURE KWA WOTE)
 elif chaguo_menyu == "📚 Maktaba ya Msamiati na Kamusi":
@@ -161,18 +181,4 @@ elif chaguo_menyu == "📚 Maktaba ya Msamiati na Kamusi":
             jibu_vocab = client.chat.completions.create(model="gpt-4o", messages=[{"role": "user", "content": vocab_prompt}])
             str_platform.info("Uchambuzi wa Kitaalamu wa Kamusi Kuu:")
             str_platform.write(jibu_vocab.choices.message.content)
-
-# 4. MTAMBO WA SAUTI (MTEGO WA MALIPO YA PREMIUM)
-elif chaguo_menyu == "🔊 Mtambo wa Sauti (Darasa la Sauti)":
-    str_platform.markdown("<h3 style='color: #1E3A8A;'>🔊 Mtambo wa Sauti: Darasa la Kidijitali</h3>", unsafe_allow_html=True)
-    if str_platform.session_state["user_status"] == "guest":
-        str_platform.warning("👑 Kifurushi cha Majaribio ya Bure Kimeisha (Premium Lock). Tafadhali nenda kwenye kipengele cha '🔐 Ingia / Jisajili (Sign In)' pembeni ili kufungua kipengele hiki kibiashara.")
-    else:
-        sauti_mwalimu = str_platform.selectbox("Sauti ya Mwalimu:", ["onyx", "echo", "alloy"])
-        maandishi_mwalimu = str_platform.text_area("Mwalimu Maelezo:", "Karibu darasani mwanafunzi wangu.", key="teacher_text_input")
-        sauti_mwanafunzi_opt = str_platform.selectbox("Sauti ya Mwanafunzi:", ["nova", "shimmer", "fable"])
-        maandishi_mwanafunzi = str_platform.text_area("Mwanafunzi Maelezo:", "Asante sana mwalimu wangu.", key="student_text_input")
-        if str_platform.button("Zalisha Sauti za Darasa Direct", key="perfect_audio_btn"):
-            res_mwalimu = client.audio.speech.create(model="tts-1", voice=sauti_mwalimu, input=maandishi_mwalimu)
-            open("sauti_mwalimu.mp3", "wb").write(res_mwalimu.content)
-            str_platform.audio("sauti_mwalimu.mp3")
+        else:
