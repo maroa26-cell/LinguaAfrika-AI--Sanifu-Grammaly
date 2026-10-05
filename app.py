@@ -172,7 +172,7 @@ elif chaguo_menyu == "📚 Maktaba ya Msamiati na Kamusi":
         else:
             str_platform.warning("Tafadhali andika msamiati kwanza!")
 
-# 4. MTAMBO WA SAUTI (MTEGO WA MALIPO - FLAWLESS FLATTENED)
+# 4. MTAMBO WA SAUTI (MTEGO WA MALIPO - FIXED FLAWLESS)
 elif chaguo_menyu == "🔊 Mtambo wa Sauti (Darasa la Sauti)":
     str_platform.markdown("<h3 style='color: #1E3A8A;'>🔊 Mtambo wa Sauti: Darasa la Kidijitali</h3>", unsafe_allow_html=True)
     if str_platform.session_state["user_status"] == "guest":
@@ -182,4 +182,4 @@ elif chaguo_menyu == "🔊 Mtambo wa Sauti (Darasa la Sauti)":
         maandishi_mwalimu = str_platform.text_area("Mwalimu Maelezo:", "Karibu darasani mwanafunzi wangu.", key="teacher_text_input")
         sauti_mwanafunzi_opt = str_platform.selectbox("Sauti ya Mwanafunzi:", ["nova", "shimmer", "fable"])
         maandishi_mwanafunzi = str_platform.text_area("Mwanafunzi Maelezo:", "Asante sana mwalimu wangu.", key="student_text_input")
-        if maandishi_mwalimu.strip() != "" and maandishi_mwanafunzi.strip() != "":
+        if str_platform.button("Zindua Mtambo wa Sauti", key="trigger_audio_btn"):
