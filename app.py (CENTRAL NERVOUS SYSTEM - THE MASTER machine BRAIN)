@@ -1,0 +1,139 @@
+import streamlit as str_platform
+import os
+from openai import OpenAI
+
+# 🧠 BINDING THE 8 AUTONOMOUS ORGANIC SYSTEM PATHWAYS
+import respiratory_digestive as oxygen_node
+import git_processing as digestion_node
+import circulatory_transport as transport_node
+import audio_muscular as muscle_node
+import excretory_cleansing as cleansing_node
+import immune_defence as shield_node
+import nervous_endocrine as synapse_node
+import skin_appearance as visual_node
+
+# 🏰 Triggering Autonomic Framework Preparations
+synapse_node.initialize_nervous_pathways()
+visual_node.render_dermal_gold_skin()
+
+# 🔒 Connecting Cloud Storage Security tokens
+if "OPENAI_API_KEY" in os.environ:
+    api_key_source = os.environ["OPENAI_API_KEY"]
+elif hasattr(str_platform, "secrets") and "OPENAI_API_KEY" in str_platform.secrets:
+    api_key_source = str_platform.secrets["OPENAI_API_KEY"]
+else:
+    api_key_source = None
+
+if api_key_source:
+    client = OpenAI(api_key=api_key_source)
+else:
+    str_platform.error("🔒 Hitilafu ya Usalama: Secret Key (OPENAI_API_KEY) haujapatikana!")
+    str_platform.stop()
+
+# Autonomic background cleansing action (Sweeps stale audio storage)
+cleansing_node.flush_cache_excrement()
+
+# 🏰 System Executive Corporate Header Displays
+str_platform.markdown("<h1 style='text-align: center; color: #1E3A8A; font-weight: 900; margin-bottom: 0;'>👑 LinguaAfrika AI</h1>", unsafe_allow_html=True)
+str_platform.markdown("<h3 style='text-align: center; color: #D97706; font-weight: 700; margin-top: 5px;'>The Autonomous Living Organism Suite • Edition 4 Gold</h3>", unsafe_allow_html=True)
+
+# Vital Signs Real-Time Monitor Dashboard
+str_platform.sidebar.markdown("### 🫁 System Vital Signs")
+str_platform.sidebar.write(oxygen_node.inhale_system_oxygen())
+str_platform.sidebar.write(cleansing_node.trigger_garbage_excretion())
+str_platform.sidebar.write("---")
+
+# 🧭 Specialized Navigation Logic Overrides
+current_status = str_platform.session_state["user_status"]
+if current_status == "admin":
+    chaguo_menyu = str_platform.sidebar.radio("DASHBOARD YA USIMAMIZI:", ["📊 Ripoti Kuu ya Utendaji", "🚪 Toka Kwenye Mfumo (Logout)"])
+else:
+    if current_status == "standard_premium":
+        str_platform.sidebar.markdown("<p style='color: #D97706; text-align: center; font-weight: bold;'>💎 Premium Member (Unlocked)</p>", unsafe_allow_html=True)
+    else:
+        str_platform.sidebar.markdown("<p style='color: #9CA3AF; text-align: center; font-weight: bold;'>👤 Guest Mode (Free Portal)</p>", unsafe_allow_html=True)
+    chaguo_menyu = str_platform.sidebar.radio("CHAGUA HUDUMA KUU:", ["🎯 Malengo na Dira", "📝 Mhariri wa Kiswahili Sanifu", "🔀 Mtafsiri wa Lugha Suite", "📚 Maktaba ya Kamusi", "🔊 Mtambo wa Sauti", "🤖 AI Phonetic Robot", "🔐 Ingia / Jisajili (Sign In)"])
+
+# =====================================================================
+# CENTRAL NERVOUS CONTROLLER EXECUTION (THE DECISION LAYER)
+# =====================================================================
+if chaguo_menyu == "🎯 Malengo na Dira":
+    str_platform.markdown("### 🎯 Malengo na Dira ya Kimkakati")
+    str_platform.info("Kuwa kiumbe hai cha kidijitali kinachoongoza kusanifisha lugha ya Kiswahili kote ulimwenguni.")
+
+elif chaguo_menyu == "📝 Mhariri wa Kiswahili Sanifu":
+    str_platform.markdown("### 📝 Mhariri wa Kiswahili Sanifu Pro")
+    maandishi = str_platform.text_area("Andika maandishi yako hapa:")
+    if str_platform.button("Zindua Ukaguzi wa Sarufi"):
+        # Check through defense and oxygen nodes before hitting muscle
+        if shield_node.evaluate_intrusion_shield(maandishi):
+            safe, msg = oxygen_node.ingest_token_nutrition(maandishi, current_status)
+            if safe:
+                msafi = digestion_node.digest_raw_context(maandishi)
+                transport_node.circulate_payload_to_node(msafi)
+                pro_prompt = f"Wewe ni mtaalamu wa Kiswahili Sanifu. Kagua na usahihishe sarufi hapa:\n\n{msafi}"
+                jibu = client.chat.completions.create(model="gpt-4o", messages=[{"role": "user", "content": pro_prompt}])
+                str_platform.success("Marekebisho Yamekamilika!")
+                str_platform.write(jibu.choices.message.content)
+            else:
+                str_platform.error(msg)
+
+elif chaguo_menyu == "🔀 Mtafsiri wa Lugha Suite":
+    str_platform.markdown("### 🔀 Mtafsiri wa Lugha Suite")
+    maandishi_t = str_platform.text_area("Ingiza maandishi ya kutafsiri:")
+    if str_platform.button("Zindua Tafsiri"):
+        if shield_node.evaluate_intrusion_shield(maandishi_t) and maandishi_t.strip() != "":
+            jibu_t = client.chat.completions.create(model="gpt-4o", messages=[{"role": "user", "content": f"Translate to English: {maandishi_t}"}])
+            str_platform.success("🔮 Matokeo ya Tafsiri:")
+            str_platform.write(jibu_t.choices.message.content)
+
+elif chaguo_menyu == "📚 Maktaba ya Kamusi":
+    str_platform.markdown("### 📚 Maktaba ya Msamiati na Kamusi")
+    msamiati = str_platform.text_input("Andika neno:")
+    if str_platform.button("Tafuta"):
+        if msamiati.strip() != "":
+            jibu_v = client.chat.completions.create(model="gpt-4o", messages=[{"role": "user", "content": f"Toa maana na mifano ya sentensi kwa: {msamiati}"}])
+            str_platform.info("Uchambuzi wa Kamusi Kuu:")
+            str_platform.write(jibu_v.choices.message.content)
+
+elif chaguo_menyu == "🔊 Mtambo wa Sauti":
+    if current_status == "guest":
+        str_platform.warning("👑 Kifurushi cha Majaribio ya Bure Kimeisha. Tafadhali bofya '🔐 Ingia / Jisajili' upande wa menyu.")
+    else:
+        # Muscle layer takes control asynchronously
+        sauti_mwalimu = str_platform.selectbox("Sauti ya Mwalimu:", ["onyx", "echo", "alloy"])
+        matini_mwalimu = str_platform.text_area("Mwalimu:", "Karibu darasani.", key="t_in")
+        sauti_mwanafunzi = str_platform.selectbox("Sauti ya Mwanafunzi:", ["nova", "shimmer"])
+        matini_mwanafunzi = str_platform.text_area("Mwanafunzi:", "Asante.", key="s_in")
+        if str_platform.button("Execute Speech Generation"):
+            muscle_node.execute_audio_muscle(client, sauti_mwalimu, matini_mwalimu, sauti_mwanafunzi, matini_mwanafunzi)
+
+elif chaguo_menyu == "🤖 AI Phonetic Robot":
+    if current_status == "guest":
+        str_platform.warning("👑 Kipengele hiki kinahitaji Akaunti ya Premium. Tafadhali bofya '🔐 Ingia / Jisajili' upande wa menyu.")
+    else:
+        sauti_faili = str_platform.file_uploader("Pakia faili la sauti hapa:", type=["wav", "mp3"])
+        if sauti_faili and str_platform.button("Zindua Ukaguzi wa Roboti"):
+            matokeo = muscle_node.execute_phonetic_muscle(client, sauti_faili)
+            str_platform.info(f"🗣️ Robot Speech Interpretation: '{matokeo}'")
+
+elif chaguo_menyu == "🔐 Ingia / Jisajili (Sign In)":
+    chaguo_lango = str_platform.selectbox("Nia ya Kuingia yako:", ["Premium User", "Admin"], key="lango_select")
+    jina = str_platform.text_input("Username:", key="lango_username")
+    password = str_platform.text_input("Password:", type="password", key="lango_password")
+    if str_platform.button("Thibitisha Kuingia"):
+        if chaguo_lango == "Admin" and password == "Maroa2026":
+            synapse_node.update_endocrine_signal("admin")
+        elif chaguo_lango == "Premium User" and jina.strip() != "" and password.strip() != "":
+            synapse_node.update_endocrine_signal("standard_premium")
+
+elif chaguo_menyu == "📊 Ripoti Kuu ya Utendaji" and current_status == "admin":
+    str_platform.markdown("### 👑 Central Nervous System Administration Node")
+    str_platform.write(digestion_node.evaluate_system_version())
+    str_platform.success("🟢 API Engine Online. Distributed workloads executing successfully.")
+
+elif chaguo_menyu == "🚪 Toka Kwenye Mfumo (Logout)":
+    synapse_node.update_endocrine_signal("guest")
+
+str_platform.write("---")
+str_platform.markdown("<p style='text-align: center; font-size: 0.85rem; color: #9CA3AF; font-weight: bold;'>© 2026 LinguaAfrika AI Ecosystem Enterprise • Powered by Super Bio-Digital Module Architectures</p>", unsafe_allow_html=True)
