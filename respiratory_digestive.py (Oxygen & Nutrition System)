@@ -1,0 +1,20 @@
+import streamlit as str_platform
+import psutil
+
+def inhale_system_oxygen():
+    """Monitors server CPU and memory load, dynamically evaluating RAM availability."""
+    virtual_mem = psutil.virtual_memory()
+    available_gb = virtual_mem.available / (1024 ** 3)
+    memory_percent = virtual_mem.percent
+    if memory_percent > 85.0:
+        return f"⚠️ Warning: Computational Lungs Under Pressure! RAM usage at {memory_percent}%"
+    return f"🟢 Computational Lungs Stable. Available Oxygen: {available_gb:.2f} GB RAM ({memory_percent}% Utilized)"
+
+def ingest_token_nutrition(matini, user_status):
+    """Calculates model nutrition guidelines based on character lengths to avoid data starvation."""
+    char_count = len(matini) if matini else 0
+    estimated_tokens = int(char_count / 4)
+    
+    if user_status == "guest" and estimated_tokens > 250:
+        return False, "🛑 Ingestion Limit Exceeded for Free Tier. Please elevate your nutrition node via Premium Login!"
+    return True, f"🍕 Ingestion Safe. Allocated {estimated_tokens} nutrition tokens for processing node."
