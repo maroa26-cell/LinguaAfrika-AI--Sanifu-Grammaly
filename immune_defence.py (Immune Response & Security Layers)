@@ -1,0 +1,28 @@
+import streamlit as str_platform
+import time
+
+def evaluate_intrusion_shield(user_input):
+    """Screens parameters for injection or cross-site orchestration patterns."""
+    if not user_input:
+        return True
+    malicious_tokens = ["drop table", "select *", "union select", "<script>", "delete from"]
+    normalized_input = user_input.lower()
+    for token in malicious_tokens:
+        if token in normalized_input:
+            return False
+    return True
+
+def apply_rate_limit_immunity(user_ip, limit_cache):
+    """Enforces dynamic rate limiting bucket protections to counter massive script flood attempts."""
+    now = time.time()
+    if user_ip not in limit_cache:
+        limit_cache[user_ip] = []
+    
+    # Clean records older than 60 seconds
+    limit_cache[user_ip] = [t for token_time in limit_cache[user_ip] if now - token_time < 60]
+    
+    if len(limit_cache[user_ip]) >= 10:
+        return False, "🛑 Defensive Immunity Alert: Request frequency baseline breached. Connection suspended for 30s."
+    
+    limit_cache[user_ip].append(now)
+    return True, "🛡️ Immunity Shields Active. Request clean."
