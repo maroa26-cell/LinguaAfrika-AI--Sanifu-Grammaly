@@ -1,3 +1,4 @@
+
 import streamlit as str_platform
 import os
 from openai import OpenAI
@@ -18,6 +19,7 @@ elif hasattr(str_platform, "secrets") and "OPENAI_API_KEY" in str_platform.secre
 else:
     api_key_source = None
 
+# Kuwasha mtambo OpenAI Suite kwa usalama wa hali ya juu
 if api_key_source:
     client = OpenAI(api_key=api_key_source)
 else:
@@ -126,10 +128,10 @@ else:
     )
 
 # =====================================================================
-# CHAKULA CHA MAUDHUI YA NDANI (BUSINESS LOGIC EXECUTION)
+# CHAKULA CHA MAUDHUI YA NDANI (FLAWLESS NO-INDENT STRUCTURE)
 # =====================================================================
 
-# 0. MALENGO NA DIRA YA TAASISI (ENTERPRISE MISSION CONTROL)
+# 0. MALENGO NA DIRA YA TAASISI
 if chaguo_menyu == "🎯 Malengo na Dira ya Taasisi":
     str_platform.markdown("<h3 style='color: #1E3A8A;'>🎯 Malengo, Dira na Kimkakati ya Kikazi</h3>", unsafe_allow_html=True)
     str_platform.write("LinguaAfrika AI imesajiliwa kuwa chombo kikuu cha kimkakati cha kidijitali barani Afrika kusanifisha na kuongeza thamani ya matumizi ya lugha ya Kiswahili kibiashara, kiakademia, na kiofisi.")
@@ -140,7 +142,7 @@ if chaguo_menyu == "🎯 Malengo na Dira ya Taasisi":
         str_platform.info("📈 **Malengo ya Kikazi (Our Objectives)**\n\n• Kutoa zana za bure za kusaidia jamii kuhariri na kutafsiri lugha 14 tofauti.\n\n• Kujenga mitambo ya kulipia ya sauti na ripoti za fonetiki kwa ajili ya shule na mashirika ya kimataifa.")
 
 # 1. MHARIRI PRO (BURE KWA WOTE)
-elif chaguo_menyu == "📝 Mhariri wa Kiswahili Sanifu Pro":
+if chaguo_menyu == "📝 Mhariri wa Kiswahili Sanifu Pro":
     str_platform.markdown("<h3 style='color: #1E3A8A;'>📝 Mhariri wa Kiswahili Sanifu Pro</h3>", unsafe_allow_html=True)
     maandishi_mhariri = str_platform.text_area("Andika maandishi yako hapa:", height=150, key="editor_input_royal")
     if str_platform.button("Zindua Ukaguzi wa Sarufi", key="editor_btn_royal"):
@@ -153,7 +155,7 @@ elif chaguo_menyu == "📝 Mhariri wa Kiswahili Sanifu Pro":
             str_platform.warning("Tafadhali ingiza maandishi kwanza!")
 
 # 2. MTAFSIRI PRO (BURE KWA WOTE)
-elif chaguo_menyu == "🔀 Mtafsiri wa Lugha Suite":
+if chaguo_menyu == "🔀 Mtafsiri wa Lugha Suite":
     str_platform.markdown("<h3 style='color: #1E3A8A;'>🔀 Mtafsiri wa Lugha & Muktadha Suite</h3>", unsafe_allow_html=True)
     orodha_lugha = ["Kiswahili", "Kiingereza (English)", "Kichewa (Chichewa)", "Kinyarwanda", "Kiganda (Luganda)", "Kinyanja", "Kiafrikana (Afrikaans)", "Kilingala (Lingala)", "Kiamhari (Amharic)", "Kichina (Chinese)", "Kireno (Portuguese)", "Kihindi (Hindi)", "Kifaransa (French)", "Kiarabu (Arabic)"]
     lugha_chanzo = str_platform.selectbox("Lugha ya Chanzo (From):", orodha_lugha, index=1)
@@ -170,7 +172,7 @@ elif chaguo_menyu == "🔀 Mtafsiri wa Lugha Suite":
             str_platform.warning("Tafadhali ingiza maandishi ya kutafsiri!")
 
 # 3. KAMUSI PRO (BURE KWA WOTE)
-elif chaguo_menyu == "📚 Maktaba ya Msamiati na Kamusi":
+if chaguo_menyu == "📚 Maktaba ya Msamiati na Kamusi":
     str_platform.markdown("<h3 style='color: #1E3A8A;'>📚 Maktaba ya Msamiati na Nahau Kuu</h3>", unsafe_allow_html=True)
     msamiati_input = str_platform.text_input("Andika neno, nahau, au methali hapa:", key="vocab_input_royal")
     if str_platform.button("Tafuta Kwenye Kamusi Kuu", key="vocab_btn_royal"):
