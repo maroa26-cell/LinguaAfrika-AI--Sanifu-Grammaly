@@ -4,20 +4,20 @@ import time
 from openai import OpenAI
 
 # =====================================================================
-# 🧠 CENTRAL NERVOUS SYSTEM (CNS) - BIOMIMETIC MACHINE INTEGRATION
+# 🧠 CENTRAL NERVOUS SYSTEM (CNS) - BIOMIMETIC MASTER machine
 # =====================================================================
-# Ubongo mkuu unavuta na kuratibu idara zote tanzu zilizopo GitHub
-import style             # 8) Muonekano na Ngozi ya Nje (Integumentary Skin Layer)
-import model             # 2) Uchakataji na Kusindika Lugha (Digestive AI Model Engine)
-import validate_entries # 6) Ulinzi, Kinga na Ukaguzi wa Ndani (Immune & Crypto-Defence)
-import errorfix         # 5) Uondoaji Taka na Kusafisha Seva (Excretory Garbage Collector)
-import search           # 4) Utendaji Kazi wa Kamusi Kuu (Muscular-Skeletal System Node 1)
-import sync             # 3) Usafirishaji na Mawasiliano ya Seva (Circulatory Transport)
-import sauti            # 4) Utendaji Kazi wa Mtambo wa Sauti (Muscular-Skeletal System Node 2)
-import robot            # 4) Utendaji Kazi wa Roboti ya Sauti (Muscular-Skeletal System Node 3)
-import admin            # 7) Uongozaji na Jopo la Utawala (Endocrine System Control)
+# Ubongo mkuu unavuta idara zote tanzu zilizopo GitHub
+import style             # Ngozi ya Nje (Integumentary Skin Layer)
+import model             # Uchakataji wa Lugha (Digestive AI Model Engine)
+import validate_entries # Kinga na Ukaguzi (Immune & Crypto-Defence)
+import errorfix         # Uondoaji Taka (Excretory Garbage Collector)
+import search           # Utendaji wa Kamusi (Muscular-Skeletal System Node 1)
+import sync             # Usafirishaji Data (Circulatory Transport System)
+import sauti            # Utendaji wa Sauti (Muscular-Skeletal System Node 2)
+import robot            # Utendaji wa Roboti (Muscular-Skeletal System Node 3)
+import admin            # Jopo la Utawala (Endocrine System Control)
 
-# 👑 Zindua Mipangilio ya Seva Kuu ya Sayari (High-Availability Cloud Configuration)
+# 👑 Zindua Mipangilio ya Seva Kuu ya Sayari
 str_platform.set_page_config(
     page_title="LinguaAfrika AI: Super Biomimetic Platform",
     page_icon="🧠",
@@ -44,13 +44,9 @@ else:
 # =====================================================================
 # 📢 IDARA YA 8 & 5: NGOZI YA NJE (SKIN Injection) & SAFISHA TUHUMA (EXCRETION)
 # =====================================================================
-# 8) Ubongo unaamrisha style.py kuweka muonekano wa Edition 4 Gold Skin
 style.weka_mandhari_ya_kifalme()
-
-# 5) Mfumo wa Excretory: Unafuta mafaili ya zamani ya sauti kuzuia mkwamo wa seva kiotomatiki
 errorfix.safisha_uchafu_wa_kache()
 
-# Kuanzisha kumbukumbu ya siri ya kiutawala (Session State Core Memory)
 if "user_status" not in str_platform.session_state:
     str_platform.session_state["user_status"] = "guest"
 
@@ -60,9 +56,8 @@ str_platform.markdown("<h3 style='text-align: center; color: #D97706; font-weigh
 str_platform.write("---")
 
 # =====================================================================
-# 🩺 IDARA YA 1: MFUMO WA OKSIJENI NA CHAKULA (RESPIRATORY & AUTO-SCALING MONITOR)
+# 🩺 IDARA YA 1: MFUMO WA OKSIJENI NA CHAKULA (RESPIRATORY STATUS)
 # =====================================================================
-# Ukaguzi wa kiotomatiki wa RAM na CPU kuonyesha afya ya mtambo mbele ya ukurasa
 afya_ya_mapafu = errorfix.kagua_afya_ya_mapafu_ya_seva()
 str_platform.sidebar.markdown(f"<div style='background-color: rgba(37, 211, 102, 0.1); border: 1px solid #25D366; padding: 10px; border-radius: 6px; margin-bottom: 10px;'><p style='color: #25D366; font-size: 13px; margin: 0; text-align: center;'>🫁 RESPIRATORY STATUS:<br><b>{afya_ya_mapafu}</b></p></div>", unsafe_allow_html=True)
 
@@ -81,7 +76,7 @@ else:
     if str_platform.session_state["user_status"] == "standard_premium":
         str_platform.sidebar.markdown("<p style='color: #D97706; text-align: center; font-weight: bold;'>💎 Premium Account (Unlocked)</p>", unsafe_allow_html=True)
     else:
-        str_platform.sidebar.markdown("<p style='color: #9CA3AF; text-align: center; font-weight: bold;'>👤 Guest Account (Free Access)</p>", unsafe_allow_html=True)
+        str_platform.sidebar.markdown("<p style='color: #9CA3AF; text-align: center; font-weight: bold;'>👤 Guest Mode (Free Portal)</p>", unsafe_allow_html=True)
         
     chaguo_menyu = str_platform.sidebar.radio(
         "CHAGUA SEHEMU YA MFUMO:",
@@ -97,29 +92,24 @@ else:
     )
 
 # =====================================================================
-# ⚙️ IDARA YA 7: ENGINES DEPLOYMENT & CENTRAL CORCHESTRATION
+# ⚙️ IDARA YA 7: CENTRAL ORCHESTRATION & ROUTING EXECUTION
 # =====================================================================
 
-# 7.1) Dira na Malengo (Mission Control)
 if chaguo_menyu == "🎯 Malengo na Dira ya Taasisi":
     str_platform.markdown("<h3 style='color: #1E3A8A;'>🎯 Malengo, Dira na Kimkakati ya Kikazi</h3>", unsafe_allow_html=True)
-    str_platform.write("LinguaAfrika AI emesajiliwa kuwa chombo kikuu cha kimkakati cha kidijitali barani Afrika kusanifisha na kuongeza thamani ya matumizi ya lugha ya Kiswahili kibiashara.")
+    str_platform.write("LinguaAfrika AI imesajiliwa kuwa chombo kikuu cha kimkakati cha kidijitali barani Afrika kusanifisha na kuongeza thamani ya matumizi ya lugha ya Kiswahili kibiashara.")
     col_m1, col_m2 = str_platform.columns(2)
     with col_m1:
         str_platform.info("🚀 **Dira Yetu (Our Vision)**\n\nKuwa kitovu namba moja duniani cha Akili Mnemba (AI) kinachosanifisha sarufi na matamshi ya Kiswahili.")
     with col_m2:
-        str_platform.info("📈 **Malengo ya Kikazi (Our Objectives)**\n\n• Kutoa zana za bure za kusaidia jamii kuhariri na kutafsiri lugha.\n\n• Kujenga mitambo ya kulipia ya sauti na ripoti za fonetiki kwa ajili ya shule.")
+        str_platform.info("📈 **Malengo ya Kikazi (Our Objectives)**\n\n• Kutoa zana za bure za kusaidia jamii kuhariri.\n\n• Kujenga mitambo ya kulipia ya sauti na ripoti za fonetiki.")
 
-# 7.2) 4) Mhariri Pro (Muscular Action 1)
 elif chaguo_menyu == "📝 Mhariri wa Kiswahili Sanifu Pro":
     str_platform.markdown("<h3 style='color: #1E3A8A;'>📝 Mhariri wa Kiswahili Sanifu Pro</h3>", unsafe_allow_html=True)
     maandishi = str_platform.text_area("Andika maandishi yako hapa:")
     if str_platform.button("Zindua Ukaguzi wa Sarufi"):
-        # 6) Idara ya Ulinzi (Immune system) inakagua data kwanza kama zipo safi
         if validate_entries.kagua_matini(maandishi):
-            # 5) Idara ya usafishaji inasafisha spaces zilizovurugika
             msafi = errorfix.rekebisha_matini_ya_spaces(maandishi)
-            # 2) Idara ya Digestive model.py inachakata data kwa OpenAI
             prompt = f"Wewe ni mtaalamu wa Kiswahili Sanifu. Kagua na usahihishe sarufi hapa:\n\n{msafi}"
             matokeo = model.piga_gpt4o(client, prompt)
             str_platform.success("Marekebisho Yamekamilika!")
@@ -127,33 +117,27 @@ elif chaguo_menyu == "📝 Mhariri wa Kiswahili Sanifu Pro":
         else:
             str_platform.error("🛑 Ulinzi Umekataa: Maandishi yana herufi haramu au yapo tupu!")
 
-# 7.3) 3) Mtafsiri wa Lugha Suite (Circulatory Transport Call)
 elif chaguo_menyu == "🔀 Mtafsiri wa Lugha Suite":
-    sync.anzisha_mtafsiri(client) # Ubongo unaamrisha faili la sync.py la usafirishaji kuwaka hewani
+    # Ubongo unarusha mamlaka kamili na client kwenda kwenye kiungo cha sync.py
+    sync.anzisha_mtafsiri(client)
 
-# 7.4) 4) Maktaba ya Kamusi Kuu (Muscular Action 2)
 elif chaguo_menyu == "📚 Maktaba ya Kamusi Kuu":
-    search.anzisha_kamusi(client) # Ubongo unaamrisha faili la search.py la kamusi kuwaka hewani
+    search.anzisha_kamusi(client)
 
-# 7.5) Mtambo wa Sauti (Premium Paywall Node)
 elif chaguo_menyu == "🔊 Mtambo wa Sauti (Darasa)":
     if str_platform.session_state["user_status"] == "guest":
-        str_platform.warning("👑 Kifurushi cha Majaribio ya Bure Kimeisha (Premium Lock). Tafadhali nenda kwenye kipengele cha '🔐 Ingia / Jisajili (Sign In)' pembeni ili kufungua kiofisi.")
+        str_platform.warning("👑 Kifurushi cha Majaribio ya Bure Kimeisha (Premium Lock). Tafadhali nenda kwenye kipengele cha '🔐 Ingia / Jisajili (Sign In)' pembeni.")
     else:
-        sauti.onyesha_sauti(client) # Ubongo unaamrisha faili la sauti.py kuwaka hewani
+        sauti.onyesha_sauti(client)
 
-# 7.6) Phonetic Robot (Premium Paywall Node)
 elif chaguo_menyu == "🤖 AI Phonetic Robot (Ukaguzi)":
     if str_platform.session_state["user_status"] == "guest":
-        str_platform.warning("👑 Kipengele hiki kinahitaji Akaunti ya Premium. Tafadhali bofya '🔐 Ingia / Jisajili (Sign In)' pembeni ili kufungua mfumo.")
+        str_platform.warning("👑 Kipengele hiki kinahitaji Akaunti ya Premium. Tafadhali bofya '🔐 Ingia / Jisajili (Sign In)' pembeni.")
     else:
-        robot.onyesha_robot(client) # Ubongo unaamrisha faili la robot.py kuwaka hewani
+        robot.onyesha_robot(client)
 
-# 7.7) 6) Mlango wa Kujisajili/Kuingia (Dynamic Gateway Node)
 elif chaguo_menyu == "🔐 Ingia / Jisajili (Sign In)":
-    # Ubongo unapakia muonekano wa login.html kutoka admin.py mlangoni
     admin.pakia_lango_la_html()
-    
     str_platform.write("---")
     chaguo_lango = str_platform.selectbox("Nia ya Kuingia yako:", ["Premium User", "Admin"], key="lango_select")
     jina = str_platform.text_input("Jina la Mtumiaji (Username):", key="lango_username")
@@ -164,6 +148,16 @@ elif chaguo_menyu == "🔐 Ingia / Jisajili (Sign In)":
             str_platform.session_state["user_status"] = "admin"
             str_platform.rerun()
         elif chaguo_lango == "Premium User" and jina.strip() != "" and password.strip() != "":
-            # 6) Ulinzi unafunga jina la mtumiaji kwa kodi za siri za AES Encryption
             jina_la_siri = validate_entries.funga_data_kwa_siri(jina)
             str_platform.session_state["user_status"] = "standard_premium"
+            str_platform.rerun()
+
+elif chaguo_menyu == "📊 Ripoti Kuu ya Utendaji" and str_platform.session_state["user_status"] == "admin":
+    admin.onyesha_admin(client, api_key_source)
+
+elif chaguo_menyu == "🚪 Toka Kwenye Mfumo (Logout)":
+    str_platform.session_state["user_status"] = "guest"
+    str_platform.rerun()
+
+str_platform.write("---")
+str_platform.markdown("<p style='text-align: center; font-size: 0.85rem; color: #9CA3AF; font-weight: bold;'>© 2026 LinguaAfrika AI Ecosystem Enterprise • Powered by Super Modular Central Nervous System Architecture</p>", unsafe_allow_html=True)
