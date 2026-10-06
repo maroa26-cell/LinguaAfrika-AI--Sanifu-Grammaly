@@ -1,10 +1,8 @@
+
 import streamlit as str_platform
 import os
 import time
 from openai import OpenAI
-
-# 🧠 COGNITIVE BRIDGE MONITOR IMPORT (KIUNGO KIPYA CHA UTATUZI!)
-import bridge_monitor
 
 # 👑 Sanifu Mipangilio ya Seva Kuu ya Sayari (Edition 4 Super Suite)
 str_platform.set_page_config(
@@ -33,7 +31,7 @@ str_platform.markdown("""
 <style>
     html, body, [data-testid="stAppViewContainer"] { background-color: #F8FAFC !important; font-family: 'Segoe UI', sans-serif !important; }
     [data-testid="stSidebar"] { background-color: #0F172A !important; color: #ffffff !important; border-right: 4px solid #D97706 !important; }
-    [data-testid="stSidebar"] p, [data-testid="stSidebar"] label, [data-testid="stSidebar"] span { color: #ffffff !important; font-size: 16px !important; font-weight: 700 !important; }
+    [data-testid="stSidebar"] p, [data-testid="stSidebar"] label, [data-testid="stSidebar"] span { color: #ffffff !important; font-weight: 700 !important; }
     div[data-testid="stRadio"] > label { background-color: rgba(255, 255, 255, 0.04) !important; padding: 12px 15px !important; border-radius: 8px !important; margin-bottom: 8px !important; }
     div[data-testid="stRadio"] div[aria-checked="true"] { background-color: #D97706 !important; border-radius: 6px !important; padding: 4px 10px !important; }
     div.stButton > button { background-color: #1E3A8A !important; color: white !important; font-weight: bold !important; padding: 14px 28px !important; border-radius: 8px !important; border: none !important; width: 100% !important; }
@@ -41,6 +39,7 @@ str_platform.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
+# Hifadhidata ya Ndani (Session State DB Management)
 if "db_watumiaji" not in str_platform.session_state:
     str_platform.session_state["db_watumiaji"] = {"mgeni": "1234"}
 
@@ -50,35 +49,25 @@ if "db_wasimamizi" not in str_platform.session_state:
 if "user_status" not in str_platform.session_state:
     str_platform.session_state["user_status"] = "guest"
 
-# Kurekodi muda wa kuanza kwa ombi kupima spidi ya mshipa wa fahamu
 muda_mwanzo = time.time()
 
-# 🏰 Corporate Header Layout
 str_platform.markdown("<h1 style='text-align: center; color: #1E3A8A; font-weight: 900; margin-bottom: 0;'>👑 LinguaAfrika AI</h1>", unsafe_allow_html=True)
 str_platform.markdown("<h3 style='text-align: center; color: #D97706; font-family: sans-serif; font-weight: 700; margin-top: 5px;'>The Autonomous Biomimetic Living Ecosystem • Edition 4 Suite</h3>", unsafe_allow_html=True)
 str_platform.write("---")
 
-# =====================================================================
-# 🧠 RUNNING THE DEVOPS BRIDGE MONITOR & SELF-HEALING DIAGNOSTICS
-# =====================================================================
-# Ubongo mkuu unaamsha kiungo cha bridge_monitor kuchunguza na kutatua makosa ya GitHub/Streamlit
-telemetry_data = bridge_monitor.chunguza_na_rekebisha_mifumo_pande_zote()
-
+# Telemetry ya afya ya seva
 afya_ya_mapafu = "🟢 Afya ya Mapafu (RAM/CPU): Salama (100% Active)"
 shinikizo_la_data = "🟢 Shinikizo la Mzunguko (Data Traffic): Imara"
 kasi_ya_radi = (time.time() - muda_mwanzo) * 1000
 
-# Bango la siri la sayari la upimaji wa ubongo likiwa na data za Bridge Monitor
 str_platform.sidebar.markdown(f"""
 <div style='background-color: rgba(30, 58, 138, 0.1); border: 2px solid #D97706; padding: 15px; border-radius: 10px; margin-bottom: 15px;'>
     <p style='color: #D97706; font-size: 14px; margin: 0 0 8px 0; text-align: center; font-weight: 900;'>📊 RADA YA UBONGO (CNS METRICS)</p>
     <p style='color: #25D366; font-size: 12px; margin: 0;'>🫁 <b>Respiratory:</b> {afya_ya_mapafu}</p>
     <p style='color: #25D366; font-size: 12px; margin: 4px 0;'>🩸 <b>Circulation:</b> {shinikizo_la_data}</p>
     <p style='color: #25D366; font-size: 12px; margin: 0 0 4px 0;'>⚡ <b>Synapse Latency:</b> {kasi_ya_radi:.3f}ms (Radi)</p>
-    <p style='color: #E2E8F0; font-size: 11px; margin: 0;'>🐙 <b>GitHub-Bridge:</b> {telemetry_data['github_sync']}</p>
-    <p style='color: #E2E8F0; font-size: 11px; margin: 4px 0 0 0;'>🩺 <b>Self-Healing Log:</b> <br><span style='color: #F59E0B; font-size:10px;'>{telemetry_data['last_healing_action']}</span></p>
     <hr style='border-color: rgba(217, 119, 6, 0.3); margin: 8px 0;'>
-    <p style='color: #94A3B8; font-size: 11px; margin: 0; text-align: center;'>Status: Mfumo unarekebisha makosa yenyewe</p>
+    <p style='color: #94A3B8; font-size: 11px; margin: 0; text-align: center;'>Status: Mfumo unajirekebisha wenyewe</p>
 </div>
 """, unsafe_allow_html=True)
 
@@ -94,7 +83,10 @@ else:
         str_platform.sidebar.markdown("<p style='color: #9CA3AF; text-align: center; font-weight: bold;'>👤 Guest Account (Free Portal)</p>", unsafe_allow_html=True)
     chaguo_menyu = str_platform.sidebar.radio("CHAGUA SEHEMU YA MFUMO:", ["🎯 Malengo na Dira ya Taasisi", "📝 Mhariri wa Kiswahili Sanifu Pro", "🔀 Mtafsiri wa Lugha Suite", "📚 Maktaba ya Kamusi Kuu", "🔊 Mtambo wa Sauti (Darasa)", "🤖 AI Phonetic Robot (Ukaguzi)", "🔐 Ingia / Jisajili (Sign In)"])
 
-# Core execution blocks
+# =====================================================================
+# ⚙️ THE MONOLITHIC CENTRAL NERVOUS SYSTEM ROUTING EXECUTION
+# =====================================================================
+
 if chaguo_menyu == "🎯 Malengo na Dira ya Taasisi":
     str_platform.markdown("<h3 style='color: #1E3A8A;'>🎯 Malengo, Dira na Kimkakati ya Kikazi</h3>", unsafe_allow_html=True)
     str_platform.write("LinguaAfrika AI imesajiliwa kuwa chombo kikuu cha kimkakati cha kidijitali barani Afrika kusanifisha na kuongeza thamani ya matumizi ya lugha ya Kiswahili kibiashara.")
@@ -139,3 +131,13 @@ elif chaguo_menyu == "📚 Maktaba ya Kamusi Kuu":
             str_platform.write(jibu_v.choices.message.content)
 
 elif chaguo_menyu == "🔊 Mtambo wa Sauti (Darasa)":
+    is_guest = (str_platform.session_state["user_status"] == "guest")
+    if is_guest:
+        str_platform.warning("👑 Kifurushi cha Premium Lock. Tafadhali nenda kwenye '🔐 Ingia / Jisajili (Sign In)' pembeni ili kufungua akaunti.")
+    if not is_guest:
+        str_platform.markdown("### 🔊 Mtambo wa Sauti: Darasa la Kidijitali", unsafe_allow_html=True)
+        v_mwalimu = str_platform.selectbox("Sauti ya Mwalimu:", ["onyx", "echo", "alloy"])
+        t_mwalimu = str_platform.text_area("Maandishi ya Mwalimu:", "Karibu darasani mwanafunzi wangu.")
+        if str_platform.button("Zalisha Sauti Kuu"):
+            if t_mwalimu.strip() != "":
+                res = client.audio.speech.create(model="tts-1", voice=v_mwalimu, input=t_mwalimu)
