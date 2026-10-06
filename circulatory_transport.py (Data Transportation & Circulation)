@@ -1,15 +1,26 @@
 import streamlit as str_platform
-import base64
+import time
 
-def circulate_payload_to_node(payload_data):
-    """Handles high-speed transport metrics and network packet simulation."""
-    if not payload_data:
-        return "🛑 Null circulation payload packet detected."
-    # Transports payload safely via network stream
-    return f"🚀 Circulation active. Dispatched network packet to processing cluster nodes."
+def anzisha_mzunguko_wa_data(ubongo_amri, idara_lengwa):
+    """
+    IDARA YA 3: INTERNAL CIRCULATORY SYSTEM
+    Inapokea amri kutoka kwa Central Nervous System (app.py) ili kusukuma data 
+    kwenye mishipa ya seva kwa usalama bila kusababisha I/O Bottleneck.
+    """
+    if "circulatory_logs" not in str_platform.session_state:
+        str_platform.session_state["circulatory_logs"] = []
+        
+    muda_sasa = time.strftime("%H:%M:%S", time.localtime())
+    log_ujumbe = f"🔄 [{muda_sasa}] CNS amejibu: Data imesafirishwa kwenda {idara_lengwa} kwa ufanisi."
+    
+    # Kusukuma log kwenye mzunguko wa ndani ya seva
+    str_platform.session_state["circulatory_logs"].append(log_ujumbe)
+    return True
 
-def encode_transport_stream(data_string):
-    """Shields packets by converting standard strings to deep transportation byte data strings."""
-    if not data_string:
-        return ""
-    return base64.b64encode(data_string.encode("utf-8")).decode("utf-8")
+def kagua_shinikizo_la_damu_ya_seva():
+    """Kukagua foleni ya data (Traffic Load Telemetry) kuzuia Server Stroke"""
+    if "circulatory_logs" in str_platform.session_state:
+        pigo_la_moyo = len(str_platform.session_state["circulatory_logs"])
+        if pigo_la_moyo > 500:
+            return "⚠️ Shinikizo la Seva Liko Juu (High Traffic Load) - Deploying Auto-Throttling Node"
+    return "🟢 Shinikizo la Mzunguko (Data Traffic): Imara na Salama"
