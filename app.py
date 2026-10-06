@@ -3,7 +3,7 @@ import os
 import time
 from openai import OpenAI
 
-# 👑 Zindua Mipangilio ya Seva Kuu ya Sayari (Edition 4 Super Suite)
+# 👑 Sanifu Mipangilio ya Seva Kuu ya Sayari (Edition 4 Super Suite)
 str_platform.set_page_config(
     page_title="LinguaAfrika AI: Super Biomimetic Platform",
     page_icon="🧠",
@@ -25,7 +25,7 @@ else:
     str_platform.error("🔒 Hitilafu ya Usalama: Secret Key (OPENAI_API_KEY) haujapatikana kwenye Seva!")
     str_platform.stop()
 
-# 🎨 Ngozi ya Nje: DIRECT SKIN INJECTION (EDITION 4 ENTERPRISE LUXURY SKIN)
+# 🎨 DIRECT ENTERPRISE LUXURY SKIN INJECTION (NGOZI YA NJE - IDARA YA 8)
 str_platform.markdown("""
 <style>
     html, body, [data-testid="stAppViewContainer"] {
@@ -64,6 +64,10 @@ str_platform.markdown("""
         border: none !important;
         width: 100% !important;
     }
+    div.stButton > button:hover {
+        background-color: #D97706 !important;
+        transform: translateY(-2px) !important;
+    }
     textarea, input {
         border: 2px solid #E2E8F0 !important;
         border-radius: 10px !important;
@@ -72,14 +76,22 @@ str_platform.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
+# Kuanzisha Hifadhidata ya Ndani ya Siri ya Watumiaji na Wasimamizi (Session State DB Management)
+if "db_watumiaji" not in str_platform.session_state:
+    str_platform.session_state["db_watumiaji"] = {"mgeni": "1234"}
+
+if "db_wasimamizi" not in str_platform.session_state:
+    str_platform.session_state["db_wasimamizi"] = {"admin": "Maroa2026"} # Akaundi ya asili ya Msimamizi
+
 if "user_status" not in str_platform.session_state:
     str_platform.session_state["user_status"] = "guest"
 
+# 🏰 Corporate Header Layout
 str_platform.markdown("<h1 style='text-align: center; color: #1E3A8A; font-weight: 900; margin-bottom: 0;'>👑 LinguaAfrika AI</h1>", unsafe_allow_html=True)
-str_platform.markdown("<h3 style='text-align: center; color: #D97706; font-weight: 700; margin-top: 5px;'>The Autonomous Biomimetic Living Ecosystem • Edition 4 Suite</h3>", unsafe_allow_html=True)
+str_platform.markdown("<h3 style='text-align: center; color: #D97706; font-family: sans-serif; font-weight: 700; margin-top: 5px;'>The Autonomous Biomimetic Living Ecosystem • Edition 4 Suite</h3>", unsafe_allow_html=True)
 str_platform.write("---")
 
-# Bango la telemetry ya afya ya seva
+# 🫁 Zuia mkwamo: Telemetry ya Afya ya Seva
 afya_ya_mapafu = "🟢 Oksijeni ya CPU na RAM: Salama (100% Active)"
 shinikizo_la_data = "🟢 Shinikizo la Mzunguko (Data Traffic): Imara"
 
@@ -91,11 +103,12 @@ str_platform.sidebar.markdown(f"""
 </div>
 """, unsafe_allow_html=True)
 
-# Navigation Panel
+# 🧭 SIDEBAR OMNI NAVIGATION PANEL
 str_platform.sidebar.markdown("<h2 style='text-align: center; color: #ffffff; font-weight: bold;'>🧠 Neural Panel</h2>", unsafe_allow_html=True)
 
 if str_platform.session_state["user_status"] == "admin":
-    chaguo_menyu = str_platform.sidebar.radio("UDHIBITI WA ENDOCRINE:", ["📊 Ripoti Kuu ya Utendaji", "🚪 Toka Kwenye Mfumo (Logout)"])
+    str_platform.sidebar.markdown("<p style='color: #25D366; text-align: center; font-weight: bold;'>👑 Administrator Mode ACTIVE</p>", unsafe_allow_html=True)
+    chaguo_menyu = str_platform.sidebar.radio("UDHIBITI WA UTENDAJI:", ["📊 Ripoti Kuu ya Utendaji", "⚙️ Mipangilio ya Siri ya Seva", "📝 Mhariri wa Kiswahili Sanifu Pro", "🔀 Mtafsiri wa Lugha Suite", "📚 Maktaba ya Kamusi Kuu", "🔊 Mtambo wa Sauti (Darasa)", "🤖 AI Phonetic Robot (Ukaguzi)", "🚪 Toka Kwenye Mfumo (Logout)"])
 else:
     if str_platform.session_state["user_status"] == "standard_premium":
         str_platform.sidebar.markdown("<p style='color: #D97706; text-align: center; font-weight: bold;'>💎 Premium Member (Unlocked)</p>", unsafe_allow_html=True)
@@ -103,7 +116,10 @@ else:
         str_platform.sidebar.markdown("<p style='color: #9CA3AF; text-align: center; font-weight: bold;'>👤 Guest Account (Free Portal)</p>", unsafe_allow_html=True)
     chaguo_menyu = str_platform.sidebar.radio("CHAGUA SEHEMU YA MFUMO:", ["🎯 Malengo na Dira ya Taasisi", "📝 Mhariri wa Kiswahili Sanifu Pro", "🔀 Mtafsiri wa Lugha Suite", "📚 Maktaba ya Kamusi Kuu", "🔊 Mtambo wa Sauti (Darasa)", "🤖 AI Phonetic Robot (Ukaguzi)", "🔐 Ingia / Jisajili (Sign In)"])
 
-# Core execution logic
+# =====================================================================
+# ⚙️ THE MONOLITHIC CENTRAL NERVOUS SYSTEM ROUTING EXECUTION
+# =====================================================================
+
 if chaguo_menyu == "🎯 Malengo na Dira ya Taasisi":
     str_platform.markdown("<h3 style='color: #1E3A8A;'>🎯 Malengo, Dira na Kimkakati ya Kikazi</h3>", unsafe_allow_html=True)
     str_platform.write("LinguaAfrika AI imesajiliwa kuwa chombo kikuu cha kimkakati cha kidijitali barani Afrika kusanifisha na kuongeza thamani ya matumizi ya lugha ya Kiswahili kibiashara.")
@@ -125,7 +141,7 @@ elif chaguo_menyu == "📝 Mhariri wa Kiswahili Sanifu Pro":
 
 elif chaguo_menyu == "🔀 Mtafsiri wa Lugha Suite":
     str_platform.markdown("<h3 style='color: #1E3A8A;'>🔀 Mtafsiri wa Lugha & Muktadha Suite</h3>", unsafe_allow_html=True)
-    orodha_lugha = ["Kiswahili", "Kiingereza (English)", "Kinyarwanda", "Kiganda (Luganda)", "Kichewa (Chichewa)", "Kiyarabu (Arabic)", "Kifaransa (French)", "Kichina (Chinese)", "Kireno (Portuguese)", "Kiafrikana (Afrikaans)", "Kilingala (Lingala)", "Kiamhari (Amharic)", "Kihindi (Hindi)"]
+    orodha_lugha = ["Kiswahili", "Kiingereza (English)", "Kinyarwanda", "Kiganda (Luganda)", "Kichewa (Chichewa)", "Kiyarabu (Arabic)", "Kifaransa (French)", "Kichina (Chinese)", "Kireno (Portuguese)", "Kiafrikana (Afrikaans)"]
     muktadha_list = ["Mazungumzo ya Kawaida", "Kiakademia", "Kidini na Kiimani", "Kisheria", "Kibiashara", "Fasihi na Ushairi"]
     col1, col2, col3 = str_platform.columns(3)
     with col1:
@@ -154,21 +170,6 @@ elif chaguo_menyu == "📚 Maktaba ya Kamusi Kuu":
 
 elif chaguo_menyu == "🔊 Mtambo wa Sauti (Darasa)":
     if str_platform.session_state["user_status"] == "guest":
-        str_platform.warning("👑 Kifurushi cha Premium Lock. Tafadhali nenda kwenye '🔐 Ingia / Jisajili (Sign In)' pembeni.")
+        str_platform.warning("👑 Kifurushi cha Premium Lock. Tafadhali nenda kwenye '🔐 Ingia / Jisajili (Sign In)' pembeni ili kufungua akaunti.")
     else:
-        str_platform.markdown("🔊 **Mtambo wa Sauti Enterprise Mode Active**", unsafe_allow_html=True)
-        v_mwalimu = str_platform.selectbox("Sauti ya Mwalimu:", ["onyx", "echo", "alloy"])
-        t_mwalimu = str_platform.text_area("Maandishi ya Mwalimu:", "Karibu darasani mwanafunzi wangu.")
-        if str_platform.button("Zalisha Sauti Kuu"):
-            res = client.audio.speech.create(model="tts-1", voice=v_mwalimu, input=t_mwalimu)
-            open("sauti_mwalimu.mp3", "wb").write(res.content)
-            str_platform.audio("sauti_mwalimu.mp3")
-
-elif chaguo_menyu == "🤖 AI Phonetic Robot (Ukaguzi)":
-    if str_platform.session_state["user_status"] == "guest":
-        str_platform.warning("👑 Kipengele hiki kinahitaji Akaunti ya Premium. Tafadhali bofya '🔐 Ingia / Jisajili (Sign In)' pembeni.")
-    else:
-        sauti_mwanafunzi = str_platform.file_uploader("Pakia faili la sauti hapa:", type=["wav", "mp3"])
-        if sauti_mwanafunzi is not None:
-            if str_platform.button("Zindua Ukaguzi Mkuu wa Roboti"):
-                trans_audio = client.audio.transcriptions.create(model="whisper-1", file=(sauti_mwanafunzi.name, sauti_mwanafunzi.read()))
+        str_platform.markdown("### 🔊 Mtambo wa Sauti: Darasa la Kidijitali", unsafe_allow_html=True)
