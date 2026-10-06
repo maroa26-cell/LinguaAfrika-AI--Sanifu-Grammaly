@@ -3,7 +3,7 @@ import os
 import time
 from openai import OpenAI
 
-# 👑 Zindua Mipangilio ya Seva Kuu ya Sayari
+# 👑 Zindua Mipangilio ya Seva Kuu ya Sayari (Edition 4 Super Suite)
 str_platform.set_page_config(
     page_title="LinguaAfrika AI: Super Biomimetic Platform",
     page_icon="🧠",
@@ -11,7 +11,7 @@ str_platform.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# 🔒 KUUNGANISHA NA SYSTEM SECRET KEY (STREAMLIT SECRETS INTEGRATION)
+# 🔒 KUUNGANISHA NA SYSTEM SECRET KEY (STREAMLIT SECRETS)
 if "OPENAI_API_KEY" in os.environ:
     api_key_source = os.environ["OPENAI_API_KEY"]
 elif hasattr(str_platform, "secrets") and "OPENAI_API_KEY" in str_platform.secrets:
@@ -25,12 +25,12 @@ else:
     str_platform.error("🔒 Hitilafu ya Usalama: Secret Key (OPENAI_API_KEY) haujapatikana kwenye Seva!")
     str_platform.stop()
 
-# 🎨 8) NGOZI YA NJE: DIRECT SKIN INJECTION (EDITION 4 ENTERPRISE LUXURY SKIN)
+# 🎨 DIRECT ENTERPRISE LUXURY SKIN INJECTION (NGOZI YA NJE - IDARA YA 8)
 str_platform.markdown("""
 <style>
     html, body, [data-testid="stAppViewContainer"] {
         background-color: #F8FAFC !important;
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
+        font-family: 'Segoe UI', sans-serif !important;
     }
     [data-testid="stSidebar"] {
         background-color: #0F172A !important; /* Obsidian Dark */
@@ -59,11 +59,9 @@ str_platform.markdown("""
         background-color: #1E3A8A !important;
         color: white !important;
         font-weight: bold !important;
-        font-size: 16px !important;
         padding: 14px 28px !important;
         border-radius: 8px !important;
         border: none !important;
-        box-shadow: 0 4px 8px rgba(30, 58, 138, 0.2) !important;
         width: 100% !important;
     }
     div.stButton > button:hover {
@@ -81,23 +79,22 @@ str_platform.markdown("""
 if "user_status" not in str_platform.session_state:
     str_platform.session_state["user_status"] = "guest"
 
-# 🏰 Corporate Header Layout
 str_platform.markdown("<h1 style='text-align: center; color: #1E3A8A; font-weight: 900; margin-bottom: 0;'>👑 LinguaAfrika AI</h1>", unsafe_allow_html=True)
 str_platform.markdown("<h3 style='text-align: center; color: #D97706; font-weight: 700; margin-top: 5px;'>The Autonomous Biomimetic Living Ecosystem • Edition 4 Suite</h3>", unsafe_allow_html=True)
 str_platform.write("---")
 
-# 🫁 5 & 1) AUTONOMIC SEVA TELEMETRY (MEDULLA OBLONGATA)
+# 🫁🩸 IDARA YA 1 & 3: AUTONOMIC TELEMETRY MODULES (LOWERCASE LOOKUP)
 try:
     import errorfix
     import circulatory_transport
-    import Central_Nervous_System
+    import central_nervous_system
     afya_ya_mapafu = errorfix.kagua_afya_ya_mapafu_ya_seva()
     shinikizo_la_data = circulatory_transport.kagua_shinikizo_la_damu_ya_seva()
     errorfix.safisha_uchafu_wa_kache()
     mifumo_tayari = True
 except Exception:
-    afya_ya_mapafu = "🫁 Mifumo ya ndani inayumba: Unda mafaili tanzu GitHub sasa"
-    shinikizo_la_data = "🩸 Mzunguko wa Ndani: Kusubiri Usafishaji"
+    afya_ya_mapafu = "🫁 Mfumo wa Respiratory unatafutwa..."
+    shinikizo_la_data = "🩸 Mfumo wa Circulatory unatafutwa..."
     mifumo_tayari = False
 
 str_platform.sidebar.markdown(f"""
@@ -108,7 +105,7 @@ str_platform.sidebar.markdown(f"""
 </div>
 """, unsafe_allow_html=True)
 
-# 🧭 SIDEBAR OMNI NAVIGATION CONTROLLER (ROLE-BASED NERVOUS ROUTING)
+# 🧭 SIDEBAR NEURAL CONTROL PANEL
 str_platform.sidebar.markdown("<h2 style='text-align: center; color: #ffffff; font-weight: bold;'>🧠 Neural Panel</h2>", unsafe_allow_html=True)
 
 if str_platform.session_state["user_status"] == "admin":
@@ -121,17 +118,9 @@ else:
     chaguo_menyu = str_platform.sidebar.radio("CHAGUA SEHEMU YA MFUMO:", ["🎯 Malengo na Dira ya Taasisi", "📝 Mhariri wa Kiswahili Sanifu Pro", "🔀 Mtafsiri wa Lugha Suite", "📚 Maktaba ya Kamusi Kuu", "🔊 Mtambo wa Sauti (Darasa)", "🤖 AI Phonetic Robot (Ukaguzi)", "🔐 Ingia / Jisajili (Sign In)"])
 
 # =====================================================================
-# 🧠 RUNNING THE BIOMIMETIC BRAIN KERNEL ORCHESTRATION
+# ⚙️ IDARA YA 7: UREJESHO WA AMRI ZA UBONGO (CNS EXECUTION)
 # =====================================================================
 if mifumo_tayari:
-    Central_Nervous_System.zindua_mifumo_ya_fahamu_ya_mwili(client, api_key_source, chaguo_menyu)
+    central_nervous_system.zindua_mifumo_ya_fahamu_ya_mwili(client, api_key_source, chaguo_menyu)
 else:
-    str_platform.error("🛑 Ubongo unatafuta viungo vyake GitHub: Tafadhali hakikisha umeunda faili la Central_Nervous_System.py na mafaili tanzu yote kulingana na mwongozo.")
-
-# Logout Handler inside the core brain
-if chaguo_menyu == "🚪 Toka Kwenye Mfumo (Logout)":
-    str_platform.session_state["user_status"] = "guest"
-    str_platform.rerun()
-
-str_platform.write("---")
-str_platform.markdown("<p style='text-align: center; font-size: 0.85rem; color: #9CA3AF; font-weight: bold;'>© 2026 LinguaAfrika AI Ecosystem Enterprise • Powered by Super Modular Central Nervous System Architecture</p>", unsafe_allow_html=True)
+    str_platform.error("🛑 Ubongo unatafuta viungo vyake GitHub: Tafadhali hakikisha umeunda mafaili yote kwa herufi ndogo kamili.")
