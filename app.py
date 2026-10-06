@@ -3,12 +3,6 @@ import os
 import time
 from openai import OpenAI
 
-# =====================================================================
-# 🧠 CENTRAL NERVOUS SYSTEM OMNI-ORCHESTRATOR (UBONGO MKUU)
-# =====================================================================
-# Ubongo mkuu unavuta tu kiungo cha mifumo ya fahamu kuelekea idara zingine
-import Central_Nervous_System 
-
 # 👑 Zindua Mipangilio ya Seva Kuu ya Sayari
 str_platform.set_page_config(
     page_title="LinguaAfrika AI: Super Biomimetic Platform",
@@ -28,10 +22,10 @@ else:
 if api_key_source:
     client = OpenAI(api_key=api_key_source)
 else:
-    str_platform.error("🔒 Hitilafu ya Usalama: Secret Key (OPENAI_API_KEY) haujapatikana!")
+    str_platform.error("🔒 Hitilafu ya Usalama: Secret Key (OPENAI_API_KEY) haujapatikana kwenye Seva!")
     str_platform.stop()
 
-# 🎨 8) NGOZI YA NJE: DIRECT SKIN INJECTION (HAIPOTEI TENA SEVA!)
+# 🎨 8) NGOZI YA NJE: DIRECT SKIN INJECTION (EDITION 4 ENTERPRISE LUXURY SKIN)
 str_platform.markdown("""
 <style>
     html, body, [data-testid="stAppViewContainer"] {
@@ -89,19 +83,22 @@ if "user_status" not in str_platform.session_state:
 
 # 🏰 Corporate Header Layout
 str_platform.markdown("<h1 style='text-align: center; color: #1E3A8A; font-weight: 900; margin-bottom: 0;'>👑 LinguaAfrika AI</h1>", unsafe_allow_html=True)
-str_platform.markdown("<h3 style='text-align: center; color: #D97706; font-weight: 700; margin-top: 5px;'>The Autonomous Biomimetic Living Ecosystem • Edition 4</h3>", unsafe_allow_html=True)
+str_platform.markdown("<h3 style='text-align: center; color: #D97706; font-weight: 700; margin-top: 5px;'>The Autonomous Biomimetic Living Ecosystem • Edition 4 Suite</h3>", unsafe_allow_html=True)
 str_platform.write("---")
 
-# 🫁 5 & 1) AUTONOMIC SEVA CHECKS (MEDULLA OBLONGATA CORE)
+# 🫁 5 & 1) AUTONOMIC SEVA TELEMETRY (MEDULLA OBLONGATA)
 try:
     import errorfix
     import circulatory_transport
+    import Central_Nervous_System
     afya_ya_mapafu = errorfix.kagua_afya_ya_mapafu_ya_seva()
     shinikizo_la_data = circulatory_transport.kagua_shinikizo_la_damu_ya_seva()
     errorfix.safisha_uchafu_wa_kache()
+    mifumo_tayari = True
 except Exception:
-    afya_ya_mapafu = "🟢 Status: Salama"
-    shinikizo_la_data = "🟢 Traffic Node: Imara"
+    afya_ya_mapafu = "🫁 Mifumo ya ndani inayumba: Unda mafaili tanzu GitHub sasa"
+    shinikizo_la_data = "🩸 Mzunguko wa Ndani: Kusubiri Usafishaji"
+    mifumo_tayari = False
 
 str_platform.sidebar.markdown(f"""
 <div style='background-color: rgba(37, 211, 102, 0.08); border: 1px solid #25D366; padding: 12px; border-radius: 8px; margin-bottom: 12px;'>
@@ -111,7 +108,7 @@ str_platform.sidebar.markdown(f"""
 </div>
 """, unsafe_allow_html=True)
 
-# 🧭 SIDEBAR OMNI NAVIGATION CONTROLLER
+# 🧭 SIDEBAR OMNI NAVIGATION CONTROLLER (ROLE-BASED NERVOUS ROUTING)
 str_platform.sidebar.markdown("<h2 style='text-align: center; color: #ffffff; font-weight: bold;'>🧠 Neural Panel</h2>", unsafe_allow_html=True)
 
 if str_platform.session_state["user_status"] == "admin":
@@ -124,12 +121,12 @@ else:
     chaguo_menyu = str_platform.sidebar.radio("CHAGUA SEHEMU YA MFUMO:", ["🎯 Malengo na Dira ya Taasisi", "📝 Mhariri wa Kiswahili Sanifu Pro", "🔀 Mtafsiri wa Lugha Suite", "📚 Maktaba ya Kamusi Kuu", "🔊 Mtambo wa Sauti (Darasa)", "🤖 AI Phonetic Robot (Ukaguzi)", "🔐 Ingia / Jisajili (Sign In)"])
 
 # =====================================================================
-# 🧠 RUNNING THE BIOMIMETIC BRAIN KERNEL (AUTO-TRIGGER ORCHESTRATION)
+# 🧠 RUNNING THE BIOMIMETIC BRAIN KERNEL ORCHESTRATION
 # =====================================================================
-try:
+if mifumo_tayari:
     Central_Nervous_System.zindua_mifumo_ya_fahamu_ya_mwili(client, api_key_source, chaguo_menyu)
-except Exception as e:
-    str_platform.error(f"🛑 Ubongo unatafuta viungo vyake GitHub: Tafadhali hakikisha umeunda faili la Central_Nervous_System.py")
+else:
+    str_platform.error("🛑 Ubongo unatafuta viungo vyake GitHub: Tafadhali hakikisha umeunda faili la Central_Nervous_System.py na mafaili tanzu yote kulingana na mwongozo.")
 
 # Logout Handler inside the core brain
 if chaguo_menyu == "🚪 Toka Kwenye Mfumo (Logout)":
