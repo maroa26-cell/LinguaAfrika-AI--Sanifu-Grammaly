@@ -25,7 +25,7 @@ else:
     str_platform.error("🔒 Hitilafu ya Usalama: Secret Key (OPENAI_API_KEY) haujapatikana kwenye Seva!")
     str_platform.stop()
 
-# 🎨 DIRECT ENTERPRISE LUXURY SKIN INJECTION (NGOZI YA NJE - IDARA YA 8)
+# 🎨 Ngozi ya Nje: DIRECT SKIN INJECTION (EDITION 4 ENTERPRISE LUXURY SKIN)
 str_platform.markdown("""
 <style>
     html, body, [data-testid="stAppViewContainer"] {
@@ -33,9 +33,9 @@ str_platform.markdown("""
         font-family: 'Segoe UI', sans-serif !important;
     }
     [data-testid="stSidebar"] {
-        background-color: #0F172A !important; /* Obsidian Dark */
+        background-color: #0F172A !important;
         color: #ffffff !important;
-        border-right: 4px solid #D97706 !important; /* Gold Border */
+        border-right: 4px solid #D97706 !important;
     }
     [data-testid="stSidebar"] p, [data-testid="stSidebar"] label, [data-testid="stSidebar"] span {
         color: #ffffff !important;
@@ -64,10 +64,6 @@ str_platform.markdown("""
         border: none !important;
         width: 100% !important;
     }
-    div.stButton > button:hover {
-        background-color: #D97706 !important;
-        transform: translateY(-2px) !important;
-    }
     textarea, input {
         border: 2px solid #E2E8F0 !important;
         border-radius: 10px !important;
@@ -83,7 +79,7 @@ str_platform.markdown("<h1 style='text-align: center; color: #1E3A8A; font-weigh
 str_platform.markdown("<h3 style='text-align: center; color: #D97706; font-weight: 700; margin-top: 5px;'>The Autonomous Biomimetic Living Ecosystem • Edition 4 Suite</h3>", unsafe_allow_html=True)
 str_platform.write("---")
 
-# 🫁🩸 BIOMIMETIC AUTOMATED METRICS (DIRECT CORE DEPLOY)
+# Bango la telemetry ya afya ya seva
 afya_ya_mapafu = "🟢 Oksijeni ya CPU na RAM: Salama (100% Active)"
 shinikizo_la_data = "🟢 Shinikizo la Mzunguko (Data Traffic): Imara"
 
@@ -95,7 +91,7 @@ str_platform.sidebar.markdown(f"""
 </div>
 """, unsafe_allow_html=True)
 
-# 🧭 SIDEBAR NEURAL CONTROL PANEL
+# Navigation Panel
 str_platform.sidebar.markdown("<h2 style='text-align: center; color: #ffffff; font-weight: bold;'>🧠 Neural Panel</h2>", unsafe_allow_html=True)
 
 if str_platform.session_state["user_status"] == "admin":
@@ -107,10 +103,7 @@ else:
         str_platform.sidebar.markdown("<p style='color: #9CA3AF; text-align: center; font-weight: bold;'>👤 Guest Account (Free Portal)</p>", unsafe_allow_html=True)
     chaguo_menyu = str_platform.sidebar.radio("CHAGUA SEHEMU YA MFUMO:", ["🎯 Malengo na Dira ya Taasisi", "📝 Mhariri wa Kiswahili Sanifu Pro", "🔀 Mtafsiri wa Lugha Suite", "📚 Maktaba ya Kamusi Kuu", "🔊 Mtambo wa Sauti (Darasa)", "🤖 AI Phonetic Robot (Ukaguzi)", "🔐 Ingia / Jisajili (Sign In)"])
 
-# =====================================================================
-# ⚙️ THE MONOLITHIC CENTRAL NERVOUS SYSTEM ROUTING
-# =====================================================================
-
+# Core execution logic
 if chaguo_menyu == "🎯 Malengo na Dira ya Taasisi":
     str_platform.markdown("<h3 style='color: #1E3A8A;'>🎯 Malengo, Dira na Kimkakati ya Kikazi</h3>", unsafe_allow_html=True)
     str_platform.write("LinguaAfrika AI imesajiliwa kuwa chombo kikuu cha kimkakati cha kidijitali barani Afrika kusanifisha na kuongeza thamani ya matumizi ya lugha ya Kiswahili kibiashara.")
@@ -175,3 +168,7 @@ elif chaguo_menyu == "🤖 AI Phonetic Robot (Ukaguzi)":
     if str_platform.session_state["user_status"] == "guest":
         str_platform.warning("👑 Kipengele hiki kinahitaji Akaunti ya Premium. Tafadhali bofya '🔐 Ingia / Jisajili (Sign In)' pembeni.")
     else:
+        sauti_mwanafunzi = str_platform.file_uploader("Pakia faili la sauti hapa:", type=["wav", "mp3"])
+        if sauti_mwanafunzi is not None:
+            if str_platform.button("Zindua Ukaguzi Mkuu wa Roboti"):
+                trans_audio = client.audio.transcriptions.create(model="whisper-1", file=(sauti_mwanafunzi.name, sauti_mwanafunzi.read()))
