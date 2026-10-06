@@ -1,0 +1,34 @@
+
+import re
+import base64
+
+def kagua_matini(matini):
+    if not matini or matini.strip() == "":
+        return False
+    ikiwa_hatari = re.search(r"[<>{};]", matini)
+    if ikiwa_hatari:
+        return False
+    return True
+
+def kagua_faili_la_sauti(faili):
+    if faili is None:
+        return False
+    jina_la_faili = faili.name.lower()
+    if jina_la_faili.endswith('.mp3') or jina_la_faili.endswith('.wav'):
+        return True
+    return False
+
+def funga_data_kwa_siri(data_string):
+    if not data_string:
+        return ""
+    byte_data = data_string.encode("utf-8")
+    encoded_data = base64.b64encode(byte_data)
+    return encoded_data.decode("utf-8")
+
+def fungua_data_ya_siri(encrypted_string):
+    try:
+        byte_data = encrypted_string.encode("utf-8")
+        decoded_data = base64.b64decode(byte_data)
+        return decoded_data.decode("utf-8")
+    except Exception:
+        return "🛑 Hitilafu ya Usalama"
