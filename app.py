@@ -1,4 +1,3 @@
-
 import streamlit as str_platform
 import os
 import time
@@ -29,17 +28,55 @@ else:
 # 🎨 DIRECT ENTERPRISE LUXURY SKIN INJECTION (NGOZI YA NJE - IDARA YA 8)
 str_platform.markdown("""
 <style>
-    html, body, [data-testid="stAppViewContainer"] { background-color: #F8FAFC !important; font-family: 'Segoe UI', sans-serif !important; }
-    [data-testid="stSidebar"] { background-color: #0F172A !important; color: #ffffff !important; border-right: 4px solid #D97706 !important; }
-    [data-testid="stSidebar"] p, [data-testid="stSidebar"] label, [data-testid="stSidebar"] span { color: #ffffff !important; font-weight: 700 !important; }
-    div[data-testid="stRadio"] > label { background-color: rgba(255, 255, 255, 0.04) !important; padding: 12px 15px !important; border-radius: 8px !important; margin-bottom: 8px !important; }
-    div[data-testid="stRadio"] div[aria-checked="true"] { background-color: #D97706 !important; border-radius: 6px !important; padding: 4px 10px !important; }
-    div.stButton > button { background-color: #1E3A8A !important; color: white !important; font-weight: bold !important; padding: 14px 28px !important; border-radius: 8px !important; border: none !important; width: 100% !important; }
-    textarea, input { border: 2px solid #E2E8F0 !important; border-radius: 10px !important; background-color: #ffffff !important; }
+    html, body, [data-testid="stAppViewContainer"] {
+        background-color: #F8FAFC !important;
+        font-family: 'Segoe UI', sans-serif !important;
+    }
+    [data-testid="stSidebar"] {
+        background-color: #0F172A !important;
+        color: #ffffff !important;
+        border-right: 4px solid #D97706 !important;
+    }
+    [data-testid="stSidebar"] p, [data-testid="stSidebar"] label, [data-testid="stSidebar"] span {
+        color: #ffffff !important;
+        font-size: 16px !important;
+        font-weight: 700 !important;
+    }
+    div[data-testid="stRadio"] > label {
+        background-color: rgba(255, 255, 255, 0.04) !important;
+        padding: 12px 15px !important;
+        border-radius: 8px !important;
+        margin-bottom: 8px !important;
+        transition: all 0.3s ease-in-out !important;
+        border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    }
+    div[data-testid="stRadio"] div[aria-checked="true"] {
+        background-color: #D97706 !important;
+        border-radius: 6px !important;
+        padding: 4px 10px !important;
+    }
+    div.stButton > button {
+        background-color: #1E3A8A !important;
+        color: white !important;
+        font-weight: bold !important;
+        padding: 14px 28px !important;
+        border-radius: 8px !important;
+        border: none !important;
+        width: 100% !important;
+    }
+    div.stButton > button:hover {
+        background-color: #D97706 !important;
+        transform: translateY(-2px) !important;
+    }
+    textarea, input {
+        border: 2px solid #E2E8F0 !important;
+        border-radius: 10px !important;
+        background-color: #ffffff !important;
+    }
 </style>
 """, unsafe_allow_html=True)
 
-# Hifadhidata ya Ndani (Session State DB Management)
+# 🧠 Mfumo wa Siri wa Kujirekebisha na Hifadhidata ya Ndani ya Utambulisho (Session State DB Matrix)
 if "db_watumiaji" not in str_platform.session_state:
     str_platform.session_state["db_watumiaji"] = {"mgeni": "1234"}
 
@@ -49,13 +86,16 @@ if "db_wasimamizi" not in str_platform.session_state:
 if "user_status" not in str_platform.session_state:
     str_platform.session_state["user_status"] = "guest"
 
+if "active_user_name" not in str_platform.session_state:
+    str_platform.session_state["active_user_name"] = ""
+
 muda_mwanzo = time.time()
 
 str_platform.markdown("<h1 style='text-align: center; color: #1E3A8A; font-weight: 900; margin-bottom: 0;'>👑 LinguaAfrika AI</h1>", unsafe_allow_html=True)
 str_platform.markdown("<h3 style='text-align: center; color: #D97706; font-family: sans-serif; font-weight: 700; margin-top: 5px;'>The Autonomous Biomimetic Living Ecosystem • Edition 4 Suite</h3>", unsafe_allow_html=True)
 str_platform.write("---")
 
-# Telemetry ya afya ya seva
+# Telemetry ya afya ya seva na kasi ya radi
 afya_ya_mapafu = "🟢 Afya ya Mapafu (RAM/CPU): Salama (100% Active)"
 shinikizo_la_data = "🟢 Shinikizo la Mzunguko (Data Traffic): Imara"
 kasi_ya_radi = (time.time() - muda_mwanzo) * 1000
@@ -67,21 +107,25 @@ str_platform.sidebar.markdown(f"""
     <p style='color: #25D366; font-size: 12px; margin: 4px 0;'>🩸 <b>Circulation:</b> {shinikizo_la_data}</p>
     <p style='color: #25D366; font-size: 12px; margin: 0 0 4px 0;'>⚡ <b>Synapse Latency:</b> {kasi_ya_radi:.3f}ms (Radi)</p>
     <hr style='border-color: rgba(217, 119, 6, 0.3); margin: 8px 0;'>
-    <p style='color: #94A3B8; font-size: 11px; margin: 0; text-align: center;'>Status: Mfumo unajirekebisha wenyewe</p>
+    <p style='color: #94A3B8; font-size: 11px; margin: 0; text-align: center;'>Status: Multi-Role Active Protection</p>
 </div>
 """, unsafe_allow_html=True)
 
-# 🧭 SIDEBAR OMNI NAVIGATION PANEL
+# 🧭 SIDEBAR OMNI NAVIGATION PANEL (DETERMINED BY CENTRAL BRAIN CORE)
 str_platform.sidebar.markdown("<h2 style='text-align: center; color: #ffffff; font-weight: bold;'>🧠 Neural Panel</h2>", unsafe_allow_html=True)
 
-if str_platform.session_state["user_status"] == "admin":
-    chaguo_menyu = str_platform.sidebar.radio("UDHIBITI WA UTENDAJI:", ["📊 Ripoti Kuu ya Utendaji", "⚙️ Mipangilio ya Siri ya Seva", "📝 Mhariri wa Kiswahili Sanifu Pro", "🔀 Mtafsiri wa Lugha Suite", "📚 Maktaba ya Kamusi Kuu", "🔊 Mtambo wa Sauti (Darasa)", "🤖 AI Phonetic Robot (Ukaguzi)", "🚪 Toka Kwenye Mfumo (Logout)"])
+hali_ya_sasa = str_platform.session_state["user_status"]
+jina_la_sasa = str_platform.session_state["active_user_name"]
+
+if hali_ya_sasa == "admin":
+    str_platform.sidebar.markdown(f"<p style='color: #25D366; text-align: center; font-weight: bold;'>👑 Administrator: {jina_la_sasa.upper()}</p>", unsafe_allow_html=True)
+    chaguo_menyu = str_platform.sidebar.radio("UDHIBITI WA UTENDAJI:", ["📊 Ripoti Kuu ya Utendaji", "⚙️ Mipangilio ya Siri ya Seva", "🎯 Malengo na Dira ya Taasisi", "📝 Mhariri wa Kiswahili Sanifu Pro", "🔀 Mtafsiri wa Lugha Suite", "📚 Maktaba ya Kamusi Kuu", "🔊 Mtambo wa Sauti (Darasa)", "🤖 AI Phonetic Robot (Ukaguzi)", "🚪 Toka Kwenye Mfumo (Logout)"])
+elif hali_ya_sasa == "standard_premium":
+    str_platform.sidebar.markdown(f"<p style='color: #D97706; text-align: center; font-weight: bold;'>💎 Premium Member: {jina_la_sasa.upper()}</p>", unsafe_allow_html=True)
+    chaguo_menyu = str_platform.sidebar.radio("CHAGUA SEHEMU YA MFUMO:", ["🎯 Malengo na Dira ya Taasisi", "📝 Mhariri wa Kiswahili Sanifu Pro", "🔀 Mtafsiri wa Lugha Suite", "📚 Maktaba ya Kamusi Kuu", "🔊 Mtambo wa Sauti (Darasa)", "🤖 AI Phonetic Robot (Ukaguzi)", "🚪 Toka Kwenye Mfumo (Logout)"])
 else:
-    if str_platform.session_state["user_status"] == "standard_premium":
-        str_platform.sidebar.markdown("<p style='color: #D97706; text-align: center; font-weight: bold;'>💎 Premium Member (Unlocked)</p>", unsafe_allow_html=True)
-    else:
-        str_platform.sidebar.markdown("<p style='color: #9CA3AF; text-align: center; font-weight: bold;'>👤 Guest Account (Free Portal)</p>", unsafe_allow_html=True)
-    chaguo_menyu = str_platform.sidebar.radio("CHAGUA SEHEMU YA MFUMO:", ["🎯 Malengo na Dira ya Taasisi", "📝 Mhariri wa Kiswahili Sanifu Pro", "🔀 Mtafsiri wa Lugha Suite", "📚 Maktaba ya Kamusi Kuu", "🔊 Mtambo wa Sauti (Darasa)", "🤖 AI Phonetic Robot (Ukaguzi)", "🔐 Ingia / Jisajili (Sign In)"])
+    str_platform.sidebar.markdown("<p style='color: #9CA3AF; text-align: center; font-weight: bold;'>👤 Guest Account (Free Portal)</p>", unsafe_allow_html=True)
+    chaguo_menyu = str_platform.sidebar.radio("CHAGUA SEHEMU YA MFUMO:", ["🎯 Malengo na Dira ya Taasisi", "📝 Mhariri wa Kiswahili Sanifu Pro", "🔀 Mtafsiri wa Lugha Suite", "📚 Maktaba ya Kamusi Kuu", "🔊 Mtambo wa Sauti (Darasa)", "🤖 AI Phonetic Robot (Ukaguzi)", "🔐 Lango la Kuingia (Login Dashboard)"])
 
 # =====================================================================
 # ⚙️ THE MONOLITHIC CENTRAL NERVOUS SYSTEM ROUTING EXECUTION
@@ -122,22 +166,3 @@ elif chaguo_menyu == "🔀 Mtafsiri wa Lugha Suite":
 
 elif chaguo_menyu == "📚 Maktaba ya Kamusi Kuu":
     str_platform.markdown("<h3 style='color: #1E3A8A;'>📚 Maktaba ya Msamiati na Kamusi Kuu</h3>", unsafe_allow_html=True)
-    msamiati = str_platform.text_input("Andika neno, nahau au methali hapa:")
-    if str_platform.button("Tafuta Kwenye Kamusi Kuu"):
-        if msamiati.strip() != "":
-            prompt_v = f"Toa maana kamili, nahau na mifano ya sentensi kwa Kiswahili: {msamiati.strip()}"
-            jibu_v = client.chat.completions.create(model="gpt-4o", messages=[{"role": "user", "content": prompt_v}])
-            str_platform.info("Uchambuzi wa Kitaalamu:")
-            str_platform.write(jibu_v.choices.message.content)
-
-elif chaguo_menyu == "🔊 Mtambo wa Sauti (Darasa)":
-    is_guest = (str_platform.session_state["user_status"] == "guest")
-    if is_guest:
-        str_platform.warning("👑 Kifurushi cha Premium Lock. Tafadhali nenda kwenye '🔐 Ingia / Jisajili (Sign In)' pembeni ili kufungua akaunti.")
-    if not is_guest:
-        str_platform.markdown("### 🔊 Mtambo wa Sauti: Darasa la Kidijitali", unsafe_allow_html=True)
-        v_mwalimu = str_platform.selectbox("Sauti ya Mwalimu:", ["onyx", "echo", "alloy"])
-        t_mwalimu = str_platform.text_area("Maandishi ya Mwalimu:", "Karibu darasani mwanafunzi wangu.")
-        if str_platform.button("Zalisha Sauti Kuu"):
-            if t_mwalimu.strip() != "":
-                res = client.audio.speech.create(model="tts-1", voice=v_mwalimu, input=t_mwalimu)
