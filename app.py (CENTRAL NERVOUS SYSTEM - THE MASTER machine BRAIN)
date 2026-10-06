@@ -3,31 +3,21 @@ import os
 import time
 from openai import OpenAI
 
-# =====================================================================
-# 🧠 CENTRAL NERVOUS SYSTEM (CNS) - BIOMIMETIC MASTER machine
-# =====================================================================
-# Ubongo mkuu unavuta idara zote tanzu zilizopo GitHub
-import style             # Ngozi ya Nje (Integumentary Skin Layer)
-import model             # Uchakataji wa Lugha (Digestive AI Model Engine)
-import validate_entries # Kinga na Ukaguzi (Immune & Crypto-Defence)
-import errorfix         # Uondoaji Taka (Excretory Garbage Collector)
-import search           # Utendaji wa Kamusi (Muscular-Skeletal System Node 1)
-import sync             # Usafirishaji Data (Circulatory Transport System)
-import sauti            # Utendaji wa Sauti (Muscular-Skeletal System Node 2)
-import robot            # Utendaji wa Roboti (Muscular-Skeletal System Node 3)
-import admin            # Jopo la Utawala (Endocrine System Control)
+# 🧠 CENTRAL NERVOUS SYSTEM (CNS) - BIOMIMETIC living ECOSYSTEM
+import style             
+import model             
+import validate_entries 
+import errorfix         
+import search           
+import sync             
+import sauti            
+import robot            
+import admin            
+import synapse          # ⚡ KIUNGO KIPYA: Mfumo wa Mishipa ya Fahamu ya Radi (Synaptic Link)
 
-# 👑 Zindua Mipangilio ya Seva Kuu ya Sayari
-str_platform.set_page_config(
-    page_title="LinguaAfrika AI: Super Biomimetic Platform",
-    page_icon="🧠",
-    layout="wide",
-    initial_sidebar_state="expanded"
-)
+# 👑 Zindua Mipangilio ya Seva Kuu
+str_platform.set_page_config(page_title="LinguaAfrika AI: Super Biomimetic Platform", page_icon="🧠", layout="wide")
 
-# =====================================================================
-# 🔒 IDARA YA 6: SYSTEM SECRET KEY INTEGRATION & ENCRYPTION
-# =====================================================================
 if "OPENAI_API_KEY" in os.environ:
     api_key_source = os.environ["OPENAI_API_KEY"]
 elif hasattr(str_platform, "secrets") and "OPENAI_API_KEY" in str_platform.secrets:
@@ -38,102 +28,80 @@ else:
 if api_key_source:
     client = OpenAI(api_key=api_key_source)
 else:
-    str_platform.error("🔒 Hitilafu ya Usalama: Secret Key (OPENAI_API_KEY) haujapatikana kwenye Seva!")
+    str_platform.error("🔒 Hitilafu ya Usalama: Secret Key haujapatikana!")
     str_platform.stop()
 
-# =====================================================================
-# 📢 IDARA YA 8 & 5: NGOZI YA NJE (SKIN Injection) & SAFISHA TUHUMA (EXCRETION)
-# =====================================================================
+# 🎨 UPANDISHAJI WA NGOZI NA USAFISHAJI TAKA
 style.weka_mandhari_ya_kifalme()
 errorfix.safisha_uchafu_wa_kache()
 
 if "user_status" not in str_platform.session_state:
     str_platform.session_state["user_status"] = "guest"
 
-# 🏰 Muonekano wa Juu wa Corporate Header
 str_platform.markdown("<h1 style='text-align: center; color: #1E3A8A; font-weight: 900; margin-bottom: 0;'>👑 LinguaAfrika AI</h1>", unsafe_allow_html=True)
 str_platform.markdown("<h3 style='text-align: center; color: #D97706; font-weight: 700; margin-top: 5px;'>The Autonomous Biomimetic Living Ecosystem • Edition 4 Super Suite</h3>", unsafe_allow_html=True)
 str_platform.write("---")
 
-# =====================================================================
-# 🩺 IDARA YA 1: MFUMO WA OKSIJENI NA CHAKULA (RESPIRATORY STATUS)
-# =====================================================================
+# 🩺 MFUMO WA OKSIJENI (RESPIRATORY STATUS)
 afya_ya_mapafu = errorfix.kagua_afya_ya_mapafu_ya_seva()
 str_platform.sidebar.markdown(f"<div style='background-color: rgba(37, 211, 102, 0.1); border: 1px solid #25D366; padding: 10px; border-radius: 6px; margin-bottom: 10px;'><p style='color: #25D366; font-size: 13px; margin: 0; text-align: center;'>🫁 RESPIRATORY STATUS:<br><b>{afya_ya_mapafu}</b></p></div>", unsafe_allow_html=True)
 
-# =====================================================================
-# 🧭 SIDEBAR OMNI CONTROLLER (ROLE-BASED NERVOUS ROUTING)
-# =====================================================================
+# 🧭 SIDEBAR OMNI CONTROLLER
 str_platform.sidebar.markdown("<h2 style='text-align: center; color: #ffffff; font-weight: bold;'>🧠 Neural Panel</h2>", unsafe_allow_html=True)
 
 if str_platform.session_state["user_status"] == "admin":
-    str_platform.sidebar.markdown("<p style='color: #25D366; text-align: center; font-weight: bold;'>👑 Executive Admin Node</p>", unsafe_allow_html=True)
-    chaguo_menyu = str_platform.sidebar.radio(
-        "UDHIBITI WA ENDOCRINE:",
-        ["📊 Ripoti Kuu ya Utendaji", "🚪 Toka Kwenye Mfumo (Logout)"]
-    )
+    chaguo_menyu = str_platform.sidebar.radio("UDHIBITI WA ENDOCRINE:", ["📊 Ripoti Kuu ya Utendaji", "🚪 Toka Kwenye Mfumo (Logout)"])
 else:
     if str_platform.session_state["user_status"] == "standard_premium":
-        str_platform.sidebar.markdown("<p style='color: #D97706; text-align: center; font-weight: bold;'>💎 Premium Account (Unlocked)</p>", unsafe_allow_html=True)
+        str_platform.sidebar.markdown("<p style='color: #D97706; text-align: center;'>💎 Premium Account (Unlocked)</p>", unsafe_allow_html=True)
     else:
-        str_platform.sidebar.markdown("<p style='color: #9CA3AF; text-align: center; font-weight: bold;'>👤 Guest Mode (Free Portal)</p>", unsafe_allow_html=True)
-        
-    chaguo_menyu = str_platform.sidebar.radio(
-        "CHAGUA SEHEMU YA MFUMO:",
-        [
-            "🎯 Malengo na Dira ya Taasisi",
-            "📝 Mhariri wa Kiswahili Sanifu Pro",
-            "🔀 Mtafsiri wa Lugha Suite",
-            "📚 Maktaba ya Kamusi Kuu",
-            "🔊 Mtambo wa Sauti (Darasa)",
-            "🤖 AI Phonetic Robot (Ukaguzi)",
-            "🔐 Ingia / Jisajili (Sign In)"
-        ]
-    )
+        str_platform.sidebar.markdown("<p style='color: #9CA3AF; text-align: center;'>👤 Guest Account (Free Portal)</p>", unsafe_allow_html=True)
+    chaguo_menyu = str_platform.sidebar.radio("CHAGUA SEHEMU YA MFUMO:", ["🎯 Malengo na Dira ya Taasisi", "📝 Mhariri wa Kiswahili Sanifu Pro", "🔀 Mtafsiri wa Lugha Suite", "📚 Maktaba ya Kamusi Kuu", "🔊 Mtambo wa Sauti (Darasa)", "🤖 AI Phonetic Robot (Ukaguzi)", "🔐 Ingia / Jisajili (Sign In)"])
 
 # =====================================================================
-# ⚙️ IDARA YA 7: CENTRAL ORCHESTRATION & ROUTING EXECUTION
+# ⚙️ CENTRAL CONTROL ENGINES WITH SYNAPSE SPEED METRICS
 # =====================================================================
-
 if chaguo_menyu == "🎯 Malengo na Dira ya Taasisi":
-    str_platform.markdown("<h3 style='color: #1E3A8A;'>🎯 Malengo, Dira na Kimkakati ya Kikazi</h3>", unsafe_allow_html=True)
-    str_platform.write("LinguaAfrika AI imesajiliwa kuwa chombo kikuu cha kimkakati cha kidijitali barani Afrika kusanifisha na kuongeza thamani ya matumizi ya lugha ya Kiswahili kibiashara.")
-    col_m1, col_m2 = str_platform.columns(2)
-    with col_m1:
-        str_platform.info("🚀 **Dira Yetu (Our Vision)**\n\nKuwa kitovu namba moja duniani cha Akili Mnemba (AI) kinachosanifisha sarufi na matamshi ya Kiswahili.")
-    with col_m2:
-        str_platform.info("📈 **Malengo ya Kikazi (Our Objectives)**\n\n• Kutoa zana za bure za kusaidia jamii kuhariri.\n\n• Kujenga mitambo ya kulipia ya sauti na ripoti za fonetiki.")
+    str_platform.markdown("### 🎯 Malengo na Dira ya Kimkakati")
+    str_platform.info("Kuwa kitovu namba moja duniani cha Akili Mnemba (AI) kinachosanifisha lugha ya Kiswahili.")
 
 elif chaguo_menyu == "📝 Mhariri wa Kiswahili Sanifu Pro":
+    # 1. Piga radi ya synapse kuelekea idara ya ukaguzi
+    synapse.chochea_mshipa_wa_fahamu("Mhariri")
     str_platform.markdown("<h3 style='color: #1E3A8A;'>📝 Mhariri wa Kiswahili Sanifu Pro</h3>", unsafe_allow_html=True)
     maandishi = str_platform.text_area("Andika maandishi yako hapa:")
     if str_platform.button("Zindua Ukaguzi wa Sarufi"):
         if validate_entries.kagua_matini(maandishi):
             msafi = errorfix.rekebisha_matini_ya_spaces(maandishi)
-            prompt = f"Wewe ni mtaalamu wa Kiswahili Sanifu. Kagua na usahihishe sarufi hapa:\n\n{msafi}"
+            prompt = f"Sahihisha sarufi ya Kiswahili hapa: {msafi}"
             matokeo = model.piga_gpt4o(client, prompt)
             str_platform.success("Marekebisho Yamekamilika!")
             str_platform.write(matokeo)
-        else:
-            str_platform.error("🛑 Ulinzi Umekataa: Maandishi yana herufi haramu au yapo tupu!")
+            # Onyesha kasi ya radi skrini kwa mlaji
+            str_platform.caption(synapse.kagua_kasi_ya_ubongo("Mhariri"))
 
 elif chaguo_menyu == "🔀 Mtafsiri wa Lugha Suite":
-    # Ubongo unarusha mamlaka kamili na client kwenda kwenye kiungo cha sync.py
+    synapse.chochea_mshipa_wa_fahamu("Mtafsiri")
     sync.anzisha_mtafsiri(client)
+    str_platform.sidebar.caption(synapse.kagua_kasi_ya_ubongo("Mtafsiri"))
 
 elif chaguo_menyu == "📚 Maktaba ya Kamusi Kuu":
+    synapse.chochea_mshipa_wa_fahamu("Kamusi")
     search.anzisha_kamusi(client)
+    str_platform.sidebar.caption(synapse.kagua_kasi_ya_ubongo("Kamusi"))
 
 elif chaguo_menyu == "🔊 Mtambo wa Sauti (Darasa)":
     if str_platform.session_state["user_status"] == "guest":
-        str_platform.warning("👑 Kifurushi cha Majaribio ya Bure Kimeisha (Premium Lock). Tafadhali nenda kwenye kipengele cha '🔐 Ingia / Jisajili (Sign In)' pembeni.")
+        str_platform.warning("👑 Premium Lock. Tafadhali nenda kwenye '🔐 Ingia / Jisajili (Sign In)'.")
     else:
+        synapse.chochea_mshipa_wa_fahamu("Sauti")
         sauti.onyesha_sauti(client)
 
 elif chaguo_menyu == "🤖 AI Phonetic Robot (Ukaguzi)":
     if str_platform.session_state["user_status"] == "guest":
-        str_platform.warning("👑 Kipengele hiki kinahitaji Akaunti ya Premium. Tafadhali bofya '🔐 Ingia / Jisajili (Sign In)' pembeni.")
+        str_platform.warning("👑 Kipengele hiki kinahitaji Akaunti ya Premium.")
     else:
+        synapse.chochea_mshipa_wa_fahamu("Robot")
         robot.onyesha_robot(client)
 
 elif chaguo_menyu == "🔐 Ingia / Jisajili (Sign In)":
@@ -142,13 +110,11 @@ elif chaguo_menyu == "🔐 Ingia / Jisajili (Sign In)":
     chaguo_lango = str_platform.selectbox("Nia ya Kuingia yako:", ["Premium User", "Admin"], key="lango_select")
     jina = str_platform.text_input("Jina la Mtumiaji (Username):", key="lango_username")
     password = str_platform.text_input("Nenosiri / Password:", type="password", key="lango_password")
-    
     if str_platform.button("Thibitisha Kuingia Mfumo"):
         if chaguo_lango == "Admin" and password == "Maroa2026":
             str_platform.session_state["user_status"] = "admin"
             str_platform.rerun()
         elif chaguo_lango == "Premium User" and jina.strip() != "" and password.strip() != "":
-            jina_la_siri = validate_entries.funga_data_kwa_siri(jina)
             str_platform.session_state["user_status"] = "standard_premium"
             str_platform.rerun()
 
