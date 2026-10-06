@@ -2,7 +2,10 @@ import streamlit as str_platform
 import os
 import time
 
-# Kuvuta mifumo tanzu ya kiutendaji na kiusalama
+# =====================================================================
+# 🧠 CENTRAL_NERVOUS_SYSTEM.PY - CORE BIOMIMETIC BRAIN KERNEL
+# =====================================================================
+# Inavuta na kuendesha viungo vyote tanzu vya kiumbe hai wa kidijitali
 import model
 import validate_entries
 import errorfix
@@ -17,22 +20,20 @@ import circulatory_transport
 def zindua_mifumo_ya_fahamu_ya_mwili(client, api_key_source, chaguo_menyu):
     """
     🧠 CENTRAL NERVOUS SYSTEM CORE CONTROL
-    Inaratibu na kuendesha kila idara kwa ufasaha wa hali ya juu
+    Inaratibu, inasimamia na kuendesha kila idara kulingana na amri za app.py
     """
-    # 5) MEDULLA OBLONGATA: Safisha kache kiotomatiki nyuma ya pazia
-    errorfix.safisha_uchafu_wa_kache()
     
-    # 7.1) Dira na Malengo ya Taasisi
+    # 🎯 0) DIRA NA MALENGO YA TAASISI (MISSION CONTROL)
     if chaguo_menyu == "🎯 Malengo na Dira ya Taasisi":
         str_platform.markdown("<h3 style='color: #1E3A8A;'>🎯 Malengo, Dira na Kimkakati ya Kikazi</h3>", unsafe_allow_html=True)
-        str_platform.write("LinguaAfrika AI imesajiliwa kuwa chombo kikuu cha kimkakati cha kidijitali barani Afrika kusanifisha na kuongeza thamani ya matumizi ya lugha ya Kiswahili kibiashara, kiakademia, na kiofisi.")
+        str_platform.write("LinguaAfrika AI imesajiliwa kuwa chombo kikuu cha kimkakati cha kidijitali barani Afrika kusanifisha na kuongeza thamani ya matumizi ya lugha ya Kiswahili kibiashara.")
         col_m1, col_m2 = str_platform.columns(2)
         with col_m1:
             str_platform.info("🚀 **Dira Yetu (Our Vision)**\n\nKuwa kitovu namba moja duniani cha Akili Mnemba (AI) kinachosanifisha sarufi na matamshi ya Kiswahili.")
         with col_m2:
             str_platform.info("📈 **Malengo ya Kikazi (Our Objectives)**\n\n• Kutoa zana za bure za kusaidia jamii kuhariri.\n\n• Kujenga mitambo ya kulipia ya sauti na ripoti za fonetiki.")
 
-    # 7.2) Mhariri wa Kiswahili Sanifu Pro (Bure kwa Wote)
+    # 📝 1) MHARIRI WA KISWAHILI SANIFU PRO (MUSCULAR NODE 1)
     elif chaguo_menyu == "📝 Mhariri wa Kiswahili Sanifu Pro":
         synapse.chochea_mshipa_wa_fahamu("Mhariri")
         circulatory_transport.anzisha_mzunguko_wa_data(True, "Mhariri")
@@ -49,39 +50,33 @@ def zindua_mifumo_ya_fahamu_ya_mwili(client, api_key_source, chaguo_menyu):
             else:
                 str_platform.error("🛑 Ulinzi Umekataa: Maandishi yana herufi haramu au yapo tupu!")
 
-    # 7.3) Mtafsiri wa Lugha Suite (Bure kwa Wote - Lugha 14 & Miktadha 6)
+    # 🔀 2) MTAFSIRI WA LUGHA SUITE (CIRCULATORY DATA DISPATCH)
     elif chaguo_menyu == "🔀 Mtafsiri wa Lugha Suite":
         synapse.chochea_mshipa_wa_fahamu("Mtafsiri")
         circulatory_transport.anzisha_mzunguko_wa_data(True, "Mtafsiri")
         sync.anzisha_mtafsiri(client)
         str_platform.sidebar.caption(synapse.kagua_kasi_ya_ubongo("Mtafsiri"))
 
-    # 7.4) Maktaba ya Kamusi Kuu (Bure kwa Wote)
+    # 📚 3) MAKTABA YA KAMUSI KUU (MUSCULAR NODE 2)
     elif chaguo_menyu == "📚 Maktaba ya Kamusi Kuu":
         synapse.chochea_mshipa_wa_fahamu("Kamusi")
         circulatory_transport.anzisha_mzunguko_wa_data(True, "Kamusi")
         search.anzisha_kamusi(client)
         str_platform.sidebar.caption(synapse.kagua_kasi_ya_ubongo("Kamusi"))
 
-    # 7.5) Mtambo wa Sauti (Premium Paywall Security)
+    # 🔊 4) MTAMBO WA SAUTI (DARASA - PREMIUM PAYWALL SECURITY)
     elif chaguo_menyu == "🔊 Mtambo wa Sauti (Darasa)":
-        if str_platform.session_state["user_status"] == "guest":
-            str_platform.warning("👑 Kifurushi cha Premium Lock. Tafadhali nenda kwenye kipengele cha '🔐 Ingia / Jisajili (Sign In)' pembeni ili kufungua kiofisi.")
-        else:
-            synapse.chochea_mshipa_wa_fahamu("Sauti")
-            circulatory_transport.anzisha_mzunguko_wa_data(True, "Sauti")
-            sauti.onyesha_sauti(client)
+        synapse.chochea_mshipa_wa_fahamu("Sauti")
+        circulatory_transport.anzisha_mzunguko_wa_data(True, "Sauti")
+        sauti.onyesha_sauti(client)
 
-    # 7.6) AI Phonetic Robot (Premium Paywall Security)
+    # 🤖 5) AI PHONETIC ROBOT (UKAGUZI - PREMIUM PAYWALL SECURITY)
     elif chaguo_menyu == "🤖 AI Phonetic Robot (Ukaguzi)":
-        if str_platform.session_state["user_status"] == "guest":
-            str_platform.warning("👑 Kipengele hiki kinahitaji Akaunti ya Premium. Tafadhali bofya '🔐 Ingia / Jisajili (Sign In)' pembeni.")
-        else:
-            synapse.chochea_mshipa_wa_fahamu("Robot")
-            circulatory_transport.anzisha_mzunguko_wa_data(True, "Robot")
-            robot.onyesha_robot(client)
+        synapse.chochea_mshipa_wa_fahamu("Robot")
+        circulatory_transport.anzisha_mzunguko_wa_data(True, "Robot")
+        robot.onyesha_robot(client)
 
-    # 7.7) Mlango wa Kujisajili/Kuingia (Sign In Gateway)
+    # 🔐 6) MLANGO WA KUJISAJILI/KUINGIA (SIGN IN GATEWAY)
     elif chaguo_menyu == "🔐 Ingia / Jisajili (Sign In)":
         admin.pakia_lango_la_html()
         str_platform.write("---")
@@ -96,6 +91,6 @@ def zindua_mifumo_ya_fahamu_ya_mwili(client, api_key_source, chaguo_menyu):
                 str_platform.session_state["user_status"] = "standard_premium"
                 str_platform.rerun()
 
-    # 7.8) Jopo la Siri la Admin (Dashboard)
+    # 📊 7) JOPO LA SIMAMIZI MKUU (FOR EXECUTIVES ONLY)
     elif chaguo_menyu == "📊 Ripoti Kuu ya Utendaji" and str_platform.session_state["user_status"] == "admin":
         admin.onyesha_admin(client, api_key_source)
