@@ -1,7 +1,6 @@
 import streamlit as str_platform
 import os
 import time
-import base64
 from openai import OpenAI
 
 # 👑 Zindua Mipangilio ya Seva Kuu ya Sayari (Edition 4 Super Suite)
@@ -175,3 +174,4 @@ elif chaguo_menyu == "🔊 Mtambo wa Sauti (Darasa)":
 elif chaguo_menyu == "🤖 AI Phonetic Robot (Ukaguzi)":
     if str_platform.session_state["user_status"] == "guest":
         str_platform.warning("👑 Kipengele hiki kinahitaji Akaunti ya Premium. Tafadhali bofya '🔐 Ingia / Jisajili (Sign In)' pembeni.")
+    else:
