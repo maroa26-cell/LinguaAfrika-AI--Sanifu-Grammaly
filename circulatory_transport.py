@@ -2,7 +2,6 @@ import streamlit as str_platform
 import time
 
 def anzisha_mzunguko_wa_data(ubongo_amri, idara_lengwa):
-    """Idara ya Circulatory: Inasafirisha data ghafi kati ya idara bila mkwamo"""
     if "circulatory_logs" not in str_platform.session_state:
         str_platform.session_state["circulatory_logs"] = []
     muda_sasa = time.strftime("%H:%M:%S", time.localtime())
@@ -11,7 +10,6 @@ def anzisha_mzunguko_wa_data(ubongo_amri, idara_lengwa):
     return True
 
 def kagua_shinikizo_la_damu_ya_seva():
-    """Kupima shinikizo la foleni ya data (Traffic load monitoring)"""
     if "circulatory_logs" in str_platform.session_state:
         pigo_la_moyo = len(str_platform.session_state["circulatory_logs"])
         if pigo_la_moyo > 500:
