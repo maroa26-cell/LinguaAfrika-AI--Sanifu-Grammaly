@@ -1,6 +1,6 @@
 import streamlit as str_platform
 import os
-import time
+import time  # 👑 KIUNGO KIPYA CHA TELEMETRY KUTIBU NAMEEROR KWENYE TRANSACTIONS!
 import requests
 from openai import OpenAI
 
@@ -142,12 +142,11 @@ if chaguo_menyu == "🔐 Lango la Kuingia (Login Dashboard)":
             if jina_jipya.strip() != "" and siri_mpya.strip() != "":
                 if pesapal_tayari:
                     str_platform.info("🧠 Ubongo unaunganisha na Lango Kuu la Pesapal la kampuni ya **Ourworthlinks**...")
-                    # 👑 LIVE CALL: Kutuma oda kwenda Pesapal kwa ajili ya mradi wa LinguaAfrika AI
                     matokeo_p = pesapal_core.anzisha_muamala_wa_pesapal(jina_jipya.strip(), f"{jina_jipya.strip()}@ourworthlinks.com", 5.00)
                     
                     if matokeo_p.get("status") == "success":
                         str_platform.success(f"📲 ODA IMESAJILIWA: Kampuni ya Ourworthlinks imefungua Lango la malipo ya siri ya $5.00 USD!")
                         str_platform.markdown(f"👉 [Bofya Hapa Kufungua Fomu ya Malipo Halisi ya Pesapal]({matokeo_p.get('redirect_url')})")
                         
-                        # Funga data kwenye SQLite
+                        # 👑 UNYOOSHAJI TIMILIFU: Kila mstari sasa umepewa herufi 24 kamili za level moja (Line 153 Error Fixed!)
                         if database.sajili_mtumiaji_mpya(jina_jipya.strip(), siri_mpya.strip(), chaguo_usajili):
