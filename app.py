@@ -1,10 +1,10 @@
+
 import streamlit as str_platform
 import os
 import time
-import requests
 from openai import OpenAI
 
-# 🧠 COGNITIVE SUBSYSTEM IMPORTS (Moduli Huru za herufi ndogo)
+# 🧠 COGNITIVE SUBSYSTEM IMPORTS (Moduli Huru)
 import database
 import synapse
 
@@ -34,9 +34,9 @@ else:
     api_key_source = None
 
 if api_key_source:
-    client = OpenAI(api_key=api_key_source)
+    client = OpenAI(api_key=api_key_source.strip())
 else:
-    str_platform.error("🔒 Hitilafu ya Usalama: Secret Key (OPENAI_API_KEY) haujapatikana kwenye Seva!")
+    str_platform.error("🔒 Hitilafu ya Usalama: Secret Key (OPENAI_API_KEY) haujapatikana!")
     str_platform.stop()
 
 # 🎨 DIRECT ENTERPRISE LUXURY SKIN INJECTION
@@ -88,63 +88,20 @@ else:
 chaguo_menyu = str_platform.sidebar.radio("CHAGUA SEHEMU YA MFUMO:", orodha_menyu)
 
 # =====================================================================
-# ⚙️ THE MAIN SYSTEM ROUTING BLOCK
+# ⚙️ CENTRAL NERVOUS OMNI-ROUTING (UNYOOO TIMILIFU!)
 # =====================================================================
-if chaguo_menyu == "🔐 Lango la Kuingia (Login Dashboard)":
-    str_platform.markdown("""
-    <div style="background-color: #1E293B; border: 3px solid #D97706; padding: 30px; border-radius: 15px; text-align: center; max-width: 500px; margin: 0 auto;">
-        <h2 style="color: #D97706; font-family: sans-serif; font-weight: 800; margin-bottom: 5px;">🔐 LOGIN DASHBOARD</h2>
-        <p style="color: #94A3B8; font-family: sans-serif; font-size: 14px; margin: 0;">Ourworthlinks • Administrative Secure Identity Port</p>
-    </div>
-    """, unsafe_allow_html=True)
-    str_platform.write("---")
-    col_lango1, col_lango2 = str_platform.columns(2)
-    with col_lango1:
-        str_platform.markdown("### 🔑 Kuingia Mfumo (Sign In)")
-        chaguo_lango = str_platform.selectbox("Chagua Hadhi Yako (Role):", ["Premium User", "Admin"], key="lango_select_v4")
-        jina = str_platform.text_input("Ingiza Jina (Username):", key="lango_username_v4")
-        password = str_platform.text_input("Ingiza Nenosiri (Password):", type="password", key="lango_password_v4")
-        if str_platform.button("Thibitisha Kuingia Mfumo"):
-            if database.thibitisha_utambulisho_wa_siri(jina, password, chaguo_lango):
-                str_platform.session_state["user_status"] = "admin" if chaguo_lango == "Admin" else "standard_premium"
-                str_platform.session_state["active_user_name"] = jina
-                str_platform.rerun()
-            else:
-                str_platform.error("🛑 Hitilafu: Jina au Nenosiri uliloingiza si sahihi!")
-    with col_lango2:
-        str_platform.markdown("### 📝 Jisajili Akaunti Mpya (Sign Up)")
-        chaguo_usajili = str_platform.selectbox("Sajili Akaunti Kama:", ["Premium User", "Admin"], key="signup_role_select")
-        jina_jipya = str_platform.text_input("Tengeneza Jina (New Username):", key="signup_user")
-        siri_mpya = str_platform.text_input("Tengeneza Nenosiri (New Password):", type="password", key="signup_pass")
-        
-        str_platform.write("---")
-        str_platform.markdown("<p style='color: #D97706; font-weight: bold; margin-bottom: 2px;'>💳 Kifurushi cha Premium ($5.00 USD / Mwezi)</p>", unsafe_allow_html=True)
-        njia_malipo = str_platform.radio("Chagua Njia ya Malipo:", ["Mobile Money (M-Pesa/Tigo Pesa)", "Kadi ya Benki (Visa / Mastercard)"])
-        
-        if njia_malipo == "Mobile Money (M-Pesa/Tigo Pesa)":
-            mtandao_simu = str_platform.selectbox("Chagua Mtandao wa Malipo:", ["M-Pesa (Vodacom)", "Tigo Pesa (Tigo)", "Airtel Money (Airtel)"])
-            namba_simu = str_platform.text_input("Ingiza Namba ya Simu (Mfano: 07XXXXXXXX):", key="payment_phone_no")
-        else:
-            jina_kadi = str_platform.text_input("Jina Linalosomeka Kwenye Kadi (Cardholder Name):")
-            namba_kadi = str_platform.text_input("Namba ya Kadi (Card Number - 16 Digits):", max_chars=16)
-            col_k1, col_k2 = str_platform.columns(2)
-            with col_k1: tarehe_kadi = str_platform.text_input("Tarehe ya Kuisha (MM/YY):", max_chars=5)
-            with col_k2: cvv_kadi = str_platform.text_input("Namba ya Siri (CVV):", type="password", max_chars=3)
-            
-        if str_platform.button("Kamilisha Usajili na Lipia Kifurushi"):
-            if jina_jipya.strip() != "" and siri_mpya.strip() != "":
-                if pesapal_tayari:
-                    str_platform.info("🧠 Ubongo unaunganisha na Lango Kuu la Pesapal la kampuni ya **Ourworthlinks**...")
-                    matokeo_p = pesapal_core.anzisha_muamala_wa_pesapal(jina_jipya.strip(), f"{jina_jipya.strip()}@ourworthlinks.com", 5.00)
-                    
-                    if matokeo_p.get("status") == "success":
-                        str_platform.success(f"📲 ODA IMESAJILIWA: Kampuni ya Ourworthlinks imefungua Lango la malipo ya siri ya $5.00 USD!")
-                        str_platform.markdown(f"👉 [Bofya Hapa Kufungua Fomu ya Malipo Halisi ya Pesapal]({matokeo_p.get('redirect_url')})")
-                        
-                        # 👑 CRITICAL FIXED INDENTED BLOCK (Kuhakikisha kila amri ya ndani inanyooka spaces 4 vizuri)
-                        if database.sajili_mtumiaji_mpya(jina_jipya.strip(), siri_mpya.strip(), chaguo_usajili):
-                            str_platform.caption("Akaunti imeandikwa kwenye SQLite. Baada ya malipo kukamilika itafunguka papo hapo.")
-                    else:
-                        str_platform.error(matokeo_p.get("message"))
-                else:
+if mifumo_tayari:
+    try:
+        central_nervous_system.zindua_mifumo_ya_fahamu_ya_mwili(client, chaguo_menyu)
+    except Exception as e:
+        str_platform.error(f"🛑 Hitilafu ya mawasiliano ya viungo: {str(e)}")
+else:
+    str_platform.warning("🛠️ Seva inaji-healing yenyewe... Tafadhali hakikisha umeunda central_nervous_system.py kule GitHub.")
 
+if chaguo_menyu == "🚪 Toka Kwenye Mfumo (Logout)":
+    str_platform.session_state["user_status"] = "guest"
+    str_platform.session_state["active_user_name"] = "Mgeni"
+    str_platform.rerun()
+
+str_platform.write("---")
+str_platform.markdown("<p style='text-align: center; font-size: 0.85rem; color: #9CA3AF; font-weight: bold;'>© 2026 Ourworthlinks • LinguaAfrika AI Ecosystem Enterprise • Powered by Super Modular Central Nervous System Architecture</p>", unsafe_allow_html=True)
