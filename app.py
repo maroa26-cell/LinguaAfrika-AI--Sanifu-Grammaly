@@ -1,7 +1,8 @@
+
 import streamlit as str_platform
 import os
 import time
-import requests  # Injini ya kuunganisha API za malipo ya simu na kadi
+import requests
 from openai import OpenAI
 
 # 🧠 COGNITIVE SUBSYSTEM IMPORTS (Moduli Huru)
@@ -143,11 +144,10 @@ if chaguo_menyu == "🔐 Lango la Kuingia (Login Dashboard)":
             else:
                 str_platform.warning("⚠️ Tafadhali jaza Username na Password kwanza!")
 else:
-    # 👑 UNYOOSHAJI HALISI: Hili else lipo mstari mmoja sahihi kabisa na uamuzi wa Lango la Login!
+    # 👑 UNYOOSHAJI HALISI WA SPACES (mstari wa 149 - 152 IndentationError Fixed!)
     if mifumo_tayari:
         try:
             central_nervous_system.zindua_mifumo_ya_fahamu_ya_mwili(client, chaguo_menyu)
         except Exception as e:
             str_platform.error(f"🛑 Hitilafu ya mawasiliano ya viungo: {str(e)}")
     else:
-
