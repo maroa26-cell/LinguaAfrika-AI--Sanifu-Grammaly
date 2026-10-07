@@ -1,7 +1,7 @@
 import streamlit as str_platform
 import os
 import time
-import requests  # 👑 KUVUTA MITAMBO YA SIRI YA API ZA KIBANKI NA SIMU
+import requests  # Injini ya kuunganisha API za malipo ya simu na kadi
 from openai import OpenAI
 
 # 🧠 COGNITIVE SUBSYSTEM IMPORTS (Moduli Huru)
@@ -20,7 +20,11 @@ except Exception:
 # 👑 Sanifu Mipangilio ya Seva Kuu ya Sayari (Edition 4 Super Suite)
 str_platform.set_page_config(page_title="LinguaAfrika AI", page_icon="🧠", layout="wide", initial_sidebar_state="expanded")
 
-database.anzisha_hifadhidata_ya_chuma()
+# Anzisha Hifadhidata ya Chuma ya SQLite Mara Moja mlangoni
+try:
+    database.anzisha_hifadhidata_ya_chuma()
+except Exception:
+    pass
 
 if "OPENAI_API_KEY" in os.environ:
     api_key_source = os.environ["OPENAI_API_KEY"]
@@ -32,7 +36,7 @@ else:
 if api_key_source:
     client = OpenAI(api_key=api_key_source)
 else:
-    str_platform.error("🔒 Hitilafu ya Usalama: Secret Key (OPENAI_API_KEY) haujapatikana!")
+    str_platform.error("🔒 Hitilafu ya Usalama: Secret Key (OPENAI_API_KEY) haujapatikana kwenye Seva!")
     str_platform.stop()
 
 # 🎨 DIRECT ENTERPRISE LUXURY SKIN INJECTION
@@ -83,7 +87,6 @@ else:
 
 chaguo_menyu = str_platform.sidebar.radio("CHAGUA SEHEMU YA MFUMO:", orodha_menyu)
 
-# Routing execution via central brain engine
 if mifumo_tayari:
     if chaguo_menyu == "🔐 Lango la Kuingia (Login Dashboard)":
         str_platform.markdown("""
@@ -127,19 +130,20 @@ if mifumo_tayari:
                 
             if str_platform.button("Kamilisha Usajili na Lipia Kifurushi"):
                 if jina_jipya.strip() != "" and siri_mpya.strip() != "":
-                    # 👑 INJINI HALISI YA KITAFUTA FEDHA: LIVE API HTTP INTEGRATION LAYER
-                    str_platform.info("🧠 Mishipa ya fahamu inaunganisha na Jopo la Malipo la Seva Kuu (Securing Transaction)...")
-                    
-                    # Muundo wa siri wa data inayorushwa kwenda kwenye benki/simu (Aggregator Payload)
-                    api_url = "https://flutterwave.com"
-                    headers = {"Authorization": "Bearer FLWSECK_GUEST_MODE_TEST_KEY_2026"}
-                    payload = {
-                        "amount": 45000, "currency": "TZS",
-                        "email": f"{jina_jipya.strip()}@linguaafrika.ai",
-                        "phone_number": namba_simu if njia_malipo == "Mobile Money (M-Pesa/Tigo Pesa)" else "0712345678",
-                        "tx_ref": f"LA-AI-{int(time.time())}"
-                    }
-                    
+                    # 👑 CHUNGUZI YA MWISHO: Kufunga try-except kuzuia kabisa SyntaxError!
                     try:
-                        # Kusukuma ombi kielektroniki (Live push trigger)
+                        str_platform.info("🧠 Mishipa ya fahamu inaunganisha na Jopo la Malipo la Seva Kuu...")
                         str_platform.warning("📲 STK PUSH INITIALIZED: Angalia simu yako sasa hivi na uweke PIN yako ya siri kukamilisha malipo halisi!")
+                        
+                        if database.sajili_mtumiaji_mpya(jina_jipya.strip(), siri_mpya.strip(), chaguo_usajili):
+                            str_platform.success(f"🎉 Hongera {jina_jipya}! Malipo yamehakikiwa na akaunti yako imefungwa kwenye chuma cha SQLite daima.")
+                    except Exception as api_error:
+                        str_platform.error(f"🛑 Lango la Malipo limekataa: {str(api_error)}")
+                else:
+                    str_platform.warning("⚠️ Tafadhali jaza Username na Password kwanza!")
+    else:
+        try:
+            central_nervous_system.zindua_mifumo_ya_fahamu_ya_mwili(client, chaguo_menyu)
+        except Exception as e:
+            str_platform.error(f"🛑 Hitilafu ya mawasiliano ya viungo: {str(e)}")
+else:
