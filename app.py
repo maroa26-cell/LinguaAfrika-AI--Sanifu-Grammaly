@@ -1,10 +1,9 @@
 import streamlit as str_platform
 import os
 import time
-import requests
 from openai import OpenAI
 
-# 🧠 COGNITIVE SUBSYSTEM IMPORTS (Moduli Huru za Herufi Ndogo)
+# 🧠 COGNITIVE SUBSYSTEM IMPORTS (Moduli Huru)
 import database
 import synapse
 
@@ -33,13 +32,17 @@ elif hasattr(str_platform, "secrets") and "OPENAI_API_KEY" in str_platform.secre
 else:
     api_key_source = None
 
+# Safisha ufunguo kukata spaces zilizojificha (Trim White Spaces)
+if api_key_source:
+    api_key_source = api_key_source.strip()
+
 if api_key_source:
     client = OpenAI(api_key=api_key_source)
 else:
     str_platform.error("🔒 Hitilafu ya Usalama: Secret Key (OPENAI_API_KEY) haujapatikana kwenye Seva!")
     str_platform.stop()
 
-# 🎨 DIRECT ENTERPRISE LUXURY SKIN INJECTION (NGOZI YA NJE)
+# 🎨 DIRECT ENTERPRISE LUXURY SKIN INJECTION
 str_platform.markdown("""
 <style>
     html, body, [data-testid="stAppViewContainer"] { background-color: #F8FAFC !important; font-family: 'Segoe UI', sans-serif !important; }
@@ -88,12 +91,25 @@ else:
 chaguo_menyu = str_platform.sidebar.radio("CHAGUA SEHEMU YA MFUMO:", orodha_menyu)
 
 # =====================================================================
-# ⚙️ CENTRAL NERVOUS ROUTING ENGINE (FLAWLESS RE-ENGINEERED)
+# ⚙️ CENTRAL NERVOUS ROUTING ENGINE WITH AUTHENTICATION EXCEPTION GUARDS
 # =====================================================================
 if mifumo_tayari:
     try:
         central_nervous_system.zindua_mifumo_ya_fahamu_ya_mwili(client, chaguo_menyu)
     except Exception as e:
-        str_platform.error(f"🛑 Hitilafu ya mawasiliano ya viungo: {str(e)}")
+        # 🩹 SELF-REGULATORY INTERCEPTOR FOR API AUTHENTICATION ERRORS
+        if "401" in str(e) or "invalid_api_key" in str(e):
+            str_platform.error("🛑 **Hitilafu ya Ufunguo Kuu (OpenAI API Authentication Key Expired/Invalid)**")
+            str_platform.warning("Kiongozi Maroa, ufunguo wako wa siri wa OpenAI uliopo Streamlit Secrets haupo sawa au umefutwa kule OpenAI Dashboard. Tafadhali tengeneza ufunguo mpya kule platform.openai.com na uubadilishe kwenye Advanced Settings ya mradi wako!")
+        else:
+            str_platform.error(f"🛑 Hitilafu ya mawasiliano ya viungo: {str(e)}")
 else:
     str_platform.warning("🛠️ Seva inaji-healing yenyewe... Tafadhali hakikisha umeunda central_nervous_system.py kule GitHub.")
+
+if chaguo_menyu == "🚪 Toka Kwenye Mfumo (Logout)":
+    str_platform.session_state["user_status"] = "guest"
+    str_platform.session_state["active_user_name"] = "Mgeni"
+    str_platform.rerun()
+
+str_platform.write("---")
+str_platform.markdown("<p style='text-align: center; font-size: 0.85rem; color: #9CA3AF; font-weight: bold;'>© 2026 LinguaAfrika AI Ecosystem Enterprise • Powered by Super Modular Central Nervous System Architecture</p>", unsafe_allow_html=True)
