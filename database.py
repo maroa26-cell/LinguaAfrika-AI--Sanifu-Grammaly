@@ -1,3 +1,4 @@
+
 import sqlite3
 import os
 
@@ -7,18 +8,17 @@ def anzisha_hifadhidata_ya_chuma():
     """Inatengeneza meza za siri kwenye diski ya seva kama hazina ya kudumu"""
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
-    # Meza ya Premium Users
+    # 👑 SAFU ZOMBE ZIMESAWASISHWA KUWA TEXT SAHIHI (TYPO FIXED!)
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS watumiaji (
             username TEXT PRIMARY KEY,
-            password TEXT NOT EXISTS
+            password TEXT
         )
     """)
-    # Meza ya Executive Administrators
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS wasimamizi (
             username TEXT PRIMARY KEY,
-            password TEXT NOT EXISTS
+            password TEXT
         )
     """)
     conn.commit()
