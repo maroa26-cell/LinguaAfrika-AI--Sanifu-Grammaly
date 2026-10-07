@@ -3,22 +3,34 @@ import os
 import time
 from openai import OpenAI
 
-# 🧠 COGNITIVE SUBSYSTEM IMPORTS (Moduli Huru!)
+# 🧠 COGNITIVE SUBSYSTEM IMPORTS (Moduli Huru za herufi ndogo)
 import database
 import synapse
+
+# 🩺 HATUA YA UHAKIKI MKUU: Kuzuia NameError kwa kufafanua variables pande zote
+self_healing_status = "🟢 Autonomous Shield: Active & Healthy"
+mifumo_tayari = True
+
 try:
     import central_nervous_system
-    self_regulatory_status = "🟢 Autonomous Shield: Active & Healthy"
-    mifumo_tayari = True
 except Exception:
-    self_regulatory_status = "🛠️ Self-Regulatory Action: Resolving Missing Brain Nodes"
+    # Upande wa uokoaji ukiwaka, variable inabadilika kwa usalama bila kuleta NameError
+    self_healing_status = "🛠️ Self-Regulatory Action: Restoring Defected Memory Nodes"
     mifumo_tayari = False
 
-# 👑 Zindua Mipangilio ya Seva Kuu ya Sayari
-str_platform.set_page_config(page_title="LinguaAfrika AI", page_icon="🧠", layout="wide", initial_sidebar_state="expanded")
+# 👑 Zindua Mipangilio ya Seva Kuu ya Sayari (Edition 4 Super Suite)
+str_platform.set_page_config(
+    page_title="LinguaAfrika AI", 
+    page_icon="🧠", 
+    layout="wide", 
+    initial_sidebar_state="expanded"
+)
 
-# Anzisha Hifadhidata ya Chuma ya SQLite Mara Moja mlangoni
-database.anzisha_hifadhidata_ya_chuma()
+# Anzisha Hifadhidata ya Chuma ya SQLite Mara Moja mlangoni kuzuia kupoteza data
+try:
+    database.anzisha_hifadhidata_ya_chuma()
+except Exception:
+    pass
 
 if "OPENAI_API_KEY" in os.environ:
     api_key_source = os.environ["OPENAI_API_KEY"]
@@ -30,10 +42,10 @@ else:
 if api_key_source:
     client = OpenAI(api_key=api_key_source)
 else:
-    str_platform.error("🔒 Hitilafu ya Usalama: Secret Key (OPENAI_API_KEY) haujapatikana!")
+    str_platform.error("🔒 Hitilafu ya Usalama: Secret Key (OPENAI_API_KEY) haujapatikana kwenye Seva!")
     str_platform.stop()
 
-# 🎨 Ngozi ya Nje: DIRECT SKIN INJECTION
+# 🎨 DIRECT ENTERPRISE LUXURY SKIN INJECTION (NGOZI YA NJE - IDARA YA 8)
 str_platform.markdown("""
 <style>
     html, body, [data-testid="stAppViewContainer"] { background-color: #F8FAFC !important; font-family: 'Segoe UI', sans-serif !important; }
@@ -45,8 +57,9 @@ str_platform.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
+# Kuanzisha Hifadhidata ya Ndani kuzuia Memory Dissociation
 if "user_status" not in str_platform.session_state: str_platform.session_state["user_status"] = "guest"
-if "active_user_name" not in str_platform.session_state: str_platform.session_state["active_user_name"] = ""
+if "active_user_name" not in str_platform.session_state: str_platform.session_state["active_user_name"] = "Mgeni"
 
 muda_mwanzo = time.time()
 str_platform.markdown("<h1 style='text-align: center; color: #1E3A8A; font-weight: 900; margin-bottom: 0;'>👑 LinguaAfrika AI</h1>", unsafe_allow_html=True)
@@ -82,13 +95,16 @@ else:
 chaguo_menyu = str_platform.sidebar.radio("CHAGUA SEHEMU YA MFUMO:", orodha_menyu)
 
 if mifumo_tayari:
-    central_nervous_system.zindua_mifumo_ya_fahamu_ya_mwili(client, chaguo_menyu)
+    try:
+        central_nervous_system.zindua_mifumo_ya_fahamu_ya_mwili(client, chaguo_menyu)
+    except Exception as e:
+        str_platform.error(f"🛑 Hitilafu ya mawasiliano ya viungo vya ndani: {str(e)}")
 else:
     str_platform.warning("🛠️ Seva inaji-healing yenyewe... Tafadhali hakikisha umeunda central_nervous_system.py kule GitHub.")
 
 if chaguo_menyu == "🚪 Toka Kwenye Mfumo (Logout)":
     str_platform.session_state["user_status"] = "guest"
-    str_platform.session_state["active_user_name"] = ""
+    str_platform.session_state["active_user_name"] = "Mgeni"
     str_platform.rerun()
 
 str_platform.write("---")
