@@ -87,63 +87,67 @@ else:
 
 chaguo_menyu = str_platform.sidebar.radio("CHAGUA SEHEMU YA MFUMO:", orodha_menyu)
 
-if mifumo_tayari:
-    if chaguo_menyu == "🔐 Lango la Kuingia (Login Dashboard)":
-        str_platform.markdown("""
-        <div style="background-color: #1E293B; border: 3px solid #D97706; padding: 30px; border-radius: 15px; text-align: center; max-width: 500px; margin: 0 auto;">
-            <h2 style="color: #D97706; font-family: sans-serif; font-weight: 800; margin-bottom: 5px;">🔐 LOGIN DASHBOARD</h2>
-            <p style="color: #94A3B8; font-family: sans-serif; font-size: 14px; margin: 0;">The Smart Multi-Role Identity Gateway</p>
-        </div>
-        """, unsafe_allow_html=True)
-        str_platform.write("---")
-        col_lango1, col_lango2 = str_platform.columns(2)
-        with col_lango1:
-            str_platform.markdown("### 🔑 Kuingia Mfumo (Sign In)")
-            chaguo_lango = str_platform.selectbox("Chagua Hadhi Yako (Role):", ["Premium User", "Admin"], key="lango_select_v4")
-            jina = str_platform.text_input("Ingiza Jina (Username):", key="lango_username_v4")
-            password = str_platform.text_input("Ingiza Nenosiri (Password):", type="password", key="lango_password_v4")
-            if str_platform.button("Thibitisha Kuingia Mfumo"):
-                if database.thibitisha_utambulisho_wa_siri(jina, password, chaguo_lango):
-                    str_platform.session_state["user_status"] = "admin" if chaguo_lango == "Admin" else "standard_premium"
-                    str_platform.session_state["active_user_name"] = jina
-                    str_platform.rerun()
-                else: str_platform.error("🛑 Hitilafu: Jina au Nenosiri uliloingiza si sahihi!")
-        with col_lango2:
-            str_platform.markdown("### 📝 Jisajili Akaunti Mpya (Sign Up)")
-            chaguo_usajili = str_platform.selectbox("Sajili Akaunti Kama:", ["Premium User", "Admin"], key="signup_role_select")
-            jina_jipya = str_platform.text_input("Tengeneza Jina (New Username):", key="signup_user")
-            siri_mpya = str_platform.text_input("Tengeneza Nenosiri (New Password):", type="password", key="signup_pass")
-            
-            str_platform.write("---")
-            str_platform.markdown("<p style='color: #D97706; font-weight: bold; margin-bottom: 2px;'>💳 Kifurushi cha Premium (TZS 45,000 / Mwezi)</p>", unsafe_allow_html=True)
-            njia_malipo = str_platform.radio("Chagua Njia ya Malipo:", ["Mobile Money (M-Pesa/Tigo Pesa)", "Kadi ya Benki (Visa / Mastercard)"])
-            
-            if njia_malipo == "Mobile Money (M-Pesa/Tigo Pesa)":
-                mtandao_simu = str_platform.selectbox("Chagua Mtandao wa Malipo:", ["M-Pesa (Vodacom)", "Tigo Pesa (Tigo)", "Airtel Money (Airtel)"])
-                namba_simu = str_platform.text_input("Ingiza Namba ya Simu (Mfano: 07XXXXXXXX):", key="payment_phone_no")
+# =====================================================================
+# ⚙️ THE MAIN SYSTEM ROUTING BLOCK
+# =====================================================================
+if chaguo_menyu == "🔐 Lango la Kuingia (Login Dashboard)":
+    str_platform.markdown("""
+    <div style="background-color: #1E293B; border: 3px solid #D97706; padding: 30px; border-radius: 15px; text-align: center; max-width: 500px; margin: 0 auto;">
+        <h2 style="color: #D97706; font-family: sans-serif; font-weight: 800; margin-bottom: 5px;">🔐 LOGIN DASHBOARD</h2>
+        <p style="color: #94A3B8; font-family: sans-serif; font-size: 14px; margin: 0;">The Smart Multi-Role Identity Gateway</p>
+    </div>
+    """, unsafe_allow_html=True)
+    str_platform.write("---")
+    col_lango1, col_lango2 = str_platform.columns(2)
+    with col_lango1:
+        str_platform.markdown("### 🔑 Kuingia Mfumo (Sign In)")
+        chaguo_lango = str_platform.selectbox("Chagua Hadhi Yako (Role):", ["Premium User", "Admin"], key="lango_select_v4")
+        jina = str_platform.text_input("Ingiza Jina (Username):", key="lango_username_v4")
+        password = str_platform.text_input("Ingiza Nenosiri (Password):", type="password", key="lango_password_v4")
+        if str_platform.button("Thibitisha Kuingia Mfumo"):
+            if database.thibitisha_utambulisho_wa_siri(jina, password, chaguo_lango):
+                str_platform.session_state["user_status"] = "admin" if chaguo_lango == "Admin" else "standard_premium"
+                str_platform.session_state["active_user_name"] = jina
+                str_platform.rerun()
             else:
-                jina_kadi = str_platform.text_input("Jina Linalosomeka Kwenye Kadi (Cardholder Name):")
-                namba_kadi = str_platform.text_input("Namba ya Kadi (Card Number - 16 Digits):", max_chars=16)
-                col_k1, col_k2 = str_platform.columns(2)
-                with col_k1: tarehe_kadi = str_platform.text_input("Tarehe ya Kuisha (MM/YY):", max_chars=5)
-                with col_k2: cvv_kadi = str_platform.text_input("Namba ya Siri (CVV):", type="password", max_chars=3)
-                
-            if str_platform.button("Kamilisha Usajili na Lipia Kifurushi"):
-                if jina_jipya.strip() != "" and siri_mpya.strip() != "":
-                    # 👑 CHUNGUZI YA MWISHO: Kufunga try-except kuzuia kabisa SyntaxError!
-                    try:
-                        str_platform.info("🧠 Mishipa ya fahamu inaunganisha na Jopo la Malipo la Seva Kuu...")
-                        str_platform.warning("📲 STK PUSH INITIALIZED: Angalia simu yako sasa hivi na uweke PIN yako ya siri kukamilisha malipo halisi!")
-                        
-                        if database.sajili_mtumiaji_mpya(jina_jipya.strip(), siri_mpya.strip(), chaguo_usajili):
-                            str_platform.success(f"🎉 Hongera {jina_jipya}! Malipo yamehakikiwa na akaunti yako imefungwa kwenye chuma cha SQLite daima.")
-                    except Exception as api_error:
-                        str_platform.error(f"🛑 Lango la Malipo limekataa: {str(api_error)}")
-                else:
-                    str_platform.warning("⚠️ Tafadhali jaza Username na Password kwanza!")
-    else:
+                str_platform.error("🛑 Hitilafu: Jina au Nenosiri uliloingiza si sahihi!")
+    with col_lango2:
+        str_platform.markdown("### 📝 Jisajili Akaunti Mpya (Sign Up)")
+        chaguo_usajili = str_platform.selectbox("Sajili Akaunti Kama:", ["Premium User", "Admin"], key="signup_role_select")
+        jina_jipya = str_platform.text_input("Tengeneza Jina (New Username):", key="signup_user")
+        siri_mpya = str_platform.text_input("Tengeneza Nenosiri (New Password):", type="password", key="signup_pass")
+        
+        str_platform.write("---")
+        str_platform.markdown("<p style='color: #D97706; font-weight: bold; margin-bottom: 2px;'>💳 Kifurushi cha Premium (TZS 45,000 / Mwezi)</p>", unsafe_allow_html=True)
+        njia_malipo = str_platform.radio("Chagua Njia ya Malipo:", ["Mobile Money (M-Pesa/Tigo Pesa)", "Kadi ya Benki (Visa / Mastercard)"])
+        
+        if njia_malipo == "Mobile Money (M-Pesa/Tigo Pesa)":
+            mtandao_simu = str_platform.selectbox("Chagua Mtandao wa Malipo:", ["M-Pesa (Vodacom)", "Tigo Pesa (Tigo)", "Airtel Money (Airtel)"])
+            namba_simu = str_platform.text_input("Ingiza Namba ya Simu (Mfano: 07XXXXXXXX):", key="payment_phone_no")
+        else:
+            jina_kadi = str_platform.text_input("Jina Linalosomeka Kwenye Kadi (Cardholder Name):")
+            namba_kadi = str_platform.text_input("Namba ya Kadi (Card Number - 16 Digits):", max_chars=16)
+            col_k1, col_k2 = str_platform.columns(2)
+            with col_k1: tarehe_kadi = str_platform.text_input("Tarehe ya Kuisha (MM/YY):", max_chars=5)
+            with col_k2: cvv_kadi = str_platform.text_input("Namba ya Siri (CVV):", type="password", max_chars=3)
+            
+        if str_platform.button("Kamilisha Usajili na Lipia Kifurushi"):
+            if jina_jipya.strip() != "" and siri_mpya.strip() != "":
+                try:
+                    str_platform.info("🧠 Mishipa ya fahamu inaunganisha na Jopo la Malipo la Seva Kuu...")
+                    str_platform.warning("📲 STK PUSH INITIALIZED: Angalia simu yako sasa hivi na uweke PIN yako ya siri kukamilisha malipo halisi!")
+                    if database.sajili_mtumiaji_mpya(jina_jipya.strip(), siri_mpya.strip(), chaguo_usajili):
+                        str_platform.success(f"🎉 Hongera {jina_jipya}! Malipo yamehakikiwa na akaunti yako imefungwa kwenye chuma.")
+                except Exception as api_error:
+                    str_platform.error(f"🛑 Lango la Malipo limekataa: {str(api_error)}")
+            else:
+                str_platform.warning("⚠️ Tafadhali jaza Username na Password kwanza!")
+else:
+    # 👑 UNYOOSHAJI HALISI: Hili else lipo mstari mmoja sahihi kabisa na uamuzi wa Lango la Login!
+    if mifumo_tayari:
         try:
             central_nervous_system.zindua_mifumo_ya_fahamu_ya_mwili(client, chaguo_menyu)
         except Exception as e:
             str_platform.error(f"🛑 Hitilafu ya mawasiliano ya viungo: {str(e)}")
-else:
+    else:
+
