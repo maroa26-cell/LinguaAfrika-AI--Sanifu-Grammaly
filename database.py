@@ -8,7 +8,7 @@ def anzisha_hifadhidata_ya_chuma():
     """Inatengeneza meza za siri kwenye diski ya seva kama hazina ya kudumu"""
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
-    # 👑 SAFU ZOMBE ZIMESAWASISHWA KUWA TEXT SAHIHI (TYPO FIXED!)
+    
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS watumiaji (
             username TEXT PRIMARY KEY,
@@ -22,6 +22,14 @@ def anzisha_hifadhidata_ya_chuma():
         )
     """)
     conn.commit()
+    
+    # 👑 AUTOMATED NEURAL SEEDING (KUREKODI USERNAME NA PASSWORD YA MSIMAMIZI)
+    # Mtambo unakagua kama kuna admin yeyote, asipokuwepo unaandika akaunti yako ya siri!
+    cursor.execute("SELECT COUNT(*) FROM wasimamizi")
+    if cursor.fetchone()[0] == 0:
+        cursor.execute("INSERT INTO wasimamizi VALUES (?, ?)", ("admin", "Maroa2026"))
+        conn.commit()
+        
     conn.close()
 
 def sajili_mtumiaji_mpya(username, password, role):
