@@ -1,11 +1,10 @@
-
 import streamlit as str_platform
 import os
 import time
 import requests
 from openai import OpenAI
 
-# 🧠 COGNITIVE SUBSYSTEM IMPORTS (Moduli Huru)
+# 🧠 COGNITIVE SUBSYSTEM IMPORTS (Moduli Huru za Herufi Ndogo)
 import database
 import synapse
 
@@ -40,7 +39,7 @@ else:
     str_platform.error("🔒 Hitilafu ya Usalama: Secret Key (OPENAI_API_KEY) haujapatikana kwenye Seva!")
     str_platform.stop()
 
-# 🎨 DIRECT ENTERPRISE LUXURY SKIN INJECTION
+# 🎨 DIRECT ENTERPRISE LUXURY SKIN INJECTION (NGOZI YA NJE)
 str_platform.markdown("""
 <style>
     html, body, [data-testid="stAppViewContainer"] { background-color: #F8FAFC !important; font-family: 'Segoe UI', sans-serif !important; }
@@ -62,7 +61,7 @@ str_platform.write("---")
 
 kasi_ya_radi = (time.time() - muda_mwanzo) * 1000
 
-# 📊 Bango la Telemetry (Rada ya Ubongo)
+# 📊 Bango la Telemetry (Rada ya Ubongo Kuu)
 str_platform.sidebar.markdown(f"""
 <div style='background-color: rgba(30, 58, 138, 0.1); border: 2px solid #D97706; padding: 15px; border-radius: 10px; margin-bottom: 15px;'>
     <p style='color: #D97706; font-size: 14px; margin: 0 0 8px 0; text-align: center; font-weight: 900;'>📊 RADA YA UBONGO (CNS METRICS)</p>
@@ -89,65 +88,12 @@ else:
 chaguo_menyu = str_platform.sidebar.radio("CHAGUA SEHEMU YA MFUMO:", orodha_menyu)
 
 # =====================================================================
-# ⚙️ THE MAIN SYSTEM ROUTING BLOCK
+# ⚙️ CENTRAL NERVOUS ROUTING ENGINE (FLAWLESS RE-ENGINEERED)
 # =====================================================================
-if chaguo_menyu == "🔐 Lango la Kuingia (Login Dashboard)":
-    str_platform.markdown("""
-    <div style="background-color: #1E293B; border: 3px solid #D97706; padding: 30px; border-radius: 15px; text-align: center; max-width: 500px; margin: 0 auto;">
-        <h2 style="color: #D97706; font-family: sans-serif; font-weight: 800; margin-bottom: 5px;">🔐 LOGIN DASHBOARD</h2>
-        <p style="color: #94A3B8; font-family: sans-serif; font-size: 14px; margin: 0;">The Smart Multi-Role Identity Gateway</p>
-    </div>
-    """, unsafe_allow_html=True)
-    str_platform.write("---")
-    col_lango1, col_lango2 = str_platform.columns(2)
-    with col_lango1:
-        str_platform.markdown("### 🔑 Kuingia Mfumo (Sign In)")
-        chaguo_lango = str_platform.selectbox("Chagua Hadhi Yako (Role):", ["Premium User", "Admin"], key="lango_select_v4")
-        jina = str_platform.text_input("Ingiza Jina (Username):", key="lango_username_v4")
-        password = str_platform.text_input("Ingiza Nenosiri (Password):", type="password", key="lango_password_v4")
-        if str_platform.button("Thibitisha Kuingia Mfumo"):
-            if database.thibitisha_utambulisho_wa_siri(jina, password, chaguo_lango):
-                str_platform.session_state["user_status"] = "admin" if chaguo_lango == "Admin" else "standard_premium"
-                str_platform.session_state["active_user_name"] = jina
-                str_platform.rerun()
-            else:
-                str_platform.error("🛑 Hitilafu: Jina au Nenosiri uliloingiza si sahihi!")
-    with col_lango2:
-        str_platform.markdown("### 📝 Jisajili Akaunti Mpya (Sign Up)")
-        chaguo_usajili = str_platform.selectbox("Sajili Akaunti Kama:", ["Premium User", "Admin"], key="signup_role_select")
-        jina_jipya = str_platform.text_input("Tengeneza Jina (New Username):", key="signup_user")
-        siri_mpya = str_platform.text_input("Tengeneza Nenosiri (New Password):", type="password", key="signup_pass")
-        
-        str_platform.write("---")
-        str_platform.markdown("<p style='color: #D97706; font-weight: bold; margin-bottom: 2px;'>💳 Kifurushi cha Premium (TZS 45,000 / Mwezi)</p>", unsafe_allow_html=True)
-        njia_malipo = str_platform.radio("Chagua Njia ya Malipo:", ["Mobile Money (M-Pesa/Tigo Pesa)", "Kadi ya Benki (Visa / Mastercard)"])
-        
-        if njia_malipo == "Mobile Money (M-Pesa/Tigo Pesa)":
-            mtandao_simu = str_platform.selectbox("Chagua Mtandao wa Malipo:", ["M-Pesa (Vodacom)", "Tigo Pesa (Tigo)", "Airtel Money (Airtel)"])
-            namba_simu = str_platform.text_input("Ingiza Namba ya Simu (Mfano: 07XXXXXXXX):", key="payment_phone_no")
-        else:
-            jina_kadi = str_platform.text_input("Jina Linalosomeka Kwenye Kadi (Cardholder Name):")
-            namba_kadi = str_platform.text_input("Namba ya Kadi (Card Number - 16 Digits):", max_chars=16)
-            col_k1, col_k2 = str_platform.columns(2)
-            with col_k1: tarehe_kadi = str_platform.text_input("Tarehe ya Kuisha (MM/YY):", max_chars=5)
-            with col_k2: cvv_kadi = str_platform.text_input("Namba ya Siri (CVV):", type="password", max_chars=3)
-            
-        if str_platform.button("Kamilisha Usajili na Lipia Kifurushi"):
-            if jina_jipya.strip() != "" and siri_mpya.strip() != "":
-                try:
-                    str_platform.info("🧠 Mishipa ya fahamu inaunganisha na Jopo la Malipo la Seva Kuu...")
-                    str_platform.warning("📲 STK PUSH INITIALIZED: Angalia simu yako sasa hivi na uweke PIN yako ya siri kukamilisha malipo halisi!")
-                    if database.sajili_mtumiaji_mpya(jina_jipya.strip(), siri_mpya.strip(), chaguo_usajili):
-                        str_platform.success(f"🎉 Hongera {jina_jipya}! Malipo yamehakikiwa na akaunti yako imefungwa kwenye chuma.")
-                except Exception as api_error:
-                    str_platform.error(f"🛑 Lango la Malipo limekataa: {str(api_error)}")
-            else:
-                str_platform.warning("⚠️ Tafadhali jaza Username na Password kwanza!")
+if mifumo_tayari:
+    try:
+        central_nervous_system.zindua_mifumo_ya_fahamu_ya_mwili(client, chaguo_menyu)
+    except Exception as e:
+        str_platform.error(f"🛑 Hitilafu ya mawasiliano ya viungo: {str(e)}")
 else:
-    # 👑 UNYOOSHAJI HALISI WA SPACES (mstari wa 149 - 152 IndentationError Fixed!)
-    if mifumo_tayari:
-        try:
-            central_nervous_system.zindua_mifumo_ya_fahamu_ya_mwili(client, chaguo_menyu)
-        except Exception as e:
-            str_platform.error(f"🛑 Hitilafu ya mawasiliano ya viungo: {str(e)}")
-    else:
+    str_platform.warning("🛠️ Seva inaji-healing yenyewe... Tafadhali hakikisha umeunda central_nervous_system.py kule GitHub.")
