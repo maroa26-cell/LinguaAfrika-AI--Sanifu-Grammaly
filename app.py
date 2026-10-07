@@ -1,19 +1,12 @@
 import streamlit as str_platform
 import os
-import time  # 👑 KIUNGO KIPYA CHA TELEMETRY KUTIBU NAMEEROR KWENYE TRANSACTIONS!
+import time
 import requests
 from openai import OpenAI
 
 # 🧠 COGNITIVE SUBSYSTEM IMPORTS (Moduli Huru za herufi ndogo)
 import database
 import synapse
-
-# 👑 INTEGRATING THE FISCAL SYSTEM (KUVUTA INJINI YA MALIPO YA PESAPAL)
-try:
-    import pesapal_core
-    pesapal_tayari = True
-except Exception:
-    pesapal_tayari = False
 
 self_healing_status = "🟢 Autonomous Shield: Active & Healthy"
 mifumo_tayari = True
@@ -148,5 +141,10 @@ if chaguo_menyu == "🔐 Lango la Kuingia (Login Dashboard)":
                         str_platform.success(f"📲 ODA IMESAJILIWA: Kampuni ya Ourworthlinks imefungua Lango la malipo ya siri ya $5.00 USD!")
                         str_platform.markdown(f"👉 [Bofya Hapa Kufungua Fomu ya Malipo Halisi ya Pesapal]({matokeo_p.get('redirect_url')})")
                         
-                        # 👑 UNYOOSHAJI TIMILIFU: Kila mstari sasa umepewa herufi 24 kamili za level moja (Line 153 Error Fixed!)
+                        # 👑 CRITICAL FIXED INDENTED BLOCK (Kuhakikisha kila amri ya ndani inanyooka spaces 4 vizuri)
                         if database.sajili_mtumiaji_mpya(jina_jipya.strip(), siri_mpya.strip(), chaguo_usajili):
+                            str_platform.caption("Akaunti imeandikwa kwenye SQLite. Baada ya malipo kukamilika itafunguka papo hapo.")
+                    else:
+                        str_platform.error(matokeo_p.get("message"))
+                else:
+
