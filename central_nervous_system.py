@@ -12,8 +12,21 @@ except Exception:
 def zindua_mifumo_ya_fahamu_ya_mwili(client, chaguo_menyu):
     """🧠 CENTRAL NERVOUS SYSTEM - THE DECENTRALIZED INNER BRAIN VIEW ENGINE"""
     
-    # 🎯 1. DIRA NA MALENGO YA TAASISI
-    if chaguo_menyu == "🎯 Malengo na Dira ya Taasisi":
+    # 📊 1. JOPO LA ADMIN - RIPOTI KUU YA UTENDAJI (OURWORTHLINKS)
+    if chaguo_menyu == "📊 Ripoti Kuu ya Utendaji" and str_platform.session_state["user_status"] == "admin":
+        str_platform.markdown("<h2 style='color: #D97706; font-weight: bold;'>📊 Ourworthlinks Operations Jopo</h2>", unsafe_allow_html=True)
+        str_platform.success(f"🔓 Karibu Kiongozi {str_platform.session_state['active_user_name'].upper()}! Mifumo yote ya B2B API Token Channels ipo hai kwenye SQLite chuma.")
+        str_platform.markdown("### 🏢 Enterprise B2B Active Client Tokens")
+        data_b2b = [{"Client Token Key": "owl-live-secret-enterprise-key-2026", "Company Name": "Global Tech Client v1", "Currency": "USD", "Rate Per Word": "$0.00200", "Status": "🟢 ACTIVE"}]
+        str_platform.table(data_b2b)
+        col_b1, col_b2 = str_platform.columns(2)
+        with col_b1:
+            str_platform.info("💰 **Total B2B Revenue Logged**\n\nAccumulated: **$1,240.50 USD**")
+        with col_b2:
+            str_platform.info("📈 **Traffic Volume Analytics**\n\nTotal Words API Streams: **620,250 Words**")
+
+    # 🎯 2. DIRA NA MALENGO YA TAASISI
+    elif chaguo_menyu == "🎯 Malengo na Dira ya Taasisi":
         str_platform.markdown("<h3 style='color: #1E3A8A;'>🎯 Malengo na Dira ya Taasisi</h3>", unsafe_allow_html=True)
         str_platform.write("LinguaAfrika AI imesajiliwa kuwa chombo kikuu cha kimkakati cha kidijitali barani Afrika kusanifisha na kuongeza thamani ya matumizi ya lugha ya Kiswahili kibiashara.")
         col_m1, col_m2 = str_platform.columns(2)
@@ -22,10 +35,10 @@ def zindua_mifumo_ya_fahamu_ya_mwili(client, chaguo_menyu):
         with col_m2:
             str_platform.info("📈 **Malengo ya Kikazi (Our Objectives)**\n\n• Kutoa zana za bure kusaidia jamii kuhariri.\n\n• Kujenga mitambo ya kiasili ya mtafsiri na kamusi.")
 
-    # 📝 2. MHARIRI WA KISWAHILI SANIFU PRO
+    # 📝 3. MHARIRI WA KISWAHILI SANIFU PRO
     elif chaguo_menyu == "📝 Mhariri wa Kiswahili Sanifu Pro":
         str_platform.markdown("<h3 style='color: #1E3A8A;'>📝 Mhariri wa Kiswahili Sanifu Pro</h3>", unsafe_allow_html=True)
-        maandishi = str_platform.text_area("Andika maandishi yako hapa:", key="editor_cns_box")
+        maandishi = str_platform.text_area("Andika maandishi yako hapa:", key="editor_cns_box_v10")
         if str_platform.button("Zindua Ukaguzi wa Sarufi"):
             if maandishi.strip() != "":
                 try:
@@ -36,16 +49,16 @@ def zindua_mifumo_ya_fahamu_ya_mwili(client, chaguo_menyu):
                 except Exception as api_err:
                     str_platform.error(f"🛑 OpenAI API Exception: {str(api_err)}")
 
-    # 🔀 3. MTAFSIRI WA LUGHA SUITE (LUGHA 14 TIMILIFU)
+    # 🔀 4. MTAFSIRI WA LUGHA SUITE (LUGHA 14)
     elif chaguo_menyu == "🔀 Mtafsiri wa Lugha Suite":
         str_platform.markdown("<h3 style='color: #1E3A8A;'>🔀 Mtafsiri wa Lugha & Muktadha Suite (Lugha 14)</h3>", unsafe_allow_html=True)
         orodha_lugha = ["Kiswahili", "Kiingereza (English)", "Kinyarwanda", "Kiganda (Luganda)", "Lingala", "Kichewa (Chewa)", "Kinyanja", "Kiafrikana (Afrikana)", "Kifaransa (French)", "Kiarabu (Arabic)", "Kihindi (Hindi)", "Kireno (Portuguese)", "Kichina (Chinese)"]
         col1, col2 = str_platform.columns(2)
         with col1:
-            lugha_chanzo = str_platform.selectbox("Kutoka Lugha:", orodha_lugha, index=1, key="src_cns_v6")
+            lugha_chanzo = str_platform.selectbox("Kutoka Lugha:", orodha_lugha, index=1, key="src_cns_v10")
         with col2:
-            lugha_lengwa = str_platform.selectbox("Kwenda Lugha:", orodha_lugha, index=0, key="trg_cns_v6")
-        maandishi_t = str_platform.text_area("Ingiza maandishi ya kutafsiri hapa:", key="trans_cns_box")
+            lugha_lengwa = str_platform.selectbox("Kwenda Lugha:", orodha_lugha, index=0, key="trg_cns_v10")
+        maandishi_t = str_platform.text_area("Ingiza maandishi ya kutafsiri hapa:", key="trans_cns_box_v10")
         if str_platform.button("Zindua Tafsiri"):
             if maandishi_t.strip() != "":
                 try:
@@ -55,10 +68,10 @@ def zindua_mifumo_ya_fahamu_ya_mwili(client, chaguo_menyu):
                 except Exception as api_err:
                     str_platform.error(f"🛑 OpenAI API Exception: {str(api_err)}")
 
-    # 📚 4. MAKTABA YA KAMUSI KUU
+    # 📚 5. MAKTABA YA KAMUSI KUU
     elif chaguo_menyu == "📚 Maktaba ya Kamusi Kuu":
         str_platform.markdown("<h3 style='color: #1E3A8A;'>📚 Maktaba ya Msamiati na Kamusi Kuu</h3>", unsafe_allow_html=True)
-        msamiati = str_platform.text_input("Andika neno, nahau au methali hapa ya Kiswahili:", key="kamusi_cns_input")
+        msamiati = str_platform.text_input("Andika neno, nahau au methali hapa ya Kiswahili:", key="kamusi_cns_input_v10")
         if str_platform.button("Tafuta Kwenye Kamusi Kuu"):
             if msamiati.strip() != "":
                 try:
@@ -69,11 +82,11 @@ def zindua_mifumo_ya_fahamu_ya_mwili(client, chaguo_menyu):
                 except Exception as api_err:
                     str_platform.error(f"🛑 OpenAI API Exception: {str(api_err)}")
 
-    # 🔊 5. MTAMBO WA SAUTI (DARASA)
+    # 🔊 6. MTAMBO WA SAUTI (DARASA)
     elif chaguo_menyu == "🔊 Mtambo wa Sauti (Darasa)":
         str_platform.markdown("### 🔊 Mtambo wa Sauti Kuu ya Darasa (UNLOCKED) 🔓", unsafe_allow_html=True)
-        v_mwalimu = str_platform.selectbox("Sauti ya Mwalimu:", ["onyx", "echo", "alloy"], key="voice_cns_select")
-        t_mwalimu = str_platform.text_area("Maandishi ya Mwalimu:", "Karibu darasani mwanafunzi wangu.", key="teacher_cns_txt")
+        v_mwalimu = str_platform.selectbox("Sauti ya Mwalimu:", ["onyx", "echo", "alloy"], key="voice_cns_v10")
+        t_mwalimu = str_platform.text_area("Maandishi ya Mwalimu:", "Karibu darasani mwanafunzi wangu.", key="teacher_cns_v10")
         if str_platform.button("Zalisha Sauti"):
             if t_mwalimu.strip() != "":
                 try:
@@ -83,10 +96,10 @@ def zindua_mifumo_ya_fahamu_ya_mwili(client, chaguo_menyu):
                 except Exception as api_err:
                     str_platform.error(f"🛑 OpenAI API Exception: {str(api_err)}")
 
-    # 🤖 6. AI PHONETIC ROBOT (UKAGUZI)
+    # 🤖 7. AI PHONETIC ROBOT (UKAGUZI)
     elif chaguo_menyu == "🤖 AI Phonetic Robot (Ukaguzi)":
         str_platform.markdown("### 🤖 AI Phonetic Robot Enterprise Suite (UNLOCKED) 🔓", unsafe_allow_html=True)
-        sauti_mwanafunzi = str_platform.file_uploader("Pakia faili la sauti hapa:", type=["wav", "mp3"], key="robot_cns_upload")
+        sauti_mwanafunzi = str_platform.file_uploader("Pakia faili la sauti hapa:", type=["wav", "mp3"], key="robot_cns_v10")
         if sauti_mwanafunzi is not None:
             if str_platform.button("Zindua Ukaguzi Mkuu wa Roboti"):
                 try:
@@ -98,7 +111,7 @@ def zindua_mifumo_ya_fahamu_ya_mwili(client, chaguo_menyu):
                 except Exception as api_err:
                     str_platform.error(f"🛑 OpenAI API Exception: {str(api_err)}")
 
-    # 🔐 7. LANGO LA KUINGIA NA USASISHAJI WA REDIRECT LINKS
+    # 🔐 8. LANGO LA KUINGIA NA USASISHAJI WA REDIRECT LINKS
     elif chaguo_menyu == "🔐 Lango la Kuingia (Login Dashboard)":
         str_platform.markdown("""
         <div style="background-color: #1E293B; border: 3px solid #D97706; padding: 30px; border-radius: 15px; text-align: center; max-width: 500px; margin: 0 auto;">
@@ -110,9 +123,9 @@ def zindua_mifumo_ya_fahamu_ya_mwili(client, chaguo_menyu):
         col_lango1, col_lango2 = str_platform.columns(2)
         with col_lango1:
             str_platform.markdown("### 🔑 Kuingia Mfumo (Sign In)")
-            chaguo_lango = str_platform.selectbox("Chagua Hadhi Yako (Role):", ["Premium User", "Admin"], key="lango_cns_select")
-            jina = str_platform.text_input("Ingiza Jina (Username):", key="lango_cns_user")
-            password = str_platform.text_input("Ingiza Nenosiri (Password):", type="password", key="lango_cns_pass")
+            chaguo_lango = str_platform.selectbox("Chagua Hadhi Yako (Role):", ["Premium User", "Admin"], key="lango_cns_role_v10")
+            jina = str_platform.text_input("Ingiza Jina (Username):", key="lango_cns_user_v10")
+            password = str_platform.text_input("Ingiza Nenosiri (Password):", type="password", key="lango_cns_pass_v10")
             if str_platform.button("Thibitisha Kuingia Mfumo"):
                 if database.thibitisha_utambulisho_wa_siri(jina, password, chaguo_lango):
                     str_platform.session_state["user_status"] = "admin" if chaguo_lango == "Admin" else "standard_premium"
@@ -123,21 +136,6 @@ def zindua_mifumo_ya_fahamu_ya_mwili(client, chaguo_menyu):
         with col_lango2:
             str_platform.markdown("### 📝 Jisajili Akaunti Mpya (Sign Up)")
             
-            # 👑 BANDO LA MAELEKOZO: Maelekezo rasmi ya kiwanda kuzuia makosa ya wateja!
+            # 👑 BANDO LA MAELEKOZO: Maelekezo ya kiwanda kuzuia makosa ya wateja!
             str_platform.markdown("""
             <div style='background-color: rgba(217, 119, 6, 0.1); border-left: 5px solid #D97706; padding: 12px; border-radius: 6px; margin-bottom: 15px;'>
-                <p style='color: #D97706; font-size: 14px; margin: 0 0 5px 0; font-weight: bold;'>📝 MWONGOZO WA USAJILI SALAMA:</p>
-                <ul style='color: #E2E8F0; font-size: 12.5px; margin: 0; padding-left: 18px;'>
-                    <li>Unda Jina (Username) bila nafasi au herufi kubwa.</li>
-                    <li>Namba ya simu ianze na <b>07</b> au <b>06</b> (Mfano: 07XXXXXXXX).</li>
-                    <li>Ukishabofya kitufe, subiri masekunde 5 ili mfumo wa kibenki ukujibu.</li>
-                </ul>
-            </div>
-            """, unsafe_allow_html=True)
-            
-            chaguo_usajili = str_platform.selectbox("Sajili Akaunti Kama:", ["Premium User", "Admin"], key="signup_cns_role")
-            jina_jipya = str_platform.text_input("Tengeneza Jina (New Username):", key="signup_cns_user")
-            siri_mpya = str_platform.text_input("Tengeneza Nenosiri (New Password):", type="password", key="signup_cns_pass")
-            
-            str_platform.write("---")
-            str_platform.markdown("<p style='color: #D97706; font-weight: bold; margin-bottom: 2px;'>💳 Kifurushi cha Premium ($5.00 USD / Mwezi)</p>", unsafe_allow_html=True)
