@@ -46,7 +46,7 @@ else:
 str_platform.markdown("""
 <style>
     html, body, [data-testid="stAppViewContainer"] { background-color: #F8FAFC !important; font-family: 'Segoe UI', sans-serif !important; }
-    [data-testid="stSidebar"] { background-color: #0F172A !important; color: #ffffff !important; border-right: 4px solid #D97706 !important; border-bottom: none !important; border-left: none !important; border-top: none !important; }
+    [data-testid="stSidebar"] { background-color: #0F172A !important; color: #ffffff !important; border-right: 4px solid #D97706 !important; }
     [data-testid="stSidebar"] p, [data-testid="stSidebar"] label, [data-testid="stSidebar"] span { color: #ffffff !important; font-size: 16px !important; font-weight: 700 !important; }
     div[data-testid="stRadio"] > label { background-color: rgba(255, 255, 255, 0.04) !important; padding: 12px 15px !important; border-radius: 8px !important; margin-bottom: 8px !important; }
     div[data-testid="stRadio"] div[aria-checked="true"] { background-color: #D97706 !important; border-radius: 6px !important; padding: 4px 10px !important; }
@@ -136,8 +136,7 @@ try:
 
     elif chaguo_menyu == "📚 Maktaba ya Kamusi Kuu":
         str_platform.markdown("<h3 style='color: #1E3A8A;'>📚 Maktaba ya Msamiati na Kamusi Kuu</h3>", unsafe_allow_html=True)
-        msamiati = str_platform.text_input("Andika neno, nahau au methali hapa ya Kiswahili:")
+        msamiati = str_platform.text_input("Andika neno, nahau au methali hapa ya Kiswahili:", key="kamusi_input_v5")
         if str_platform.button("Tafuta Kwenye Kamusi Kuu"):
-            # 👑 UNYOOSHAJI TIMILIFU WA SPACES: Kila mstari wa ndani sasa umepewa nafasi 16 kiofisi hapa (Line 142 Fixed!)
             if msamiati.strip() != "":
-
+                prompt_v = f"Wewe ni Kamusi Kuu ya Lugha za Kiafrika. Toa ufafanuzi wa kina na mifano ya sentensi kwa neno hili la Kiswahili: {msamiati.strip()}"
