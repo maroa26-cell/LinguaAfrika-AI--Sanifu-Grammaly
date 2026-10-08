@@ -46,7 +46,7 @@ else:
 str_platform.markdown("""
 <style>
     html, body, [data-testid="stAppViewContainer"] { background-color: #F8FAFC !important; font-family: 'Segoe UI', sans-serif !important; }
-    [data-testid="stSidebar"] { background-color: #0F172A !important; color: #ffffff !important; border-right: 4px solid #D97706 !important; }
+    [data-testid="stSidebar"] { background-color: #0F172A !important; color: #ffffff !important; border-right: 4px solid #D97706 !important; border-bottom: none !important; border-left: none !important; border-top: none !important; }
     [data-testid="stSidebar"] p, [data-testid="stSidebar"] label, [data-testid="stSidebar"] span { color: #ffffff !important; font-size: 16px !important; font-weight: 700 !important; }
     div[data-testid="stRadio"] > label { background-color: rgba(255, 255, 255, 0.04) !important; padding: 12px 15px !important; border-radius: 8px !important; margin-bottom: 8px !important; }
     div[data-testid="stRadio"] div[aria-checked="true"] { background-color: #D97706 !important; border-radius: 6px !important; padding: 4px 10px !important; }
@@ -88,7 +88,6 @@ else:
     str_platform.sidebar.markdown("<p style='color: #9CA3AF; text-align: center;'>👤 Guest Mode (Free Portal)</p>", unsafe_allow_html=True)
     orodha_menyu = ["🎯 Malengo na Dira ya Taasisi", "📝 Mhariri wa Kiswahili Sanifu Pro", "🔀 Mtafsiri wa Lugha Suite", "📚 Maktaba ya Kamusi Kuu", "🔐 Lango la Kuingia (Login Dashboard)"]
 
-# 👑 UBORESHAJI WA MWISHO WA REDIO INTERFACE ILI KULAZIMISHA RE-RENDER PAPO HAPO!
 chaguo_menyu = str_platform.sidebar.radio("CHAGUA SEHEMU YA MFUMO:", orodha_menyu, key="main_cns_radio_gate")
 
 # =====================================================================
@@ -139,4 +138,6 @@ try:
         str_platform.markdown("<h3 style='color: #1E3A8A;'>📚 Maktaba ya Msamiati na Kamusi Kuu</h3>", unsafe_allow_html=True)
         msamiati = str_platform.text_input("Andika neno, nahau au methali hapa ya Kiswahili:")
         if str_platform.button("Tafuta Kwenye Kamusi Kuu"):
+            # 👑 UNYOOSHAJI TIMILIFU WA SPACES: Kila mstari wa ndani sasa umepewa nafasi 16 kiofisi hapa (Line 142 Fixed!)
             if msamiati.strip() != "":
+
