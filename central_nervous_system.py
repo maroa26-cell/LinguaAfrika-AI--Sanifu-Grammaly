@@ -16,13 +16,10 @@ def zindua_mifumo_ya_fahamu_ya_mwili(client, chaguo_menyu):
         str_platform.markdown("<h3 style='color: #1E3A8A;'>🎯 Malengo na Dira ya Taasisi</h3>", unsafe_allow_html=True)
         str_platform.write("LinguaAfrika AI imesajiliwa kuwa chombo kikuu cha kimkakati cha kidijitali barani Afrika kusanifisha na kuongeza thamani ya matumizi ya lugha ya Kiswahili kibiashara.")
         col_m1, col_m2 = str_platform.columns(2)
-        with col_m1:
-            str_platform.info("🚀 **Dira Yetu (Our Vision)**\n\nKuwa kitovu namba moja duniani cha Akili Mnemba (AI) kinachosanifisha lugha ya Kiswahili.")
-        with col_m2:
-            str_platform.info("📈 **Malengo ya Kikazi (Our Objectives)**\n\n• Kutoa zana za bure kusaidia jamii kuhariri.\n\n• Kujenga mitambo ya kiasili ya mtafsiri na kamusi.")
+        with col_m1: str_platform.info("🚀 **Dira Yetu (Our Vision)**\n\nKuwa kitovu namba moja duniani cha Akili Mnemba (AI) kinachosanifisha lugha ya Kiswahili.")
+        with col_m2: str_platform.info("📈 **Malengo ya Kikazi (Our Objectives)**\n\n• Kutoa zana za bure kusaidia jamii kuhariri.\n\n• Kujenga mitambo ya kiasili ya mtafsiri na kamusi.")
 
     elif chaguo_menyu == "📝 Mhariri wa Kiswahili Sanifu Pro":
-        synapse.chochea_mshipa_wa_fahamu("Mhariri")
         str_platform.markdown("<h3 style='color: #1E3A8A;'>📝 Mhariri wa Kiswahili Sanifu Pro</h3>", unsafe_allow_html=True)
         maandishi = str_platform.text_area("Andika maandishi yako hapa:", key="editor_v5_box")
         if str_platform.button("Zindua Ukaguzi wa Sarufi"):
@@ -33,14 +30,11 @@ def zindua_mifumo_ya_fahamu_ya_mwili(client, chaguo_menyu):
                 str_platform.write(jibu.choices.message.content)
 
     elif chaguo_menyu == "🔀 Mtafsiri wa Lugha Suite":
-        synapse.chochea_mshipa_wa_fahamu("Mtafsiri")
         str_platform.markdown("<h3 style='color: #1E3A8A;'>🔀 Mtafsiri wa Lugha & Muktadha Suite (Lugha 14)</h3>", unsafe_allow_html=True)
         orodha_lugha = ["Kiswahili", "Kiingereza (English)", "Kinyarwanda", "Kiganda (Luganda)", "Lingala", "Kichewa (Chewa)", "Kinyanja", "Kiafrikana (Afrikana)", "Kifaransa (French)", "Kiarabu (Arabic)", "Kihindi (Hindi)", "Kireno (Portuguese)", "Kichina (Chinese)"]
         col1, col2 = str_platform.columns(2)
-        with col1:
-            lugha_chanzo = str_platform.selectbox("Kutoka Lugha:", orodha_lugha, index=1, key="src_v5")
-        with col2:
-            lugha_lengwa = str_platform.selectbox("Kwenda Lugha:", orodha_lugha, index=0, key="trg_v5")
+        with col1: lugha_chanzo = str_platform.selectbox("Kutoka Lugha:", orodha_lugha, index=1, key="src_v5")
+        with col2: lugha_lengwa = str_platform.selectbox("Kwenda Lugha:", orodha_lugha, index=0, key="trg_v5")
         maandishi_t = str_platform.text_area("Ingiza maandishi ya kutafsiri hapa:", key="trans_v5_box")
         if str_platform.button("Zindua Tafsiri"):
             if maandishi_t.strip() != "":
@@ -49,7 +43,6 @@ def zindua_mifumo_ya_fahamu_ya_mwili(client, chaguo_menyu):
                 str_platform.write(jibu_t.choices.message.content)
 
     elif chaguo_menyu == "📚 Maktaba ya Kamusi Kuu":
-        synapse.chochea_mshipa_wa_fahamu("Kamusi")
         str_platform.markdown("<h3 style='color: #1E3A8A;'>📚 Maktaba ya Msamiati na Kamusi Kuu</h3>", unsafe_allow_html=True)
         msamiati = str_platform.text_input("Andika neno, nahau au methali hapa ya Kiswahili:")
         if str_platform.button("Tafuta Kwenye Kamusi Kuu"):
@@ -79,7 +72,7 @@ def zindua_mifumo_ya_fahamu_ya_mwili(client, chaguo_menyu):
                 jibu_robot = client.chat.completions.create(model="gpt-4o", messages=[{"role": "user", "content": robot_prompt}])
                 str_platform.success(jibu_robot.choices.message.content)
 
-    # 🔐 LANGO LA KUINGIA (LIMEJIPANGA VIZURI KATIKATI YA SKRINI HAPA!)
+    # 🔐 7. LANGO LA KUINGIA (THE UNIFIED ENTERPRISE DASHBOARD LOOPS)
     elif chaguo_menyu == "🔐 Lango la Kuingia (Login Dashboard)":
         str_platform.markdown("""
         <div style="background-color: #1E293B; border: 3px solid #D97706; padding: 30px; border-radius: 15px; text-align: center; max-width: 500px; margin: 0 auto;">
@@ -99,10 +92,22 @@ def zindua_mifumo_ya_fahamu_ya_mwili(client, chaguo_menyu):
                     str_platform.session_state["user_status"] = "admin" if chaguo_lango == "Admin" else "standard_premium"
                     str_platform.session_state["active_user_name"] = jina
                     str_platform.rerun()
-                else:
-                    str_platform.error("🛑 Hitilafu: Jina au Nenosiri uliloingiza si sahihi!")
+                else: str_platform.error("🛑 Hitilafu: Jina au Nenosiri uliloingiza si sahihi!")
         with col_lango2:
             str_platform.markdown("### 📝 Jisajili Akaunti Mpya (Sign Up)")
+            
+            # 👑 MKAKATI WA MWONGOZO: Maelekezo rasmi ili mteja asikosee mlangoni!
+            str_platform.markdown("""
+            <div style='background-color: rgba(217, 119, 6, 0.1); border-left: 5px solid #D97706; padding: 10px; border-radius: 4px; margin-bottom: 15px;'>
+                <p style='color: #D97706; font-size: 13px; margin: 0; font-weight: bold;'>📝 MWONGOZO WA USAJILI HALISI:</p>
+                <ul style='color: #E2E8F0; font-size: 12px; margin: 5px 0 0 0; padding-left: 20px;'>
+                    <li>Andika Jina (Username) bila kuweka nafasi (spaces).</li>
+                    <li>Namba ya simu ianze na <b>07</b> au <b>06</b> (Mfano: 0712345678).</li>
+                    <li>Ukishabofya kitufe, usiondoke kwenye skrini hadi link ya malipo itokee.</li>
+                </ul>
+            </div>
+            """, unsafe_allow_html=True)
+            
             chaguo_usajili = str_platform.selectbox("Sajili Akaunti Kama:", ["Premium User", "Admin"], key="signup_role_select")
             jina_jipya = str_platform.text_input("Tengeneza Jina (New Username):", key="signup_user")
             siri_mpya = str_platform.text_input("Tengeneza Nenosiri (New Password):", type="password", key="signup_pass")
@@ -124,8 +129,3 @@ def zindua_mifumo_ya_fahamu_ya_mwili(client, chaguo_menyu):
             if str_platform.button("Kamilisha Usajili na Lipia Kifurushi"):
                 if jina_jipya.strip() != "" and siri_mpya.strip() != "":
                     if pesapal_tayari:
-                        str_platform.info("🧠 Ubongo unaunganisha na Lango Kuu la Pesapal la kampuni ya **Ourworthlinks**...")
-                        matokeo_p = pesapal_core.anzisha_muamala_wa_pesapal(jina_jipya.strip(), f"{jina_jipya.strip()}@ourworthlinks.com", 5.00)
-                        if matokeo_p.get("status") == "success":
-                            str_platform.success(f"📲 ODA IMESAJILIWA: Lango la malipo ya siri ya $5.00 USD ya mradi wa LinguaAfrika AI!")
-                            str_platform.markdown(f"👉 [Bofya Hapa Kufungua Fomu ya Malipo Halisi ya Pesapal]({matokeo_p.get('redirect_url')})")
