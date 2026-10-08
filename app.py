@@ -70,7 +70,8 @@ jina_la_sasa = str_platform.session_state["active_user_name"]
 
 if hali_ya_sasa == "admin":
     str_platform.sidebar.markdown(f"<p style='color: #25D366; text-align: center;'>👑 Admin: {jina_la_sasa.upper()}</p>", unsafe_allow_html=True)
-    orodha_menyu = ["🎯 Malengo na Dira ya Taasisi", "📝 Mhariri wa Kiswahili Sanifu Pro", "🔀 Mtafsiri wa Lugha Suite", "📚 Maktaba ya Kamusi Kuu", "🔊 Mtambo wa Sauti (Darasa)", "🤖 AI Phonetic Robot (Ukaguzi)", "📊 Ripoti Kuu ya Utendaji", "🚪 Toka Kwenye Mfumo (Logout)"]
+    # 👑 ANKARA ZA DOLA ZIMEWEKWA KWENYE MENYU KIOFISI HAPA!
+    orodha_menyu = ["📊 Ripoti Kuu ya Utendaji", "🎯 Malengo na Dira ya Taasisi", "📝 Mhariri wa Kiswahili Sanifu Pro", "🔀 Mtafsiri wa Lugha Suite", "📚 Maktaba ya Kamusi Kuu", "🔊 Mtambo wa Sauti (Darasa)", "🤖 AI Phonetic Robot (Ukaguzi)", "🚪 Toka Kwenye Mfumo (Logout)"]
 elif hali_ya_sasa == "standard_premium":
     str_platform.sidebar.markdown(f"<p style='color: #D97706; text-align: center;'>💎 Premium: {jina_la_sasa.upper()}</p>", unsafe_allow_html=True)
     orodha_menyu = ["🎯 Malengo na Dira ya Taasisi", "📝 Mhariri wa Kiswahili Sanifu Pro", "🔀 Mtafsiri wa Lugha Suite", "📚 Maktaba ya Kamusi Kuu", "🔊 Mtambo wa Sauti (Darasa)", "🤖 AI Phonetic Robot (Ukaguzi)", "🚪 Toka Kwenye Mfumo (Logout)"]
@@ -138,4 +139,3 @@ elif chaguo_menyu == "🤖 AI Phonetic Robot (Ukaguzi)":
     if sauti_mwanafunzi is not None:
         if str_platform.button("Zindua Ukaguzi Mkuu wa Roboti"):
             trans_audio = client.audio.transcriptions.create(model="whisper-1", file=(sauti_mwanafunzi.name, sauti_mwanafunzi.read()))
-            str_platform.info(f"🗣️ Robot amekusikia: '{trans_audio.text}'")
