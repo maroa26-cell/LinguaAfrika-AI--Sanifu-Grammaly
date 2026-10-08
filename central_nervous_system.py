@@ -96,14 +96,14 @@ def zindua_mifumo_ya_fahamu_ya_mwili(client, chaguo_menyu):
         with col_lango2:
             str_platform.markdown("### 📝 Jisajili Akaunti Mpya (Sign Up)")
             
-            # 👑 MKAKATI WA MWONGOZO: Maelekezo rasmi ili mteja asikosee mlangoni!
+            # 👑 BANDO LA MAELEKOZO: Maelekezo rasmi ili mteja asikosee mlangoni!
             str_platform.markdown("""
-            <div style='background-color: rgba(217, 119, 6, 0.1); border-left: 5px solid #D97706; padding: 10px; border-radius: 4px; margin-bottom: 15px;'>
-                <p style='color: #D97706; font-size: 13px; margin: 0; font-weight: bold;'>📝 MWONGOZO WA USAJILI HALISI:</p>
-                <ul style='color: #E2E8F0; font-size: 12px; margin: 5px 0 0 0; padding-left: 20px;'>
-                    <li>Andika Jina (Username) bila kuweka nafasi (spaces).</li>
-                    <li>Namba ya simu ianze na <b>07</b> au <b>06</b> (Mfano: 0712345678).</li>
-                    <li>Ukishabofya kitufe, usiondoke kwenye skrini hadi link ya malipo itokee.</li>
+            <div style='background-color: rgba(217, 119, 6, 0.1); border-left: 5px solid #D97706; padding: 12px; border-radius: 6px; margin-bottom: 15px;'>
+                <p style='color: #D97706; font-size: 14px; margin: 0 0 5px 0; font-weight: bold;'>📝 MWONGOZO WA USAJILI SALAMA:</p>
+                <ul style='color: #E2E8F0; font-size: 12.5px; margin: 0; padding-left: 18px;'>
+                    <li>Unda Jina (Username) bila nafasi au herufi kubwa.</li>
+                    <li>Namba ya simu ianze na <b>07</b> au <b>06</b> (Mfano: 07XXXXXXXX).</li>
+                    <li>Ukishabofya kitufe, subiri masekunde 5 ili mfumo wa kibenki ukujibu.</li>
                 </ul>
             </div>
             """, unsafe_allow_html=True)
