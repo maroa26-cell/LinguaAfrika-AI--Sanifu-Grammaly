@@ -1,7 +1,6 @@
 import streamlit as str_platform
 import os
 import time
-import requests
 from openai import OpenAI
 
 # 🧠 COGNITIVE SUBSYSTEM IMPORTS (Moduli Huru za herufi ndogo)
