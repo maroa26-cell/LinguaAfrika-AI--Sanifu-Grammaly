@@ -13,6 +13,7 @@ except Exception:
 def zindua_mifumo_ya_fahamu_ya_mwili(client, chaguo_menyu):
     """🧠 CENTRAL NERVOUS SYSTEM - THE DECENTRALIZED INNER BRAIN VIEW ENGINE"""
     
+    # 🎯 1. DIRA NA MALENGO YA TAASISI
     if chaguo_menyu == "🎯 Malengo na Dira ya Taasisi":
         str_platform.markdown("<h3 style='color: #1E3A8A;'>🎯 Malengo na Dira ya Taasisi</h3>", unsafe_allow_html=True)
         str_platform.write("LinguaAfrika AI imesajiliwa kuwa chombo kikuu cha kimkakati cha kidijitali barani Afrika kusanifisha na kuongeza thamani ya matumizi ya lugha ya Kiswahili kibiashara.")
@@ -20,6 +21,7 @@ def zindua_mifumo_ya_fahamu_ya_mwili(client, chaguo_menyu):
         with col_m1: str_platform.info("🚀 **Dira Yetu (Our Vision)**\n\nKuwa kitovu namba moja duniani cha Akili Mnemba (AI) kinachosanifisha lugha ya Kiswahili.")
         with col_m2: str_platform.info("📈 **Malengo ya Kikazi (Our Objectives)**\n\n• Kutoa zana za bure kusaidia jamii kuhariri.\n\n• Kujenga mitambo ya kiasili ya mtafsiri na kamusi.")
 
+    # 📝 2. MHARIRI WA KISWAHILI SANIFU PRO
     elif chaguo_menyu == "📝 Mhariri wa Kiswahili Sanifu Pro":
         synapse.chochea_mshipa_wa_fahamu("Mhariri")
         str_platform.markdown("<h3 style='color: #1E3A8A;'>📝 Mhariri wa Kiswahili Sanifu Pro</h3>", unsafe_allow_html=True)
@@ -31,6 +33,7 @@ def zindua_mifumo_ya_fahamu_ya_mwili(client, chaguo_menyu):
                 str_platform.success("Marekebisho Yamekamilika! ✨")
                 str_platform.write(jibu.choices.message.content)
 
+    # 🔀 3. MTAFSIRI WA LUGHA SUITE
     elif chaguo_menyu == "🔀 Mtafsiri wa Lugha Suite":
         synapse.chochea_mshipa_wa_fahamu("Mtafsiri")
         str_platform.markdown("<h3 style='color: #1E3A8A;'>🔀 Mtafsiri wa Lugha & Muktadha Suite (Lugha 14)</h3>", unsafe_allow_html=True)
@@ -45,6 +48,7 @@ def zindua_mifumo_ya_fahamu_ya_mwili(client, chaguo_menyu):
                 str_platform.success("🔮 Matokeo ya Tafsiri Kuu:")
                 str_platform.write(jibu_t.choices.message.content)
 
+    # 📚 4. MAKTABA KUU YA KAMUSI
     elif chaguo_menyu == "📚 Maktaba ya Kamusi Kuu":
         synapse.chochea_mshipa_wa_fahamu("Kamusi")
         str_platform.markdown("<h3 style='color: #1E3A8A;'>📚 Maktaba ya Msamiati na Kamusi Kuu</h3>", unsafe_allow_html=True)
@@ -56,6 +60,7 @@ def zindua_mifumo_ya_fahamu_ya_mwili(client, chaguo_menyu):
                 str_platform.info("✨ Uchambuzi wa Kitaalamu vya Kamusi Kuu:")
                 str_platform.write(jibu_v.choices.message.content)
 
+    # 🔊 5. MTAMBO WA SAUTI (DARASA)
     elif chaguo_menyu == "🔊 Mtambo wa Sauti (Darasa)":
         str_platform.markdown("### 🔊 Mtambo wa Sauti Kuu ya Darasa (UNLOCKED) 🔓", unsafe_allow_html=True)
         v_mwalimu = str_platform.selectbox("Sauti ya Mwalimu:", ["onyx", "echo", "alloy"])
@@ -65,6 +70,7 @@ def zindua_mifumo_ya_fahamu_ya_mwili(client, chaguo_menyu):
             open("sauti_mwalimu.mp3", "wb").write(res.content)
             str_platform.audio("sauti_mwalimu.mp3")
 
+    # 🤖 6. AI PHONETIC ROBOT
     elif chaguo_menyu == "🤖 AI Phonetic Robot (Ukaguzi)":
         str_platform.markdown("### 🤖 AI Phonetic Robot Enterprise Suite (UNLOCKED) 🔓", unsafe_allow_html=True)
         sauti_mwanafunzi = str_platform.file_uploader("Pakia faili la sauti hapa:", type=["wav", "mp3"], key="robot_link_v5")
@@ -72,12 +78,12 @@ def zindua_mifumo_ya_fahamu_ya_mwili(client, chaguo_menyu):
             if str_platform.button("Zindua Ukaguzi Mkuu wa Roboti"):
                 trans_audio = client.audio.transcriptions.create(model="whisper-1", file=(sauti_mwanafunzi.name, sauti_mwanafunzi.read()))
                 str_platform.info(f"🗣️ Robot amekusikia: '{trans_audio.text}'")
-                robot_prompt = f"Wewe ni mtaalamu wa fonetiki ya Kiswahili Sanifu. Sentensi: '{trans_audio.text}'. Toa ripoti rasmi ya fonetiki, mpe alama (0-100%) na ushauri."
+                robot_prompt = f"Wewe ni mtaalamu wa fonetiki ya Kiswahili Sanifu. Sentensi: '{trans_audio.text}'. Toa report ya fonetiki."
                 jibu_robot = client.chat.completions.create(model="gpt-4o", messages=[{"role": "user", "content": robot_prompt}])
                 str_platform.success("🔮 Ripoti Kuu ya Ukaguzi wa Roboti:")
                 str_platform.write(jibu_robot.choices.message.content)
 
-    # 🔐 7. LANGO LA KUINGIA (THE UNIFIED ENTERPRISE GATEWAY LOOPS)
+    # 🔐 7. LANGO LA KUINGIA (LOGIN DASHBOARD)
     elif chaguo_menyu == "🔐 Lango la Kuingia (Login Dashboard)":
         str_platform.markdown("""
         <div style="background-color: #1E293B; border: 3px solid #D97706; padding: 30px; border-radius: 15px; text-align: center; max-width: 500px; margin: 0 auto;">
@@ -125,4 +131,3 @@ def zindua_mifumo_ya_fahamu_ya_mwili(client, chaguo_menyu):
                         matokeo_p = pesapal_core.anzisha_muamala_wa_pesapal(jina_jipya.strip(), f"{jina_jipya.strip()}@ourworthlinks.com", 5.00)
                         
                         if matokeo_p.get("status") == "success":
-                            str_platform.success(f"📲 ODA IMESAJILIWA: Lango la malipo ya siri ya $5.00 USD ya mradi wa LinguaAfrika AI!")
