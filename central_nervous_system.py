@@ -1,7 +1,7 @@
 import streamlit as str_platform
 import database
 import synapse
-import time
+import time  # 👑 KIUNGO KIPYA KILICHOPUNGUA KUZUIA NAMEERROR KWENYE MIAMALA!
 
 # Kujaribu kuvuta Pesapal Engine kiwanda
 try:
@@ -18,8 +18,10 @@ def zindua_mifumo_ya_fahamu_ya_mwili(client, chaguo_menyu):
         str_platform.markdown("<h3 style='color: #1E3A8A;'>🎯 Malengo na Dira ya Taasisi</h3>", unsafe_allow_html=True)
         str_platform.write("LinguaAfrika AI imesajiliwa kuwa chombo kikuu cha kimkakati cha kidijitali barani Afrika kusanifisha na kuongeza thamani ya matumizi ya lugha ya Kiswahili kibiashara.")
         col_m1, col_m2 = str_platform.columns(2)
-        with col_m1: str_platform.info("🚀 **Dira Yetu (Our Vision)**\n\nKuwa kitovu namba moja duniani cha Akili Mnemba (AI) kinachosanifisha lugha ya Kiswahili.")
-        with col_m2: str_platform.info("📈 **Malengo ya Kikazi (Our Objectives)**\n\n• Kutoa zana za bure kusaidia jamii kuhariri.\n\n• Kujenga mitambo ya kiasili ya mtafsiri na kamusi.")
+        with col_m1:
+            str_platform.info("🚀 **Dira Yetu (Our Vision)**\n\nKuwa kitovu namba moja duniani cha Akili Mnemba (AI) kinachosanifisha lugha ya Kiswahili.")
+        with col_m2:
+            str_platform.info("📈 **Malengo ya Kikazi (Our Objectives)**\n\n• Kutoa zana za bure kusaidia jamii kuhariri.\n\n• Kujenga mitambo ya kiasili ya mtafsiri na kamusi.")
 
     # 📝 2. MHARIRI WA KISWAHILI SANIFU PRO
     elif chaguo_menyu == "📝 Mhariri wa Kiswahili Sanifu Pro":
@@ -28,25 +30,42 @@ def zindua_mifumo_ya_fahamu_ya_mwili(client, chaguo_menyu):
         maandishi = str_platform.text_area("Andika maandishi yako hapa:", key="editor_v5_box")
         if str_platform.button("Zindua Ukaguzi wa Sarufi"):
             if maandishi.strip() != "":
-                prompt = f"Sahihisha sarufi ya matini haya kitalaalamu:\n\n{maandishi.strip()}"
+                prompt = f"Wewe ni mtaalamu wa Kiswahili Sanifu. Kagua na usahihishe sarufi ya matini haya kitalaalamu:\n\n{maandishi.strip()}"
                 jibu = client.chat.completions.create(model="gpt-4o", messages=[{"role": "user", "content": prompt}])
                 str_platform.success("Marekebisho Yamekamilika! ✨")
                 str_platform.write(jibu.choices.message.content)
+                str_platform.caption(synapse.kagua_kasi_ya_ubongo("Mhariri"))
 
-    # 🔀 3. MTAFSIRI WA LUGHA SUITE
+    # 🔀 3. MTAFSIRI WA LUGHA SUITE (Orodha ya Lugha 14 Zimerudi kwa Unyoofu!)
     elif chaguo_menyu == "🔀 Mtafsiri wa Lugha Suite":
         synapse.chochea_mshipa_wa_fahamu("Mtafsiri")
         str_platform.markdown("<h3 style='color: #1E3A8A;'>🔀 Mtafsiri wa Lugha & Muktadha Suite (Lugha 14)</h3>", unsafe_allow_html=True)
-        orodha_lugha = ["Kiswahili", "Kiingereza (English)", "Kinyarwanda", "Kiganda (Luganda)", "Lingala", "Kichewa (Chewa)", "Kinyanja", "Kiafrikana (Afrikana)", "Kifaransa (French)", "Kiarabu (Arabic)", "Kihindi (Hindi)", "Kireno (Portuguese)", "Kichina (Chinese)"]
-        col1, col2 = str_platform.columns(2)
-        with col1: lugha_chanzo = str_platform.selectbox("Kutoka Lugha:", orodha_lugha, index=1, key="src_v5")
-        with col2: lugha_lengwa = str_platform.selectbox("Kwenda Lugha:", orodha_lugha, index=0, key="trg_v5")
+        
+        # 👑 MAREKEBISHO: Jina la lugha ya Kireno limesasishwa kiofisi hapa!
+        orodha_lugha = [
+            "Kiswahili", "Kiingereza (English)", "Kinyarwanda", "Kiganda (Luganda)", 
+            "Lingala", "Kichewa (Chewa)", "Kinyanja", "Kiafrikana (Afrikana)", 
+            "Kifaransa (French)", "Kiarabu (Arabic)", "Kihindi (Hindi)", 
+            "Kireno (Portuguese)", "Kichina (Chinese)"
+        ]
+        muktadha_list = ["Mazungumzo ya Kawaida", "Kiakademia", "Kibiashara", "Fasihi na Ushairi", "Kisheria"]
+        
+        col1, col2, col3 = str_platform.columns(3)
+        with col1:
+            lugha_chanzo = str_platform.selectbox("Kutoka Lugha (From):", orodha_lugha, index=1, key="src_v5")
+        with col2:
+            lugha_lengwa = str_platform.selectbox("Kwenda Lugha (To):", orodha_lugha, index=0, key="trg_v5")
+        with col3:
+            muktadha = str_platform.selectbox("Muktadha wa Tafsiri:", muktadha_list, index=0, key="ctx_v5")
+            
         maandishi_t = str_platform.text_area("Ingiza maandishi ya kutafsiri hapa:", key="trans_v5_box")
-        if str_platform.button("Zindua Tafsiri"):
-            if  maandishi_t.strip() != "":
-                jibu_t = client.chat.completions.create(model="gpt-4o", messages=[{"role": "user", "content": f"Translate from {lugha_chanzo} to {lugha_lengwa}: {maandishi_t}"}])
-                str_platform.success("🔮 Matokeo ya Tafsiri Kuu:")
+        if str_platform.button("Zindua Tafsiri ya Kitaalamu"):
+            if maandishi_t.strip() != "":
+                prompt_t = f"Translate from {lugha_chanzo} to {lugha_lengwa} in a {muktadha} style:\n\n{maandishi_t.strip()}"
+                jibu_t = client.chat.completions.create(model="gpt-4o", messages=[{"role": "user", "content": prompt_t}])
+                str_platform.success("🔮 Matokeo ya Tafsiri ya Kitaalamu Imekamilika:")
                 str_platform.write(jibu_t.choices.message.content)
+                str_platform.caption(synapse.kagua_kasi_ya_ubongo("Mtafsiri"))
 
     # 📚 4. MAKTABA KUU YA KAMUSI
     elif chaguo_menyu == "📚 Maktaba ya Kamusi Kuu":
@@ -55,40 +74,50 @@ def zindua_mifumo_ya_fahamu_ya_mwili(client, chaguo_menyu):
         msamiati = str_platform.text_input("Andika neno, nahau au methali hapa ya Kiswahili:")
         if str_platform.button("Tafuta Kwenye Kamusi Kuu"):
             if msamiati.strip() != "":
-                prompt_v = f"Wewe ni Kamusi Kuu ya Lugha za Kiafrika. Toa ufafanuzi wa kina na mifano ya sentensi kwa neno hili la Kiswahili: {msamiati.strip()}"
+                prompt_v = f"Wewe ni Kamusi Kuu ya Lugha za Kiafrika. Toa ufafanuzi wa kina, etimolojia (asili ya neno), maana kamili, na mifano 3 ya sentensi kwa kutumia neno hili la Kiswahili: {msamiati.strip()}"
                 jibu_v = client.chat.completions.create(model="gpt-4o", messages=[{"role": "user", "content": prompt_v}])
                 str_platform.info("✨ Uchambuzi wa Kitaalamu vya Kamusi Kuu:")
                 str_platform.write(jibu_v.choices.message.content)
+                str_platform.caption(synapse.kagua_kasi_ya_ubongo("Kamusi"))
+            else:
+                str_platform.warning("⚠️ Tafadhali andika msamiati kwanza!")
 
     # 🔊 5. MTAMBO WA SAUTI (DARASA)
     elif chaguo_menyu == "🔊 Mtambo wa Sauti (Darasa)":
-        str_platform.markdown("### 🔊 Mtambo wa Sauti Kuu ya Darasa (UNLOCKED) 🔓", unsafe_allow_html=True)
-        v_mwalimu = str_platform.selectbox("Sauti ya Mwalimu:", ["onyx", "echo", "alloy"])
-        t_mwalimu = str_platform.text_area("Maandishi ya Mwalimu:", "Karibu darasani mwanafunzi wangu.", key="teacher_link_v5")
-        if str_platform.button("Zalisha Sauti"):
-            res = client.audio.speech.create(model="tts-1", voice=v_mwalimu, input=t_mwalimu)
-            open("sauti_mwalimu.mp3", "wb").write(res.content)
-            str_platform.audio("sauti_mwalimu.mp3")
+        if str_platform.session_state["user_status"] == "guest":
+            str_platform.warning("👑 Kifurushi cha Premium Lock. Tafadhali nenda kwenye '🔐 Lango la Kuingia (Login Dashboard)' pembeni ili kufungua akaunti yako.")
+        else:
+            str_platform.markdown("### 🔊 Mtambo wa Sauti Kuu ya Darasa (UNLOCKED) 🔓", unsafe_allow_html=True)
+            v_mwalimu = str_platform.selectbox("Sauti ya Mwalimu:", ["onyx", "echo", "alloy"])
+            t_mwalimu = str_platform.text_area("Maandishi ya Mwalimu:", "Karibu darasani mwanafunzi wangu.", key="teacher_link_v5")
+            if str_platform.button("Zalisha Sauti Kuu"):
+                if t_mwalimu.strip() != "":
+                    res = client.audio.speech.create(model="tts-1", voice=v_mwalimu, input=t_mwalimu)
+                    open("sauti_mwalimu.mp3", "wb").write(res.content)
+                    str_platform.audio("sauti_mwalimu.mp3")
 
     # 🤖 6. AI PHONETIC ROBOT
     elif chaguo_menyu == "🤖 AI Phonetic Robot (Ukaguzi)":
-        str_platform.markdown("### 🤖 AI Phonetic Robot Enterprise Suite (UNLOCKED) 🔓", unsafe_allow_html=True)
-        sauti_mwanafunzi = str_platform.file_uploader("Pakia faili la sauti hapa:", type=["wav", "mp3"], key="robot_link_v5")
-        if sauti_mwanafunzi is not None:
-            if str_platform.button("Zindua Ukaguzi Mkuu wa Roboti"):
-                trans_audio = client.audio.transcriptions.create(model="whisper-1", file=(sauti_mwanafunzi.name, sauti_mwanafunzi.read()))
-                str_platform.info(f"🗣️ Robot amekusikia: '{trans_audio.text}'")
-                robot_prompt = f"Wewe ni mtaalamu wa fonetiki ya Kiswahili Sanifu. Sentensi: '{trans_audio.text}'. Toa report ya fonetiki."
-                jibu_robot = client.chat.completions.create(model="gpt-4o", messages=[{"role": "user", "content": robot_prompt}])
-                str_platform.success("🔮 Ripoti Kuu ya Ukaguzi wa Roboti:")
-                str_platform.write(jibu_robot.choices.message.content)
+        if str_platform.session_state["user_status"] == "guest":
+            str_platform.warning("👑 Kipengele hiki kinahitaji Akaunti ya Premium. Tafadhali bofya '🔐 Lango la Kuingia (Login Dashboard)' pembeni.")
+        else:
+            str_platform.markdown("### 🤖 AI Phonetic Robot Enterprise Suite (UNLOCKED) 🔓", unsafe_allow_html=True)
+            sauti_mwanafunzi = str_platform.file_uploader("Pakia faili la sauti hapa:", type=["wav", "mp3"], key="robot_link_v5")
+            if sauti_mwanafunzi is not None:
+                if str_platform.button("Zindua Ukaguzi Mkuu wa Roboti"):
+                    trans_audio = client.audio.transcriptions.create(model="whisper-1", file=(sauti_mwanafunzi.name, sauti_mwanafunzi.read()))
+                    str_platform.info(f"🗣️ Robot amekusikia: '{trans_audio.text}'")
+                    robot_prompt = f"Wewe ni mtaalamu wa fonetiki ya Kiswahili Sanifu. Sentensi: '{trans_audio.text}'. Toa ripoti rasmi ya fonetiki, mpe alama (0-100%) na ushauri."
+                    jibu_robot = client.chat.completions.create(model="gpt-4o", messages=[{"role": "user", "content": robot_prompt}])
+                    str_platform.success("🔮 Ripoti Kuu ya Ukaguzi wa Roboti:")
+                    str_platform.write(jibu_robot.choices.message.content)
 
     # 🔐 7. LANGO LA KUINGIA (LOGIN DASHBOARD)
     elif chaguo_menyu == "🔐 Lango la Kuingia (Login Dashboard)":
         str_platform.markdown("""
-        <div style="background-color: #1E293B; border: 3px solid #D97706; padding: 30px; border-radius: 15px; text-align: center; max-width: 500px; margin: 0 auto;">
+        <div style="background-color: #1E293B; border: 3px solid #D97706; padding: 30px; border-radius: 15px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.3); max-width: 500px; margin: 0 auto;">
             <h2 style="color: #D97706; font-family: sans-serif; font-weight: 800; margin-bottom: 5px;">🔐 LOGIN DASHBOARD</h2>
-            <p style="color: #94A3B8; font-family: sans-serif; font-size: 14px; margin: 0;">Ourworthlinks • Administrative Secure Identity Port</p>
+            <p style="color: #94A3B8; font-family: sans-serif; font-size: 14px; margin-top: 0; margin-bottom: 20px;">The Smart Multi-Role Identity Gateway</p>
         </div>
         """, unsafe_allow_html=True)
         str_platform.write("---")
@@ -103,7 +132,8 @@ def zindua_mifumo_ya_fahamu_ya_mwili(client, chaguo_menyu):
                     str_platform.session_state["user_status"] = "admin" if chaguo_lango == "Admin" else "standard_premium"
                     str_platform.session_state["active_user_name"] = jina
                     str_platform.rerun()
-                else: str_platform.error("🛑 Hitilafu: Jina au Nenosiri uliloingiza si sahihi!")
+                else:
+                    str_platform.error("🛑 Hitilafu: Jina au Nenosiri uliloingiza si sahihi!")
         with col_lango2:
             str_platform.markdown("### 📝 Jisajili Akaunti Mpya (Sign Up)")
             chaguo_usajili = str_platform.selectbox("Sajili Akaunti Kama:", ["Premium User", "Admin"], key="signup_role_select")
@@ -111,23 +141,3 @@ def zindua_mifumo_ya_fahamu_ya_mwili(client, chaguo_menyu):
             siri_mpya = str_platform.text_input("Tengeneza Nenosiri (New Password):", type="password", key="signup_pass")
             
             str_platform.write("---")
-            str_platform.markdown("<p style='color: #D97706; font-weight: bold; margin-bottom: 2px;'>💳 Kifurushi cha Premium ($5.00 USD / Mwezi)</p>", unsafe_allow_html=True)
-            njia_malipo = str_platform.radio("Chagua Njia ya Malipo:", ["Mobile Money (M-Pesa/Tigo Pesa)", "Kadi ya Benki (Visa / Mastercard)"])
-            
-            if njia_malipo == "Mobile Money (M-Pesa/Tigo Pesa)":
-                mtandao_simu = str_platform.selectbox("Chagua Mtandao wa Malipo:", ["M-Pesa (Vodacom)", "Tigo Pesa (Tigo)", "Airtel Money (Airtel)"])
-                namba_simu = str_platform.text_input("Ingiza Namba ya Simu (Mfano: 07XXXXXXXX):", key="payment_phone_no")
-            else:
-                jina_kadi = str_platform.text_input("Jina Linalosomeka Kwenye Kadi (Cardholder Name):")
-                namba_kadi = str_platform.text_input("Namba ya Kadi (Card Number - 16 Digits):", max_chars=16)
-                col_k1, col_k2 = str_platform.columns(2)
-                with col_k1: tarehe_kadi = str_platform.text_input("Tarehe ya Kuisha (MM/YY):", max_chars=5)
-                with col_k2: cvv_kadi = str_platform.text_input("Namba ya Siri (CVV):", type="password", max_chars=3)
-                
-            if str_platform.button("Kamilisha Usajili na Lipia Kifurushi"):
-                if jina_jipya.strip() != "" and siri_mpya.strip() != "":
-                    if pesapal_tayari:
-                        str_platform.info("🧠 Ubongo unaunganisha na Lango Kuu la Pesapal la kampuni ya **Ourworthlinks**...")
-                        matokeo_p = pesapal_core.anzisha_muamala_wa_pesapal(jina_jipya.strip(), f"{jina_jipya.strip()}@ourworthlinks.com", 5.00)
-                        
-                        if matokeo_p.get("status") == "success":
