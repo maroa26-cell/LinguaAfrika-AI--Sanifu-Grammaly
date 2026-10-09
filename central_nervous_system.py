@@ -12,6 +12,9 @@ except Exception:
 def zindua_mifumo_ya_fahamu_ya_mwili(client, chaguo_menyu):
     """🧠 CENTRAL NERVOUS SYSTEM - THE DECENTRALIZED INNER BRAIN VIEW ENGINE"""
     
+    # Jina la Lango la Kuingia lililofungwa kufuli sambamba na app.py core router
+    jina_lango_dashboard = "🔐 Lango la Kuingia (Login Dashboard)"
+    
     # 📊 1. JOPO LA ADMIN - RIPOTI KUU YA UTENDAJI (OURWORTHLINKS)
     if chaguo_menyu == "📊 Ripoti Kuu ya Utendaji" and str_platform.session_state["user_status"] == "admin":
         str_platform.markdown("<h2 style='color: #D97706; font-weight: bold;'>📊 Ourworthlinks Operations Jopo</h2>", unsafe_allow_html=True)
@@ -38,7 +41,7 @@ def zindua_mifumo_ya_fahamu_ya_mwili(client, chaguo_menyu):
     # 📝 3. MHARIRI WA KISWAHILI SANIFU PRO
     elif chaguo_menyu == "📝 Mhariri wa Kiswahili Sanifu Pro":
         str_platform.markdown("<h3 style='color: #1E3A8A;'>📝 Mhariri wa Kiswahili Sanifu Pro</h3>", unsafe_allow_html=True)
-        maandishi = str_platform.text_area("Andika maandishi yako hapa:", key="editor_cns_box_v12")
+        maandishi = str_platform.text_area("Andika maandishi yako hapa:", key="editor_cns_box_v13")
         if str_platform.button("Zindua Ukaguzi wa Sarufi"):
             if maandishi.strip() != "":
                 try:
@@ -49,16 +52,16 @@ def zindua_mifumo_ya_fahamu_ya_mwili(client, chaguo_menyu):
                 except Exception as api_err:
                     str_platform.error(f"🛑 OpenAI API Exception: {str(api_err)}")
 
-    # 🔀 4. MTAFSIRI WA LUGHA SUITE (LUGHA 14)
+    # 🔀 4. MTAFSIRI WA LUGHA SUITE (LUGHA 14 TIMILIFU)
     elif chaguo_menyu == "🔀 Mtafsiri wa Lugha Suite":
         str_platform.markdown("<h3 style='color: #1E3A8A;'>🔀 Mtafsiri wa Lugha & Muktadha Suite (Lugha 14)</h3>", unsafe_allow_html=True)
         orodha_lugha = ["Kiswahili", "Kiingereza (English)", "Kinyarwanda", "Kiganda (Luganda)", "Lingala", "Kichewa (Chewa)", "Kinyanja", "Kiafrikana (Afrikana)", "Kifaransa (French)", "Kiarabu (Arabic)", "Kihindi (Hindi)", "Kireno (Portuguese)", "Kichina (Chinese)"]
         col1, col2 = str_platform.columns(2)
         with col1:
-            lugha_chanzo = str_platform.selectbox("Kutoka Lugha:", orodha_lugha, index=1, key="src_cns_v12")
+            lugha_chanzo = str_platform.selectbox("Kutoka Lugha:", orodha_lugha, index=1, key="src_cns_v13")
         with col2:
-            lugha_lengwa = str_platform.selectbox("Kwenda Lugha:", orodha_lugha, index=0, key="trg_cns_v12")
-        maandishi_t = str_platform.text_area("Ingiza maandishi ya kutafsiri hapa:", key="trans_cns_box_v12")
+            lugha_lengwa = str_platform.selectbox("Kwenda Lugha:", orodha_lugha, index=0, key="trg_cns_v13")
+        maandishi_t = str_platform.text_area("Ingiza maandishi ya kutafsiri hapa:", key="trans_cns_box_v13")
         if str_platform.button("Zindua Tafsiri"):
             if maandishi_t.strip() != "":
                 try:
@@ -71,7 +74,7 @@ def zindua_mifumo_ya_fahamu_ya_mwili(client, chaguo_menyu):
     # 📚 5. MAKTABA YA KAMUSI KUU
     elif chaguo_menyu == "📚 Maktaba ya Kamusi Kuu":
         str_platform.markdown("<h3 style='color: #1E3A8A;'>📚 Maktaba ya Msamiati na Kamusi Kuu</h3>", unsafe_allow_html=True)
-        msamiati = str_platform.text_input("Andika neno, nahau au methali hapa ya Kiswahili:", key="kamusi_cns_input_v12")
+        msamiati = str_platform.text_input("Andika neno, nahau au methali hapa ya Kiswahili:", key="kamusi_cns_input_v13")
         if str_platform.button("Tafuta Kwenye Kamusi Kuu"):
             if msamiati.strip() != "":
                 try:
@@ -85,8 +88,8 @@ def zindua_mifumo_ya_fahamu_ya_mwili(client, chaguo_menyu):
     # 🔊 6. MTAMBO WA SAUTI (DARASA)
     elif chaguo_menyu == "🔊 Mtambo wa Sauti (Darasa)":
         str_platform.markdown("### 🔊 Mtambo wa Sauti Kuu ya Darasa (UNLOCKED) 🔓", unsafe_allow_html=True)
-        v_mwalimu = str_platform.selectbox("Sauti ya Mwalimu:", ["onyx", "echo", "alloy"], key="voice_cns_v12")
-        t_mwalimu = str_platform.text_area("Maandishi ya Mwalimu:", "Karibu darasani mwanafunzi wangu.", key="teacher_cns_v12")
+        v_mwalimu = str_platform.selectbox("Sauti ya Mwalimu:", ["onyx", "echo", "alloy"], key="voice_cns_v13")
+        t_mwalimu = str_platform.text_area("Maandishi ya Mwalimu:", "Karibu darasani mwanafunzi wangu.", key="teacher_cns_v13")
         if str_platform.button("Zalisha Sauti"):
             if t_mwalimu.strip() != "":
                 try:
@@ -99,7 +102,7 @@ def zindua_mifumo_ya_fahamu_ya_mwili(client, chaguo_menyu):
     # 🤖 7. AI PHONETIC ROBOT (UKAGUZI)
     elif chaguo_menyu == "🤖 AI Phonetic Robot (Ukaguzi)":
         str_platform.markdown("### 🤖 AI Phonetic Robot Enterprise Suite (UNLOCKED) 🔓", unsafe_allow_html=True)
-        sauti_mwanafunzi = str_platform.file_uploader("Pakia faili la sauti hapa:", type=["wav", "mp3"], key="robot_cns_v12")
+        sauti_mwanafunzi = str_platform.file_uploader("Pakia faili la sauti hapa:", type=["wav", "mp3"], key="robot_cns_v13")
         if sauti_mwanafunzi is not None:
             if str_platform.button("Zindua Ukaguzi Mkuu wa Roboti"):
                 try:
@@ -111,8 +114,8 @@ def zindua_mifumo_ya_fahamu_ya_mwili(client, chaguo_menyu):
                 except Exception as api_err:
                     str_platform.error(f"🛑 OpenAI API Exception: {str(api_err)}")
 
-    # 🔐 8. LANGO LA KUINGIA NA USASISHAJI WA REDIRECT LINKS
-    elif chaguo_menyu == "🔐 Lango la Kuingia (Login Dashboard)":
+    # 🔐 8. LANGO LA KUINGIA NA MAPINDUZI YA REDIRECT LAYOUTS (LUGHA YA USHINDI)
+    elif chaguo_menyu == jina_lango_dashboard:
         str_platform.markdown("""
         <div style="background-color: #1E293B; border: 3px solid #D97706; padding: 30px; border-radius: 15px; text-align: center; max-width: 500px; margin: 0 auto;">
             <h2 style="color: #D97706; font-family: sans-serif; font-weight: 800; margin-bottom: 5px;">🔐 LOGIN DASHBOARD</h2>
@@ -123,9 +126,9 @@ def zindua_mifumo_ya_fahamu_ya_mwili(client, chaguo_menyu):
         col_lango1, col_lango2 = str_platform.columns(2)
         with col_lango1:
             str_platform.markdown("### 🔑 Kuingia Mfumo (Sign In)")
-            chaguo_lango = str_platform.selectbox("Chagua Hadhi Yako (Role):", ["Premium User", "Admin"], key="lango_cns_role_v12")
-            jina = str_platform.text_input("Ingiza Jina (Username):", key="lango_cns_user_v12")
-            password = str_platform.text_input("Ingiza Nenosiri (Password):", type="password", key="lango_cns_pass_v12")
+            chaguo_lango = str_platform.selectbox("Chagua Hadhi Yako (Role):", ["Premium User", "Admin"], key="lango_cns_role_v13")
+            jina = str_platform.text_input("Ingiza Jina (Username):", key="lango_cns_user_v13")
+            password = str_platform.text_input("Ingiza Nenosiri (Password):", type="password", key="lango_cns_pass_v13")
             if str_platform.button("Thibitisha Kuingia Mfumo"):
                 if database.thibitisha_utambulisho_wa_siri(jina, password, chaguo_lango):
                     str_platform.session_state["user_status"] = "admin" if chaguo_lango == "Admin" else "standard_premium"
@@ -138,4 +141,3 @@ def zindua_mifumo_ya_fahamu_ya_mwili(client, chaguo_menyu):
             
             str_platform.markdown("""
             <div style='background-color: rgba(217, 119, 6, 0.1); border-left: 5px solid #D97706; padding: 12px; border-radius: 6px; margin-bottom: 15px;'>
-                <p style='color: #D97706; font-size: 14px; margin: 0 0 5px 0; font-weight: bold;'>📝 MWONGOZO WA USAJILI SALAMA:</p>
