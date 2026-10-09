@@ -38,7 +38,7 @@ def zindua_mifumo_ya_fahamu_ya_mwili(client, chaguo_menyu):
     # 📝 3. MHARIRI WA KISWAHILI SANIFU PRO
     elif chaguo_menyu == "📝 Mhariri wa Kiswahili Sanifu Pro":
         str_platform.markdown("<h3 style='color: #1E3A8A;'>📝 Mhariri wa Kiswahili Sanifu Pro</h3>", unsafe_allow_html=True)
-        maandishi = str_platform.text_area("Andika maandishi yako hapa:", key="editor_v11_box")
+        maandishi = str_platform.text_area("Andika maandishi yako hapa:", key="editor_cns_box_v12")
         if str_platform.button("Zindua Ukaguzi wa Sarufi"):
             if maandishi.strip() != "":
                 try:
@@ -55,10 +55,10 @@ def zindua_mifumo_ya_fahamu_ya_mwili(client, chaguo_menyu):
         orodha_lugha = ["Kiswahili", "Kiingereza (English)", "Kinyarwanda", "Kiganda (Luganda)", "Lingala", "Kichewa (Chewa)", "Kinyanja", "Kiafrikana (Afrikana)", "Kifaransa (French)", "Kiarabu (Arabic)", "Kihindi (Hindi)", "Kireno (Portuguese)", "Kichina (Chinese)"]
         col1, col2 = str_platform.columns(2)
         with col1:
-            lugha_chanzo = str_platform.selectbox("Kutoka Lugha:", orodha_lugha, index=1, key="src_v11")
+            lugha_chanzo = str_platform.selectbox("Kutoka Lugha:", orodha_lugha, index=1, key="src_cns_v12")
         with col2:
-            lugha_lengwa = str_platform.selectbox("Kwenda Lugha:", orodha_lugha, index=0, key="trg_v11")
-        maandishi_t = str_platform.text_area("Ingiza maandishi ya kutafsiri hapa:", key="trans_v11_box")
+            lugha_lengwa = str_platform.selectbox("Kwenda Lugha:", orodha_lugha, index=0, key="trg_cns_v12")
+        maandishi_t = str_platform.text_area("Ingiza maandishi ya kutafsiri hapa:", key="trans_cns_box_v12")
         if str_platform.button("Zindua Tafsiri"):
             if maandishi_t.strip() != "":
                 try:
@@ -71,7 +71,7 @@ def zindua_mifumo_ya_fahamu_ya_mwili(client, chaguo_menyu):
     # 📚 5. MAKTABA YA KAMUSI KUU
     elif chaguo_menyu == "📚 Maktaba ya Kamusi Kuu":
         str_platform.markdown("<h3 style='color: #1E3A8A;'>📚 Maktaba ya Msamiati na Kamusi Kuu</h3>", unsafe_allow_html=True)
-        msamiati = str_platform.text_input("Andika neno, nahau au methali hapa ya Kiswahili:", key="kamusi_input_v11")
+        msamiati = str_platform.text_input("Andika neno, nahau au methali hapa ya Kiswahili:", key="kamusi_cns_input_v12")
         if str_platform.button("Tafuta Kwenye Kamusi Kuu"):
             if msamiati.strip() != "":
                 try:
@@ -85,8 +85,8 @@ def zindua_mifumo_ya_fahamu_ya_mwili(client, chaguo_menyu):
     # 🔊 6. MTAMBO WA SAUTI (DARASA)
     elif chaguo_menyu == "🔊 Mtambo wa Sauti (Darasa)":
         str_platform.markdown("### 🔊 Mtambo wa Sauti Kuu ya Darasa (UNLOCKED) 🔓", unsafe_allow_html=True)
-        v_mwalimu = str_platform.selectbox("Sauti ya Mwalimu:", ["onyx", "echo", "alloy"], key="voice_v11_select")
-        t_mwalimu = str_platform.text_area("Maandishi ya Mwalimu:", "Karibu darasani mwanafunzi wangu.", key="teacher_link_v11")
+        v_mwalimu = str_platform.selectbox("Sauti ya Mwalimu:", ["onyx", "echo", "alloy"], key="voice_cns_v12")
+        t_mwalimu = str_platform.text_area("Maandishi ya Mwalimu:", "Karibu darasani mwanafunzi wangu.", key="teacher_cns_v12")
         if str_platform.button("Zalisha Sauti"):
             if t_mwalimu.strip() != "":
                 try:
@@ -99,7 +99,7 @@ def zindua_mifumo_ya_fahamu_ya_mwili(client, chaguo_menyu):
     # 🤖 7. AI PHONETIC ROBOT (UKAGUZI)
     elif chaguo_menyu == "🤖 AI Phonetic Robot (Ukaguzi)":
         str_platform.markdown("### 🤖 AI Phonetic Robot Enterprise Suite (UNLOCKED) 🔓", unsafe_allow_html=True)
-        sauti_mwanafunzi = str_platform.file_uploader("Pakia faili la sauti hapa:", type=["wav", "mp3"], key="robot_link_v11")
+        sauti_mwanafunzi = str_platform.file_uploader("Pakia faili la sauti hapa:", type=["wav", "mp3"], key="robot_cns_v12")
         if sauti_mwanafunzi is not None:
             if str_platform.button("Zindua Ukaguzi Mkuu wa Roboti"):
                 try:
@@ -123,9 +123,9 @@ def zindua_mifumo_ya_fahamu_ya_mwili(client, chaguo_menyu):
         col_lango1, col_lango2 = str_platform.columns(2)
         with col_lango1:
             str_platform.markdown("### 🔑 Kuingia Mfumo (Sign In)")
-            chaguo_lango = str_platform.selectbox("Chagua Hadhi Yako (Role):", ["Premium User", "Admin"], key="lango_select_v11")
-            jina = str_platform.text_input("Ingiza Jina (Username):", key="lango_username_v11")
-            password = str_platform.text_input("Ingiza Nenosiri (Password):", type="password", key="lango_password_v11")
+            chaguo_lango = str_platform.selectbox("Chagua Hadhi Yako (Role):", ["Premium User", "Admin"], key="lango_cns_role_v12")
+            jina = str_platform.text_input("Ingiza Jina (Username):", key="lango_cns_user_v12")
+            password = str_platform.text_input("Ingiza Nenosiri (Password):", type="password", key="lango_cns_pass_v12")
             if str_platform.button("Thibitisha Kuingia Mfumo"):
                 if database.thibitisha_utambulisho_wa_siri(jina, password, chaguo_lango):
                     str_platform.session_state["user_status"] = "admin" if chaguo_lango == "Admin" else "standard_premium"
@@ -136,6 +136,6 @@ def zindua_mifumo_ya_fahamu_ya_mwili(client, chaguo_menyu):
         with col_lango2:
             str_platform.markdown("### 📝 Jisajili Akaunti Mpya (Sign Up)")
             
-            # 👑 BANDO LA MAELEKOZO: Maelekezo ya kiwanda kuzuia makosa ya wateja!
             str_platform.markdown("""
             <div style='background-color: rgba(217, 119, 6, 0.1); border-left: 5px solid #D97706; padding: 12px; border-radius: 6px; margin-bottom: 15px;'>
+                <p style='color: #D97706; font-size: 14px; margin: 0 0 5px 0; font-weight: bold;'>📝 MWONGOZO WA USAJILI SALAMA:</p>
