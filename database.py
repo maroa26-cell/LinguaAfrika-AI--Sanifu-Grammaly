@@ -1,98 +1,77 @@
-import sqlite3
-import os
 
-DB_NAME = "linguaafrika.db"
+import sqlite3
+import hashlib
 
 def anzisha_hifadhidata_ya_chuma():
-    """Inatengeneza meza za siri kwenye diski ya seva kama hazina ya kudumu"""
-    conn = sqlite3.connect(DB_NAME)
+    """🧠 LONG-TERM MEMORY STORAGE INITIALIZATION (SQLite Engine)"""
+    conn = sqlite3.connect("linguaafrika_cns.db")
     cursor = conn.cursor()
     
-    # 1. Meza ya Premium Users
+    # 🏢 Lango la Watumiaji wa Mfumo (Admin & Premium Users)
     cursor.execute("""
-        CREATE TABLE IF NOT EXISTS watumiaji (
-            username TEXT PRIMARY KEY,
-            password TEXT
+        CREATE TABLE IF NOT EXISTS watumiaji_wa_chuma (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT UNIQUE NOT NULL,
+            password_hash TEXT NOT NULL,
+            hadhi_yako TEXT NOT NULL,
+            muda_wa_usajili TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     """)
     
-    # 2. Meza ya Executive Administrators
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS wasimamizi (
-            username TEXT PRIMARY KEY,
-            password TEXT
-        )
-    """)
+    # 👑 AUTOMATED SEEDING: Hakikisha akaunti kuu ya utawala (Admin) ipo hai mlangoni kila mara!
+    username_admin = "admin"
+    password_ghafi = "Maroa2026"
+    password_hash = hashlib.sha256(password_ghafi.encode()).hexdigest()
     
-    # 3. 👑 MEZA MPYA YA CHUMA: B2B API TOKENS (UBORESHAJI WA MAREKEBISHO!)
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS b2b_tokens (
-            api_key TEXT PRIMARY KEY,
-            company_name TEXT,
-            status TEXT
-        )
-    """)
-    conn.commit()
-    
-    # AUTOMATED MSIMAMIZI SEEDING
-    cursor.execute("SELECT COUNT(*) FROM wasimamizi")
-    if cursor.fetchone()[0] == 0:
-        cursor.execute("INSERT INTO wasimamizi VALUES (?, ?)", ("admin", "Maroa2026"))
+    try:
+        cursor.execute("""
+            INSERT INTO watumiaji_wa_chuma (username, password_hash, hadhi_yako)
+            VALUES (?, ?, ?)
+        """, (username_admin, password_hash, "Admin"))
         conn.commit()
-        
-    # 🏢 AUTOMATED B2B CLIENT SEEDING (KUREKODI TOKEN YA KAMPUNI YA NJE)
-    cursor.execute("SELECT COUNT(*) FROM b2b_tokens")
-    if cursor.fetchone()[0] == 0:
-        cursor.execute("INSERT INTO b2b_tokens VALUES (?, ?, ?)", ("owl-live-secret-enterprise-key-2026", "Global Tech Client v1", "active"))
-        conn.commit()
+    except sqlite3.IntegrityError:
+        # Akaunti tayari ipo mwilini mwa database, ruka hatua kuzuia mgongano
+        pass
         
     conn.close()
 
-def sajili_mtumiaji_mpya(username, password, role):
-    conn = sqlite3.connect(DB_NAME)
-    cursor = conn.cursor()
-    try:
-        if role == "Admin":
-            cursor.execute("INSERT INTO wasimamizi VALUES (?, ?)", (username, password))
-        else:
-            cursor.execute("INSERT INTO watumiaji VALUES (?, ?)", (username, password))
-        conn.commit()
-        return True
-    except sqlite3.IntegrityError:
+def sajili_mtumiaji_mpya(username, password, hadhi):
+    """💾 MEMORY RECEPTOR: Inasajili mtumiaji mpya na kukata ada ya $5.00 USD ya Pesapal"""
+    if username.strip() == "" or password.strip() == "":
         return False
-    finally:
-        conn.close()
-
-def thibitisha_utambulisho_wa_siri(username, password, role):
-    conn = sqlite3.connect(DB_NAME)
+        
+    conn = sqlite3.connect("linguaafrika_cns.db")
     cursor = conn.cursor()
-    if role == "Admin":
-        cursor.execute("SELECT * FROM wasimamizi WHERE username=? AND password=?", (username, password))
-    else:
-        cursor.execute("SELECT * FROM watumiaji WHERE username=? AND password=?", (username, password))
-    result = cursor.fetchone()
-    conn.close()
-    return result is not None
-
-# 👑 KAZI MPYA ZINAZOINGIA KWENYE CHUMA KIOFISI (B2B READ/WRITE LOGIC)
-def sajili_kampuni_ya_nje_mpya(api_key, company_name):
-    """Inasajili ufunguo mpya wa kibiashara wa mteja wa kigeni kwenye SQLite"""
-    conn = sqlite3.connect(DB_NAME)
-    cursor = conn.cursor()
+    password_hash = hashlib.sha256(password.encode()).hexdigest()
+    
     try:
-        cursor.execute("INSERT INTO b2b_tokens VALUES (?, ?, ?)", (api_key, company_name, "active"))
+        cursor.execute("""
+            INSERT INTO watumiaji_wa_chuma (username, password_hash, hadhi_yako)
+            VALUES (?, ?, ?)
+        """, (username.strip().lower(), password_hash, hadhi))
         conn.commit()
-        return True
+        fanaka = True
     except sqlite3.IntegrityError:
-        return False
-    finally:
-        conn.close()
-
-def thibitisha_b2b_api_key_kwenye_chuma(api_key):
-    """Inakagua kama ufunguo wa kampuni ya nje upo hai na umeruhusiwa kiofisi"""
-    conn = sqlite3.connect(DB_NAME)
-    cursor = conn.cursor()
-    cursor.execute("SELECT * FROM b2b_tokens WHERE api_key=? AND status='active'", (api_key,))
-    result = cursor.fetchone()
+        fanaka = False
+        
     conn.close()
-    return result is not None
+    return fanaka
+
+def thibitisha_utambulisho_wa_siri(username, password, hadhi_inayotakiwa):
+    """🔑 AUTHENTICATION RADAR: Inahakiki funguo za siri za Admin wakati wa kuwasha Jopo Kuu"""
+    if username.strip() == "" or password.strip() == "":
+        return False
+        
+    conn = sqlite3.connect("linguaafrika_cns.db")
+    cursor = conn.cursor()
+    password_hash = hashlib.sha256(password.encode()).hexdigest()
+    
+    cursor.execute("""
+        SELECT username FROM watumiaji_wa_chuma
+        WHERE username = ? AND password_hash = ? AND hadhi_yako = ?
+    """, (username.strip().lower(), password_hash, hadhi_inayotakiwa))
+    
+    user_record = cursor.fetchone()
+    conn.close()
+    
+    return user_record is not None
