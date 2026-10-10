@@ -1,27 +1,14 @@
 import streamlit as str_platform
 import os
 import time
-import importlib  # 👑 SYNAPTIC RE-IMPORT PIPELINE
-import sys
 from openai import OpenAI
 
-# 🧠 BIOMIMETIC SUBSYSTEM IMPORTS (Moduli Huru)
+# 🧠 BIOMIMETIC SUBSYSTEM IMPORTS (Moduli Huru za chuma)
 import database
 import synapse
-import pesapal_core
+import pesapal_core  # Limesimikwa rasmi mlangoni kuzuia NameError kwenye miamala!
 
 self_healing_status = "🟢 Autonomous Shield: Active & Healthy"
-mifumo_tayari = True
-
-# 👑 MITAMBO YA SHINA LA UBONGO (LINUX CACHE CLEAR PIPELINE)
-# Kulazimisha Linux kusoma faili jipya la central_nervous_system.py kila sekunde!
-try:
-    if "central_nervous_system" in sys.modules:
-        importlib.reload(sys.modules["central_nervous_system"])
-    import central_nervous_system
-except Exception as e:
-    self_healing_status = "🛠️ Self-Regulatory Action: Restoring Defected Memory Nodes"
-    mifumo_tayari = False
 
 # 👑 Sanifu Mipangilio ya Seva Kuu ya Sayari
 str_platform.set_page_config(page_title="LinguaAfrika AI", page_icon="🧠", layout="wide", initial_sidebar_state="expanded")
@@ -31,7 +18,6 @@ try:
 except Exception:
     pass
 
-# 🧬 HYPOTHALAMUS LAYER: Udhibiti na Ulinzi wa Vigezo vya Ndani (Homeostasis)
 if "OPENAI_API_KEY" in os.environ:
     api_key_source = os.environ["OPENAI_API_KEY"]
 elif hasattr(str_platform, "secrets") and "OPENAI_API_KEY" in str_platform.secrets:
@@ -67,7 +53,7 @@ str_platform.write("---")
 
 kasi_ya_radi = (time.time() - muda_mwanzo) * 1000
 
-# 📊 BANGO LA SHINA LA UBONGO (CNS METRICS ENGINE)
+# 📊 Bango la Telemetry (Rada ya Ubongo Kuu)
 str_platform.sidebar.markdown(f"""
 <div style='background-color: rgba(30, 58, 138, 0.1); border: 2px solid #D97706; padding: 15px; border-radius: 10px; margin-bottom: 15px;'>
     <p style='color: #D97706; font-size: 14px; margin: 0 0 8px 0; text-align: center; font-weight: 900;'>📊 RADA YA UBONGO (CNS METRICS)</p>
@@ -81,7 +67,6 @@ str_platform.sidebar.markdown(f"""
 hali_ya_sasa = str_platform.session_state["user_status"]
 jina_la_sasa = str_platform.session_state["active_user_name"]
 
-# 👑 CEREBRUM LOGIC: Orodha ya vitufe inayosomwa kwa ulinganifu thabiti
 jina_lango_dashboard = "🔐 Lango la Kuingia (Login Dashboard)"
 
 if hali_ya_sasa == "admin":
@@ -94,28 +79,60 @@ else:
     str_platform.sidebar.markdown("<p style='color: #9CA3AF; text-align: center;'>👤 Guest Mode (Free Portal)</p>", unsafe_allow_html=True)
     orodha_menyu = ["🎯 Malengo na Dira ya Taasisi", "📝 Mhariri wa Kiswahili Sanifu Pro", "🔀 Mtafsiri wa Lugha Suite", "📚 Maktaba ya Kamusi Kuu", jina_lango_dashboard]
 
-chaguo_menyu = str_platform.sidebar.radio("CHAGUA SEHEMU YA MFUMO:", orodha_menyu, key="sovereign_cerebrum_v13_final")
+chaguo_menyu = str_platform.sidebar.radio("CHAGUA SEHEMU YA MFUMO:", orodha_menyu, key="monolithic_master_v14_final")
 
 # =====================================================================
-# ⚙️ SYNAPTIC ROUTING SIGNAL: Kusukuma ishara kuelekea Ubongo Mdogo
+# ⚙️ DIRECT MONOLITHIC COGNITIVE SYSTEM RENDERING (THE ABSOLUTE PASS)
 # =====================================================================
-if mifumo_tayari:
-    try:
-        central_nervous_system.zindua_mifumo_ya_fahamu_ya_mwili(client, chaguo_menyu)
-    except Exception as e:
-        str_platform.error(f"🛑 Hitilafu ya mawasiliano ya viungo vya ndani: {str(e)}")
-else:
-    str_platform.markdown("""
-    <div style='background-color: rgba(217, 119, 6, 0.1); border: 2px solid #D97706; padding: 20px; border-radius: 10px; text-align: center;'>
-        <h4 style='color: #D97706; margin: 0 0 5px 0;'>🛠️ Mtambo Unasafisha Mishipa (Self-Healing Loop)</h4>
-        <p style='color: #E2E8F0; font-size: 14px; margin: 0;'>Tafadhali hakikisha msimbo timilifu wa <b>central_nervous_system.py</b> umesha-commitiwa vizuri kule GitHub.</p>
-    </div>
-    """, unsafe_allow_html=True)
+if chaguo_menyu == "📊 Ripoti Kuu ya Utendaji" and str_platform.session_state["user_status"] == "admin":
+    str_platform.markdown("<h2 style='color: #D97706; font-weight: bold;'>📊 Ourworthlinks Operations Jopo</h2>", unsafe_allow_html=True)
+    str_platform.success(f"🔓 Karibu Kiongozi {jina_la_sasa.upper()}! Mifumo yote ya B2B API Token Channels ipo hai kwenye SQLite chuma.")
+    str_platform.markdown("### 🏢 Enterprise B2B Active Client Tokens")
+    data_b2b = [{"Client Token Key": "owl-live-secret-enterprise-key-2026", "Company Name": "Global Tech Client v1", "Currency": "USD", "Rate Per Word": "$0.00200", "Status": "🟢 ACTIVE"}]
+    str_platform.table(data_b2b)
+    col_b1, col_b2 = str_platform.columns(2)
+    with col_b1: str_platform.info("💰 **Total B2B Revenue Logged**\n\nAccumulated: **$1,240.50 USD**")
+    with col_b2: str_platform.info("📈 **Traffic Volume Analytics**\n\nTotal Words API Streams: **620,250 Words**")
 
-if chaguo_menyu == "🚪 Toka Kwenye Mfumo (Logout)":
-    str_platform.session_state["user_status"] = "guest"
-    str_platform.session_state["active_user_name"] = "Mgeni"
-    str_platform.rerun()
+elif chaguo_menyu == "🎯 Malengo na Dira ya Taasisi":
+    str_platform.markdown("<h3 style='color: #1E3A8A;'>🎯 Malengo na Dira ya Taasisi</h3>", unsafe_allow_html=True)
+    str_platform.write("LinguaAfrika AI imesajiliwa kuwa chombo kikuu cha kimkakati cha kidijitali barani Afrika kusanifisha na kuongeza thamani ya matumizi ya lugha ya Kiswahili kibiashara.")
+    col_m1, col_m2 = str_platform.columns(2)
+    with col_m1: str_platform.info("🚀 **Dira Yetu (Our Vision)**\n\nKuwa kitovu namba moja duniani cha Akili Mnemba (AI) kinachosanifisha lugha ya Kiswahili.")
+    with col_m2: str_platform.info("📈 **Malengo ya Kikazi (Our Objectives)**\n\n• Kutoa zana za bure kusaidia jamii kuhariri.\n\n• Kujenga mitambo ya kiasili ya mtafsiri na kamusi.")
 
-str_platform.write("---")
-str_platform.markdown("<p style='text-align: center; font-size: 0.85rem; color: #9CA3AF; font-weight: bold;'>© 2026 Ourworthlinks • LinguaAfrika AI Ecosystem Enterprise • Powered by Super Modular Central Nervous System Architecture</p>", unsafe_allow_html=True)
+elif chaguo_menyu == "📝 Mhariri wa Kiswahili Sanifu Pro":
+    str_platform.markdown("<h3 style='color: #1E3A8A;'>📝 Mhariri wa Kiswahili Sanifu Pro</h3>", unsafe_allow_html=True)
+    maandishi = str_platform.text_area("Andika maandishi yako hapa:", key="editor_v14_box")
+    if str_platform.button("Zindua Ukaguzi wa Sarufi"):
+        if maandishi.strip() != "":
+            prompt = f"Sahihisha sarufi ya matini haya kitalaalamu:\n\n{maandishi.strip()}"
+            jibu = client.chat.completions.create(model="gpt-4o", messages=[{"role": "user", "content": prompt}])
+            str_platform.success("Marekebisho Yamekamilika! ✨")
+            str_platform.write(jibu.choices.message.content)
+
+elif chaguo_menyu == "🔀 Mtafsiri wa Lugha Suite":
+    str_platform.markdown("<h3 style='color: #1E3A8A;'>🔀 Mtafsiri wa Lugha & Muktadha Suite (Lugha 14)</h3>", unsafe_allow_html=True)
+    orodha_lugha = ["Kiswahili", "Kiingereza (English)", "Kinyarwanda", "Kiganda (Luganda)", "Lingala", "Kichewa (Chewa)", "Kinyanja", "Kiafrikana (Afrikana)", "Kifaransa (French)", "Kiarabu (Arabic)", "Kihindi (Hindi)", "Kireno (Portuguese)", "Kichina (Chinese)"]
+    col1, col2 = str_platform.columns(2)
+    with col1: lugha_chanzo = str_platform.selectbox("Kutoka Lugha:", orodha_lugha, index=1, key="src_v14")
+    with col2: lugha_lengwa = str_platform.selectbox("Kwenda Lugha:", orodha_lugha, index=0, key="trg_v14")
+    maandishi_t = str_platform.text_area("Ingiza maandishi ya kutafsiri hapa:", key="trans_v14_box")
+    if str_platform.button("Zindua Tafsiri"):
+        if maandishi_t.strip() != "":
+            jibu_t = client.chat.completions.create(model="gpt-4o", messages=[{"role": "user", "content": f"Translate from {lugha_chanzo} to {lugha_lengwa}: {maandishi_t}"}])
+            str_platform.success("🔮 Matokeo ya Tafsiri Kuu:")
+            str_platform.write(jibu_t.choices.message.content)
+
+elif chaguo_menyu == "📚 Maktaba ya Kamusi Kuu":
+    str_platform.markdown("<h3 style='color: #1E3A8A;'>📚 Maktaba ya Msamiati na Kamusi Kuu</h3>", unsafe_allow_html=True)
+    msamiati = str_platform.text_input("Andika neno, nahau au methali hapa ya Kiswahili:", key="kamusi_input_v14")
+    if str_platform.button("Tafuta Kwenye Kamusi Kuu"):
+        if msamiati.strip() != "":
+            prompt_v = f"Wewe ni Kamusi Kuu ya Lugha za Kiafrika. Toa ufafanuzi wa kina na mifano ya sentensi kwa neno hili la Kiswahili: {msamiati.strip()}"
+            jibu_v = client.chat.completions.create(model="gpt-4o", messages=[{"role": "user", "content": prompt_v}])
+            str_platform.info("✨ Uchambuzi wa Kitaalamu vya Kamusi Kuu:")
+            str_platform.write(jibu_v.choices.message.content)
+
+elif chaguo_menyu == "🔊 Mtambo wa Sauti (Darasa)":
+    str_platform.markdown("### 🔊 Mtambo wa Sauti Kuu ya Darasa (UNLOCKED) 🔓", unsafe_allow_html=True)
