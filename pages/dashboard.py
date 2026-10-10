@@ -1,9 +1,9 @@
 import streamlit as str_platform
 import database
-import pespal_core  # Mfumo wa homoni wa kibenki uliopo hai mlangoni!
+import pesapal_core  # 👑 MAPINDUZI: Herufi 'a' imerejeshwa rasmi kuondoa ModuleNotFoundError!
 import time
 
-# 👑 SANIFU MIPANGILIO YA SEVA TANZU YANAYO JITEGEMEA
+# 👑 SANIFU MIPANGILI YA SEVA TANZU YANAYO JITEGEMEA
 str_platform.set_page_config(page_title="Ourworthlinks Operations Dashboard", page_icon="🔐", layout="wide")
 
 try:
@@ -31,7 +31,7 @@ str_platform.write("---")
 col_lango1, col_lango2 = str_platform.columns(2)
 
 with col_lango1:
-    str_platform.markdown("<h3 style='color: #D97706;'>🔑 Kuingia Mfumo (Sign In Admin)</h3>", unsafe_allow_html=True)
+    str_platform.markdown("### 🔑 Kuingia Mfumo (Sign In Admin)")
     chaguo_lango = str_platform.selectbox("Hadhi Yako Mfumo (Role):", ["Admin", "Premium User"], key="v14_pages_role_sel")
     jina = str_platform.text_input("Ingiza Jina (Username):", key="v14_pages_user_in")
     password = str_platform.text_input("Ingiza Nenosiri (Password):", type="password", key="v14_pages_pass_in")
@@ -54,7 +54,7 @@ with col_lango1:
             str_platform.error("🛑 Hitilafu: Jina au Nenosiri uliloingiza si sahihi!")
 
 with col_lango2:
-    str_platform.markdown("<h3 style='color: #D97706;'>📝 Jisajili Akaunti Mpya (Sign Up)</h3>", unsafe_allow_html=True)
+    str_platform.markdown("### 📝 Jisajili Akaunti Mpya (Sign Up)")
     
     str_platform.markdown("""
     <div style='background-color: rgba(217, 119, 6, 0.1); border-left: 5px solid #D97706; padding: 12px; border-radius: 6px; margin-bottom: 15px;'>
@@ -88,9 +88,8 @@ with col_lango2:
     if str_platform.button("Kamilisha Usajili na Lipia Kifurushi", key="v14_pages_btn_signup"):
         if jina_jipya.strip() != "" and siri_mpya.strip() != "":
             try:
-                # 👑 SPINNER GATEWAY: Inafungua kasiki kuzuia mkwamo wakati miamala ikichakatwa Live!
                 with str_platform.spinner("🧠 Inawasiliana na Lango Kuu la Pesapal..."):
-                    matokeo_p = pespal_core.anzisha_muamala_wa_pesapal(jina_jipya.strip(), f"{jina_jipya.strip()}@ourworthlinks.com", 5.00)
+                    matokeo_p = pesapal_core.anzisha_muamala_wa_pesapal(jina_jipya.strip(), f"{jina_jipya.strip()}@ourworthlinks.com", 5.00)
                 
                 if matokeo_p.get("status") == "success":
                     str_platform.success("📲 ODA IMESAJILIWA: Lango la malipo limefunguka!")
@@ -110,7 +109,3 @@ with col_lango2:
         else:
             str_platform.warning("⚠️ Tafadhali jaza Username na Password kwanza!")
 
-str_platform.write("---")
-# Kitufe kiofisi cha kurejea mlangoni mwa Portal ya Wageni
-if str_platform.button("← Rudi Kwenye Portal Kuu ya Kiswahili AI", key="v14_pages_btn_back"):
-    str_platform.markdown("<p style='color: #94A3B8; text-align: center;'>Tumia menu ya Streamlit au bofya App jina kurudi mlangoni.</p>", unsafe_allow_html=True)
