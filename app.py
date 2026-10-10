@@ -6,7 +6,14 @@ import database
 import synapse
 
 self_healing_status = "🟢 Autonomous Shield: Active & Healthy"
+
+# 👑 Sanifu Mipangilio ya Seva Kuu ya Sayari
 str_platform.set_page_config(page_title="LinguaAfrika AI", page_icon="🧠", layout="wide", initial_sidebar_state="expanded")
+
+try:
+    database.anzisha_hifadhidata_ya_chuma()
+except Exception:
+    pass
 
 if "OPENAI_API_KEY" in os.environ: 
     api_key_source = os.environ["OPENAI_API_KEY"]
@@ -20,12 +27,28 @@ if api_key_source:
 else: 
     str_platform.error("🔒 Secrets Error!"); str_platform.stop()
 
-# 🎨 DIRECT ENTERPRISE LUXURY SKIN INJECTION
+# 🎨 MAPINDUZI YA NGOZI (LUXURY HIGH-TECH SIDEBAR SKIN INJECTION)
 str_platform.markdown("""
 <style>
     html, body, [data-testid="stAppViewContainer"] { background-color: #F8FAFC !important; font-family: 'Segoe UI', sans-serif !important; }
     [data-testid="stSidebar"] { background-color: #0F172A !important; color: #ffffff !important; border-right: 4px solid #D97706 !important; }
     [data-testid="stSidebar"] p, [data-testid="stSidebar"] label, [data-testid="stSidebar"] span { color: #ffffff !important; font-size: 15px !important; font-weight: 700 !important; }
+    
+    /* 👑 MAPINDUZI YA VITUFE VYA JUU (APP & DASHBOARD STYLING) */
+    div[data-testid="stSidebarNav"] ul { padding-top: 15px !important; }
+    div[data-testid="stSidebarNav"] li { 
+        background-color: rgba(255, 255, 255, 0.05) !important; 
+        border-radius: 8px !important; 
+        margin-bottom: 8px !important; 
+        border-left: 5px solid #1E3A8A !important;
+        transition: all 0.3s ease !important;
+    }
+    div[data-testid="stSidebarNav"] li:hover { 
+        background-color: rgba(255, 255, 255, 0.1) !important; 
+        border-left: 5px solid #D97706 !important; 
+    }
+    div[data-testid="stSidebarNav"] span { color: #ffffff !important; font-weight: 900 !important; font-size: 16px !important; }
+    
     div[data-testid="stRadio"] > label { background-color: rgba(255, 255, 255, 0.04) !important; padding: 12px 15px !important; border-radius: 8px !important; margin-bottom: 8px !important; }
     div[data-testid="stRadio"] div[aria-checked="true"] { background-color: #D97706 !important; border-radius: 6px !important; padding: 4px 10px !important; }
     div.stButton > button { background-color: #1E3A8A !important; color: white !important; font-weight: bold !important; padding: 14px 28px !important; border-radius: 8px !important; border: none !important; width: 100% !important; }
@@ -50,21 +73,12 @@ str_platform.sidebar.markdown(f"""
 </div>
 """, unsafe_allow_html=True)
 
-str_platform.sidebar.markdown("<p style='color: #94A3B8; font-size: 13px; font-weight: bold; margin-bottom: 2px;'>🌐 ZANA ZA BURE:</p>", unsafe_allow_html=True)
+str_platform.sidebar.markdown("<p style='color: #94A3B8; font-size: 13px; font-weight: bold; margin-bottom: 2px;'>🌐 ZANA ZA BURE ZA KISWAHILI AI:</p>", unsafe_allow_html=True)
 orodha_menyu = ["🎯 Malengo na Dira ya Taasisi", "📝 Mhariri wa Kiswahili Sanifu Pro", "🔀 Mtafsiri wa Lugha Suite", "📚 Maktaba ya Kamusi Kuu"]
-chaguo_menyu = str_platform.sidebar.radio("", orodha_menyu, key="v14_master_radio_gate")
-
-str_platform.sidebar.write("---")
-str_platform.sidebar.markdown("<p style='color: #94A3B8; font-size: 13px; font-weight: bold; margin-bottom: 2px;'>🔐 MANAGEMENT PORTAL:</p>", unsafe_allow_html=True)
-
-# 👑 MAPINDUZI YA PATHWAY: Tunatumia st.page_link asilia kufungua form ya page moja kwa moja bila kuvunja mfumo!
-try:
-    str_platform.sidebar.page_link("pages/dashboard.py", label="Fungua Lango la Utawala (Dashboard) ──►", icon="🔐")
-except Exception:
-    str_platform.sidebar.warning("⚠️ Faili la pages/dashboard.py halijasomeka bado kule GitHub.")
+chaguo_menyu = str_platform.sidebar.radio("", orodha_menyu, key="v14_final_suite_radio")
 
 # =====================================================================
-# ⚙️ DIRECT MONOLITHIC COGNITIVE SYSTEM RENDERING (THE ABSOLUTE PASS)
+# ⚙️ DIRECT MONOLITHIC COGNITIVE SYSTEM RENDERING
 # =====================================================================
 if chaguo_menyu == "🎯 Malengo na Dira ya Taasisi":
     str_platform.markdown("<h3 style='color: #1E3A8A;'>🎯 Malengo na Dira ya Taasisi</h3>", unsafe_allow_html=True)
@@ -75,8 +89,8 @@ if chaguo_menyu == "🎯 Malengo na Dira ya Taasisi":
 
 elif chaguo_menyu == "📝 Mhariri wa Kiswahili Sanifu Pro":
     str_platform.markdown("<h3 style='color: #1E3A8A;'>📝 Mhariri wa Kiswahili Sanifu Pro</h3>", unsafe_allow_html=True)
-    maandishi = str_platform.text_area("Andika maandishi yako hapa:", key="editor_v14_final_box")
-    if str_platform.button("Zindua Ukaguzi wa Sarufi", key="v14_btn_ed_final"):
+    maandishi = str_platform.text_area("Andika maandishi yako hapa:", key="editor_v14_final_suite_box")
+    if str_platform.button("Zindua Ukaguzi wa Sarufi", key="v14_btn_ed_final_suite"):
         if maandishi.strip() != "":
             prompt = f"Sahihisha sarufi ya matini haya kitalaalamu:\n\n{maandishi.strip()}"
             jibu = client.chat.completions.create(model="gpt-4o", messages=[{"role": "user", "content": prompt}])
@@ -86,20 +100,27 @@ elif chaguo_menyu == "📝 Mhariri wa Kiswahili Sanifu Pro":
 elif chaguo_menyu == "🔀 Mtafsiri wa Lugha Suite":
     str_platform.markdown("<h3 style='color: #1E3A8A;'>🔀 Mtafsiri wa Lugha & Muktadha Suite (Lugha 14)</h3>", unsafe_allow_html=True)
     orodha_lugha = ["Kiswahili", "Kiingereza (English)", "Kinyarwanda", "Kiganda (Luganda)", "Lingala", "Kichewa (Chewa)", "Kinyanja", "Kiafrikana (Afrikana)", "Kifaransa (French)", "Kiarabu (Arabic)", "Kihindi (Hindi)", "Kireno (Portuguese)", "Kichina (Chinese)"]
+    
     col1, col2 = str_platform.columns(2)
-    with col1: lugha_chanzo = str_platform.selectbox("Kutoka Lugha:", orodha_lugha, index=1, key="src_v14_final_matrix")
-    with col2: lugha_lengwa = str_platform.selectbox("Kwenda Lugha:", orodha_lugha, index=0, key="trg_v14_final_matrix")
-    maandishi_t = str_platform.text_area("Ingiza maandishi ya kutafsiri hapa:", key="trans_v14_final_box")
-    if str_platform.button("Zindua Tafsiri", key="v14_btn_tr_final"):
+    with col1: lugha_chanzo = str_platform.selectbox("Kutoka Lugha:", orodha_lugha, index=1, key="src_v14_final_suite_matrix")
+    with col2: lugha_lengwa = str_platform.selectbox("Kwenda Lugha:", orodha_lugha, index=0, key="trg_v14_final_suite_matrix")
+    
+    # 👑 IDARA YA MUKTADHA PRO: Sanduku jipya la kisayansi lililosimikwa upande wa juu wa matini!
+    orodha_muktadha = ["Kawaida (General Conversation)", "Kibiashara (Enterprise Business/Marketing)", "Kisheria (Legal SLA/Contracts)", "Kitiba na Kisayansi (Medical & Technical Science)", "Kielimu na Kiakademia (Academic/Literature)"]
+    muktadha_chaguo = str_platform.selectbox("🎯 Chagua Muktadha wa Tafsiri (Context Precision Protocol):", orodha_muktadha, index=0, key="context_v14_suite")
+    
+    maandishi_t = str_platform.text_area("Ingiza maandishi ya kutafsiri hapa:", key="trans_v14_final_suite_box")
+    if str_platform.button("Zindua Tafsiri Pro", key="v14_btn_tr_final_suite"):
         if maandishi_t.strip() != "":
-            jibu_t = client.chat.completions.create(model="gpt-4o", messages=[{"role": "user", "content": f"Translate from {lugha_chanzo} to {lugha_lengwa}: {maandishi_t}"}])
-            str_platform.success("🔮 Matokeo ya Tafsiri Kuu:")
+            prompt_t = f"Translate the following text from {lugha_chanzo} to {lugha_lengwa}. Adapt the vocabulary and style strictly to match a '{muktadha_chaguo}' context:\n\n{maandishi_t}"
+            jibu_t = client.chat.completions.create(model="gpt-4o", messages=[{"role": "user", "content": prompt_t}])
+            str_platform.success("🔮 Matokeo ya Tafsiri Pro ya Muktadha:")
             str_platform.write(jibu_t.choices.message.content)
 
 elif chaguo_menyu == "📚 Maktaba ya Kamusi Kuu":
     str_platform.markdown("<h3 style='color: #1E3A8A;'>📚 Maktaba ya Msamiati na Kamusi Kuu</h3>", unsafe_allow_html=True)
-    msamiati = str_platform.text_input("Andika neno, nahau au methali hapa ya Kiswahili:", key="kamusi_input_v14_final")
-    if str_platform.button("Tafuta Kwenye Kamusi Kuu", key="v14_btn_kam_final"):
+    msamiati = str_platform.text_input("Andika neno, nahau au methali hapa ya Kiswahili:", key="kamusi_input_v14_final_suite")
+    if str_platform.button("Tafuta Kwenye Kamusi Kuu", key="v14_btn_kam_final_suite"):
         if msamiati.strip() != "":
             prompt_v = f"Wewe ni Kamusi Kuu ya Lugha za Kiafrika. Toa ufafanuzi wa kina na mifano ya sentensi kwa neno hili la Kiswahili: {msamiati.strip()}"
             jibu_v = client.chat.completions.create(model="gpt-4o", messages=[{"role": "user", "content": prompt_v}])
