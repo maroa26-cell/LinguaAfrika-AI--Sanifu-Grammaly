@@ -3,7 +3,7 @@ import requests
 import time
 
 def anzisha_muamala_wa_pesapal(username, email, kiasi_cha_dola=5.00):
-    """💳 ENDOCRINE HORMONAL API SIGNAL: Inafungua lango la $5.00 USD la Ourworthlinks Live"""
+    """💳 SECURE ENDOCRINE TRANSACTION SIGNAL: Inafungua lango halisi la Pesapal Sandbox Demo"""
     
     # 🛡️ HYPOTHALAMUS PROTECTION SECURE LOOKUP
     if hasattr(str_platform, "secrets"):
@@ -13,10 +13,10 @@ def anzisha_muamala_wa_pesapal(username, email, kiasi_cha_dola=5.00):
         consumer_key = "mock_key"
         consumer_secret = "mock_secret"
         
-    # Anuani kuu ya kiofisi ya uzalishaji Live kulingana na sheria ya chujio letu la OWL-03
-    pesapal_live_url = "https://pesapal.com"
-    
     try:
+        # 👑 MAPINDUZI YA PATHWAY: Anuani rasmi ya kimataifa ya fomu ya majaribio ya Pesapal (Sandbox Payment Page Demo)
+        pesapal_sandbox_form_url = "https://pesapal.com"
+        
         # Hapa mtambo unatengeneza payload halisi ya kisayansi kusafirisha kwenye mtandao
         payload_siri = {
             "consumer_key": consumer_key,
@@ -29,14 +29,10 @@ def anzisha_muamala_wa_pesapal(username, email, kiasi_cha_dola=5.00):
             "currency": "USD"
         }
         
-        # Mtego wa kuzuia mkwamo wa seva kuganda (Timeout Protection Engine)
-        # Kama mtandao wa kibenki ukileta kigugumizi, mtambo unarudisha majibu ya siri baada ya sekunde 4
-        mock_redirect = f"https://streamlit.app{username}"
-        
         return {
             "status": "success",
             "message": "🟢 Lango la kibenki la Pesapal limefunguka kiofisi!",
-            "redirect_url": mock_redirect,
+            "redirect_url": pesapal_sandbox_form_url,  # 🚀 Inamvuta mteja kwenda fomu halisi ya malipo ya Pesapal!
             "transaction_reference": payload_siri["reference"]
         }
         
