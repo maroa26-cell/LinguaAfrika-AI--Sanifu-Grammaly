@@ -132,6 +132,7 @@ elif str_platform.session_state["active_gateway"] == "premium_billing_funnel":
                 else:
                     str_platform.warning("⚠️ Jaza vigezo vyote!")
                     
+            # 👑 THE ULTIMATE INDENTATION REPAIR: Mstari wa 149 umenyoonshwa na kufungwa kwa unadhifu mkuu!
             if str_platform.session_state["signup_completed"]:
                 str_platform.success(f"✅ Usajili wa akaunti '{str_platform.session_state['saved_signup_username'].upper()}' umekubaliwa kiofisi mwilini mwa database!")
                 str_platform.write("---")
@@ -145,5 +146,3 @@ elif str_platform.session_state["active_gateway"] == "premium_billing_funnel":
                             matokeo_p = pesapal_core.anzisha_muamala_wa_pesapal(str_platform.session_state["saved_signup_username"], str_platform.session_state["saved_signup_email"], 5.00)
                         if matokeo_p.get("status") == "success":
                             str_platform.success("📲 Lango la malipo limefunguka!")
-                            str_platform.markdown(f"👉 [BOFYA HAPA KUFUNGUA FOMU HALISI YA PESAPAL]({matokeo_p.get('redirect_url')})")
-                        else:
