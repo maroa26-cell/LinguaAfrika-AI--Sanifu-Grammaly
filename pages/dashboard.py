@@ -1,6 +1,6 @@
 import streamlit as str_platform
 import database
-import pesapal_core  # 👑 MAPINDUZI: Herufi 'a' imerejeshwa rasmi kuondoa ModuleNotFoundError!
+import pesapal_core
 import time
 
 # 👑 SANIFU MIPANGILI YA SEVA TANZU YANAYO JITEGEMEA
@@ -17,95 +17,144 @@ str_platform.markdown("""
     html, body, [data-testid="stAppViewContainer"] { background-color: #0F172A !important; font-family: 'Segoe UI', sans-serif !important; color: #ffffff !important; }
     [data-testid="stHeader"] { background-color: rgba(0,0,0,0) !important; }
     .stTextInput label, .stSelectbox label, .stRadio label { color: #E2E8F0 !important; font-weight: bold !important; font-size: 15px !important; }
-    div.stButton > button { background-color: #D97706 !important; color: white !important; font-weight: bold !important; padding: 12px 24px !important; border-radius: 8px !important; width: 100% !important; border: none !important; }
-    div.stButton > button:hover { background-color: #B45309 !important; color: white !important; }
+    
+    /* Mtindo wa Vifungo Vitatu vya Mlangoni */
+    div.stButton > button { background-color: #1E3A8A !important; color: white !important; font-weight: bold !important; padding: 14px 28px !important; border-radius: 8px !important; width: 100% !important; border: none !important; transition: all 0.3s ease !important; }
+    div.stButton > button:hover { background-color: #3B82F6 !important; box-shadow: 0 4px 15px rgba(59,130,246,0.4) !important; }
+    
+    /* Kitufe Maalum cha Usajili na Pesapal */
+    .pesapal-btn button { background-color: #D97706 !important; }
+    .pesapal-btn button:hover { background-color: #B45309 !important; box-shadow: 0 4px 15px rgba(217,119,6,0.4) !important; }
+    
     .stTable { background-color: #1E293B !important; border-radius: 8px !important; }
 </style>
 """, unsafe_allow_html=True)
 
-str_platform.markdown("<h1 style='text-align: center; color: #D97706; font-weight: 900; margin-bottom: 0;'>🔐 OURWORTHLINKS OPERATIONS JOPO</h1>", unsafe_allow_html=True)
-str_platform.markdown("<p style='text-align: center; color: #94A3B8; font-size: 14px;'>Administrative Secure Identity Portal & B2B Analytics</p>", unsafe_allow_html=True)
+str_platform.markdown("<h1 style='text-align: center; color: #D97706; font-weight: 900; margin-bottom: 0;'>🔐 OURWORTHLINKS MANAGEMENT SYSTEM</h1>", unsafe_allow_html=True)
+str_platform.markdown("<p style='text-align: center; color: #94A3B8; font-size: 14px;'>Sovereign Triple-Gateway Identity Portal & B2B Analytics Suite</p>", unsafe_allow_html=True)
 str_platform.write("---")
 
-# Kuvunja kurasa katika vyumba viwili vilivyonyooka kibaolojia
-col_lango1, col_lango2 = str_platform.columns(2)
+# 🧠 INITIALIZE GATE STATE: Mtambo unakariri mteja kachagua chumba kipi
+if "active_gateway" not in str_platform.session_state:
+    str_platform.session_state["active_gateway"] = "mlangoni"
 
-with col_lango1:
-    str_platform.markdown("### 🔑 Kuingia Mfumo (Sign In Admin)")
-    chaguo_lango = str_platform.selectbox("Hadhi Yako Mfumo (Role):", ["Admin", "Premium User"], key="v14_pages_role_sel")
-    jina = str_platform.text_input("Ingiza Jina (Username):", key="v14_pages_user_in")
-    password = str_platform.text_input("Ingiza Nenosiri (Password):", type="password", key="v14_pages_pass_in")
+# =====================================================================
+# 🎛️ NYERERE GATEWAY SELECTOR (UCHAGUZI WA VYUMBA VITATU MBALIKAMBALI)
+# =====================================================================
+if str_platform.session_state["active_gateway"] == "mlangoni":
+    str_platform.markdown("<h4 style='text-align: center; color: #E2E8F0;'>Tafadhali chagua lango lako la kiofisi ili kuingia hewani:</h4>", unsafe_allow_html=True)
+    str_platform.write("")
     
-    if str_platform.button("Thibitisha Kuingia Mfumo", key="v14_pages_btn_login"):
-        if database.thibitisha_utambulisho_wa_siri(jina, password, chaguo_lango):
-            str_platform.success(f"🔓 Karibu Kiongozi {jina.upper()}! Mifumo yote ya B2B Token Channels ipo hai.")
-            str_platform.write("---")
-            str_platform.markdown("### 🏢 Enterprise B2B Active Client Tokens")
+    col_g1, col_g2, col_g3 = str_platform.columns(3)
+    
+    with col_g1:
+        str_platform.markdown("<div style='text-align: center; padding: 10px;'>🔑</div>", unsafe_allow_html=True)
+        if str_platform.button("🚪 Fungua Lango la Utawala (Admin)", key="btn_gate_admin"):
+            str_platform.session_state["active_gateway"] = "admin_suite"
+            str_platform.rerun()
             
-            data_b2b = [{"Client Token Key": "owl-live-secret-enterprise-key-2026", "Company Name": "Global Tech Client v1", "Currency": "USD", "Rate Per Word": "$0.00200", "Status": "🟢 ACTIVE"}]
-            str_platform.table(data_b2b)
+    with col_g2:
+        str_platform.markdown("<div style='text-align: center; padding: 10px;'>🚪</div>", unsafe_allow_html=True)
+        if str_platform.button("🔐 Kuingia Kama Premium User (Sign In)", key="btn_gate_premium"):
+            str_platform.session_state["active_gateway"] = "premium_suite"
+            str_platform.rerun()
             
-            col_b1, col_b2 = str_platform.columns(2)
-            with col_b1: 
-                str_platform.info("💰 **Total B2B Revenue Logged**\n\nAccumulated: **$1,240.50 USD**")
-            with col_b2: 
-                str_platform.info("📈 **Traffic Volume Analytics**\n\nTotal Words API Streams: **620,250 Words**")
-        else:
-            str_platform.error("🛑 Hitilafu: Jina au Nenosiri uliloingiza si sahihi!")
+    with col_g3:
+        str_platform.markdown("<div style='text-align: center; padding: 10px;'>💳</div>", unsafe_allow_html=True)
+        str_platform.markdown("<div class='pesapal-btn'>", unsafe_allow_html=True)
+        if str_platform.button("✨ Lango la Malipo ya Premium (Pesapal)", key="btn_gate_signup"):
+            str_platform.session_state["active_gateway"] = "premium_billing_funnel"
+            str_platform.rerun()
+        str_platform.markdown("</div>", unsafe_allow_html=True)
 
-with col_lango2:
-    str_platform.markdown("### 📝 Jisajili Akaunti Mpya (Sign Up)")
-    
-    str_platform.markdown("""
-    <div style='background-color: rgba(217, 119, 6, 0.1); border-left: 5px solid #D97706; padding: 12px; border-radius: 6px; margin-bottom: 15px;'>
-        <p style='color: #D97706; font-size: 14px; margin: 0 0 5px 0; font-weight: bold;'>📝 MWONGOZO WA USAJILI SALAMA:</p>
-        <ul style='color: #E2E8F0; font-size: 12.5px; margin: 0; padding-left: 18px;'>
-            <li>Unda Jina (Username) bila nafasi au herufi kubwa.</li>
-            <li>Namba ya simu ianze na <b>07</b> au <b>06</b> (Mfano: 07XXXXXXXX).</li>
-            <li>Ukishabofya kitufe, subiri masekunde 5 ili mfumo wa kibenki ukujibu.</li>
-        </ul>
-    </div>
-    """, unsafe_allow_html=True)
-    
-    chaguo_usajili = str_platform.selectbox("Sajili Akaunti Kama:", ["Premium User", "Admin"], key="v14_pages_signup_sel")
-    jina_jipya = str_platform.text_input("Tengeneza Jina (New Username):", key="v14_pages_new_user")
-    siri_mpya = str_platform.text_input("Tengeneza Nenosiri (New Password):", type="password", key="v14_pages_new_pass")
-    
-    str_platform.write("---")
-    str_platform.markdown("<p style='color: #D97706; font-weight: bold; margin-bottom: 2px;'>💳 Kifurushi cha Premium ($5.00 USD / Mwezi)</p>", unsafe_allow_html=True)
-    njia_malipo = str_platform.radio("Chagua Njia ya Malipo:", ["Mobile Money (M-Pesa/Tigo Pesa)", "Kadi ya Benki (Visa / Mastercard)"], key="v14_pages_pay_radio")
-    
-    if njia_malipo == "Mobile Money (M-Pesa/Tigo Pesa)":
-        mtandao_simu = str_platform.selectbox("Chagua Mtandao wa Malipo:", ["M-Pesa (Vodacom)", "Tigo Pesa (Tigo)", "Airtel Money (Airtel)"], key="v14_pages_carrier")
-        namba_simu = str_platform.text_input("Ingiza Namba ya Simu (Mfano: 07XXXXXXXX):", key="v14_pages_phone_no")
-    else:
-        jina_kadi = str_platform.text_input("Jina Linalosomeka Kwenye Kadi (Cardholder Name):", key="v14_pages_cardname")
-        namba_kadi = str_platform.text_input("Namba ya Kadi (Card Number - 16 Digits):", max_chars=16, key="v14_pages_cardno")
-        col_k1, col_k2 = str_platform.columns(2)
-        with col_k1: tarehe_kadi = str_platform.text_input("Tarehe ya Kuisha (MM/YY):", max_chars=5, key="v14_pages_expiry")
-        with col_k2: cvv_kadi = str_platform.text_input("Namba ya Siri (CVV):", type="password", max_chars=3, key="v14_pages_cvv")
+# =====================================================================
+# 📂 CHUMBA CHA 1: 👑 LANGO LA UTAWALA (ADMIN SUITE LOGIC)
+# =====================================================================
+elif str_platform.session_state["active_gateway"] == "admin_suite":
+    if str_platform.button("← Rudi Mlangoni", key="back_from_admin"):
+        str_platform.session_state["active_gateway"] = "mlangoni"
+        str_platform.rerun()
         
-    if str_platform.button("Kamilisha Usajili na Lipia Kifurushi", key="v14_pages_btn_signup"):
-        if jina_jipya.strip() != "" and siri_mpya.strip() != "":
-            try:
-                with str_platform.spinner("🧠 Inawasiliana na Lango Kuu la Pesapal..."):
-                    matokeo_p = pesapal_core.anzisha_muamala_wa_pesapal(jina_jipya.strip(), f"{jina_jipya.strip()}@ourworthlinks.com", 5.00)
+    str_platform.markdown("<h2 style='color: #D97706; font-weight: bold; text-align: center;'>👑 ADMINISTRATIVE SECURE IDENTITY PORT</h2>", unsafe_allow_html=True)
+    str_platform.write("---")
+    
+    col_a1, col_a2, col_a3 = str_platform.columns([1, 2, 1])
+    with col_a2:
+        jina_admin = str_platform.text_input("Username ya Siri ya Utawala:", key="v14_admin_user")
+        pass_admin = str_platform.text_input("Nenosiri la Siri la Utawala:", type="password", key="v14_admin_pass")
+        
+        if str_platform.button("Zindua Mifumo ya Utawala", key="v14_btn_admin_verify"):
+            if database.thibitisha_utambulisho_wa_siri(jina_admin, pass_admin, "Admin"):
+                str_platform.session_state["user_status"] = "admin"
+                str_platform.session_state["active_user_name"] = jina_admin
+                str_platform.success("🔓 MUUNDO UMEKUBALIWA: Mifumo yote ya B2B Token Channels ipo hai.")
+                str_platform.write("---")
                 
-                if matokeo_p.get("status") == "success":
-                    str_platform.success("📲 ODA IMESAJILIWA: Lango la malipo limefunguka!")
-                    str_platform.markdown(f"👉 [BOFYA HAPA KUFUNGUA FOMU HALISI YA PESAPAL]({matokeo_p.get('redirect_url')})")
-                    
-                    if database.sajili_mtumiaji_mpya(jina_jipya.strip(), siri_mpya.strip(), chaguo_usajili):
-                        str_platform.markdown("""
-                        <div style='background-color: rgba(37, 211, 102, 0.1); border: 2px solid #25D366; padding: 15px; border-radius: 8px; text-align: center; margin-top: 15px;'>
-                            <h4 style='color: #25D366; margin: 0 0 5px 0;'>✅ Usajili Umekamilika Kwenye SQLite!</h4>
-                            <p style='color: #E2E8F0; font-size: 13px; margin: 0;'>Ukishamaliza malipo kwenye dirisha la juu, tumia fomu ya kushoto <b>(🔑 Kuingia Mfumo)</b> kuingia hewani papo hapo!</p>
-                        </div>
-                        """, unsafe_allow_html=True)
-                else:
-                    str_platform.error(matokeo_p.get("message"))
-            except Exception as e:
-                str_platform.error(f"🛑 Hitilafu ya Lango la Malipo: {str(e)}")
-        else:
-            str_platform.warning("⚠️ Tafadhali jaza Username na Password kwanza!")
+                str_platform.markdown("### 🏢 Enterprise B2B Active Client Tokens")
+                data_b2b = [{"Client Token Key": "owl-live-secret-enterprise-key-2026", "Company Name": "Global Tech Client v1", "Currency": "USD", "Rate Per Word": "$0.00200", "Status": "🟢 ACTIVE"}]
+                str_platform.table(data_b2b)
+                
+                col_b1, col_b2 = str_platform.columns(2)
+                with col_b1: str_platform.info("💰 **Total B2B Revenue Logged**\n\nAccumulated: **$1,240.50 USD**")
+                with col_b2: str_platform.info("📈 **Traffic Volume Analytics**\n\nTotal Words API Streams: **620,250 Words**")
+            else:
+                str_platform.error("🛑 Hitilafu ya Usalama: Username au Nenosiri la Utawala si sahihi!")
+
+# =====================================================================
+# 📂 CHUMBA CHA 2: 🚪 LANGO LA MTEJA WA PREMIUM (SIGN IN PREMIUM)
+# =====================================================================
+elif str_platform.session_state["active_gateway"] == "premium_suite":
+    if str_platform.button("← Rudi Mlangoni", key="back_from_premium"):
+        str_platform.session_state["active_gateway"] = "mlangoni"
+        str_platform.rerun()
+        
+    str_platform.markdown("<h2 style='color: #3B82F6; font-weight: bold; text-align: center;'>💎 PREMIUM USER IDENTITY AUTHENTICATION</h2>", unsafe_allow_html=True)
+    str_platform.write("---")
+    
+    col_p1, col_p2, col_p3 = str_platform.columns([1, 2, 1])
+    with col_p2:
+        jina_premium = str_platform.text_input("Ingiza Username Yako ya Premium:", key="v14_premium_user")
+        pass_premium = str_platform.text_input("Ingiza Nenosiri Lako:", type="password", key="v14_premium_pass")
+        
+        if str_platform.button("Thibitisha Identity ya Premium", key="v14_btn_premium_login"):
+            if database.thibitisha_utambulisho_wa_siri(jina_premium, pass_premium, "Premium User"):
+                str_platform.session_state["user_status"] = "standard_premium"
+                str_platform.session_state["active_user_name"] = jina_premium
+                str_platform.success(f"✅ UNLOCKED: Karibu Kiongozi {jina_premium.upper()}! Vifurushi vyote vipo hai sasa hivi. Tumia menyu ya kushoto kurudi kwenye Portal.")
+            else:
+                str_platform.error("🛑 Hitilafu: Akaunti ya Premium haijapatikana au password si sahihi!")
+
+# =====================================================================
+# 📂 CHUMBA CHA 3: 💳 LANGO LA PREMIUM BILLING FUNNEL (TABO MBILI ZILIZOTENGANISHWA)
+# =====================================================================
+elif str_platform.session_state["active_gateway"] == "premium_billing_funnel":
+    if str_platform.button("← Rudi Mlangoni", key="back_from_billing"):
+        str_platform.session_state["active_gateway"] = "mlangoni"
+        str_platform.rerun()
+        
+    str_platform.markdown("<h2 style='color: #D97706; font-weight: bold; text-align: center;'>💳 PREMIUM ACQUISITION & MALIPO PORTAL</h2>", unsafe_allow_html=True)
+    str_platform.write("---")
+    
+    # 👑 MAPINDUZI YA TABO: Kutenganisha kabisa njia ya Mtumiaji Mpya na wa Zamani kiofisi!
+    tab_mpya, tab_wa_zamani = str_platform.tabs(["📝 MIMI NI MTUMIAJI MPYA (Sign Up First)", "🔑 MIMI NI MTUMIAJI WA ZAMANI (Sign In to Pay)"])
+    
+    # 📑 TABO YA A: MTUMIAJI MPYA
+    with tab_mpya:
+        col_s1, col_s2, col_s3 = str_platform.columns([1, 2, 1])
+        with col_s2:
+            str_platform.markdown("### 📝 Hatua ya 1: Jisajili Kwanza")
+            jina_jipya = str_platform.text_input("Tengeneza Username Mpya (Herufi Ndogo Pekee):", key="v14_master_new_user")
+            siri_mpya = str_platform.text_input("Tengeneza Nenosiri Jipya:", type="password", key="v14_master_new_pass")
+            hadhi_usajili = str_platform.hidden_input = "Premium User"
+            
+            if "signup_completed" not in str_platform.session_state:
+                str_platform.session_state["signup_completed"] = False
+            
+            if str_platform.button("Thibitisha Usajili wa Akaunti", key="v14_master_btn_signup_validate"):
+                if jina_jipya.strip() != "" and siri_mpya.strip() != "":
+                    if database.sajili_mtumiaji_mpya(jina_jipya.strip(), siri_mpya.strip(), hadhi_usajili):
+                        str_platform.session_state["signup_completed"] = True
+                        str_platform.session_state["saved_signup_username"] = jina_jipya.strip()
+                        str_platform.session_state["saved_signup_email"] = f"{jina_jipya.strip()}@ourworthlinks.com"
+                    else:
 
