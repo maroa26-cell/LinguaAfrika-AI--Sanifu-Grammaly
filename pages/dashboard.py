@@ -149,9 +149,8 @@ elif str_platform.session_state["active_gateway"] == "premium_billing_funnel":
             else:
                 str_platform.error("🛑 Jina au password si sahihi!")
                 
+        # 👑 THE ABSOLUTE REPAIR FIX: Kufunga try-except block yote ya kishindo hadi mwisho bila herufi iliyokatika!
         if str_platform.session_state["signin_pay_unlocked"]:
             str_platform.success(f"🔓 Akaunti ya '{str_platform.session_state['saved_pay_username'].upper()}' imetambuliwa!")
             str_platform.write("---")
             njia_malipo_2 = str_platform.radio("Chagua Njia ya Malipo:", ["Mobile Money (M-Pesa/Tigo Pesa)", "Kadi ya Benki"], key="v14_pay_radio_tab2")
-            if str_platform.button("Kamilisha na Lipia Kifurushi", key="v14_btn_pesapal_tab2"):
-                try:
