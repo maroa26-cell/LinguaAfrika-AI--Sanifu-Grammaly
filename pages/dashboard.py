@@ -68,7 +68,7 @@ if str_platform.session_state["active_gateway"] == "mlangoni":
         str_platform.markdown("</div>", unsafe_allow_html=True)
 
 # =====================================================================
-# 📂 CHUMBA CHA 1: 👑 LANGO LA UTAWALA (ADMIN SUITE LOGIC)
+# 📂 CHUMBA CHA 1: 👑 LANGO LA UTAWALA (ADMIN SUICS SYSTEM)
 # =====================================================================
 elif str_platform.session_state["active_gateway"] == "admin_suite":
     if str_platform.button("← Rudi Mlangoni", key="back_from_admin"):
@@ -125,7 +125,7 @@ elif str_platform.session_state["active_gateway"] == "premium_suite":
                 str_platform.error("🛑 Hitilafu: Akaunti ya Premium haijapatikana au password si sahihi!")
 
 # =====================================================================
-# 📂 CHUMBA CHA 3: 💳 LANGO LA PREMIUM BILLING FUNNEL (TABO MBILI ZILIZOTENGANISHWA)
+# 📂 CHUMBA CHA 3: 💳 LANGO LA PREMIUM BILLING FUNNEL (ISOLATION)
 # =====================================================================
 elif str_platform.session_state["active_gateway"] == "premium_billing_funnel":
     if str_platform.button("← Rudi Mlangoni", key="back_from_billing"):
@@ -137,7 +137,7 @@ elif str_platform.session_state["active_gateway"] == "premium_billing_funnel":
     
     tab_mpya, tab_wa_zamani = str_platform.tabs(["📝 MIMI NI MTUMIAJI MPYA (Sign Up First)", "🔑 MIMI NI MTUMIAJI WA ZAMANI (Sign In to Pay)"])
     
-    # 📑 TABO YA A: MTUMIAJI MPYA
+    # 📑 TABO YA A: MTUMIAJI MPYA (SHERIA YA USHAHIDI WA NAFASI ZOTE)
     with tab_mpya:
         col_s1, col_s2, col_s3 = str_platform.columns()
         with col_s2:
@@ -157,4 +157,3 @@ elif str_platform.session_state["active_gateway"] == "premium_billing_funnel":
                     else:
                         str_platform.error("🛑 Hitilafu: Jina hili la mtumiaji tayari limeshasajiliwa! Tumia tabo ya pili kulipia.")
                 else:
-
