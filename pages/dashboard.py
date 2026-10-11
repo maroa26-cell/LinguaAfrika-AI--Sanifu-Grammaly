@@ -78,7 +78,7 @@ elif str_platform.session_state["active_gateway"] == "admin_suite":
     str_platform.markdown("<h2 style='color: #D97706; font-weight: bold; text-align: center;'>👑 ADMINISTRATIVE SECURE IDENTITY PORT</h2>", unsafe_allow_html=True)
     str_platform.write("---")
     
-    col_a1, col_a2, col_a3 = str_platform.columns([1, 2, 1])
+    col_a1, col_a2, col_a3 = str_platform.columns([1,2,1])
     with col_a2:
         jina_admin = str_platform.text_input("Username ya Siri ya Utawala:", key="v14_admin_user")
         pass_admin = str_platform.text_input("Nenosiri la Siri la Utawala:", type="password", key="v14_admin_pass")
@@ -111,7 +111,7 @@ elif str_platform.session_state["active_gateway"] == "premium_suite":
     str_platform.markdown("<h2 style='color: #3B82F6; font-weight: bold; text-align: center;'>💎 PREMIUM USER IDENTITY AUTHENTICATION</h2>", unsafe_allow_html=True)
     str_platform.write("---")
     
-    col_p1, col_p2, col_p3 = str_platform.columns([1, 2, 1])
+    col_p1, col_p2, col_p3 = str_platform.columns([1,2,1])
     with col_p2:
         jina_premium = str_platform.text_input("Ingiza Username Yako ya Premium:", key="v14_premium_user")
         pass_premium = str_platform.text_input("Ingiza Nenosiri Lako:", type="password", key="v14_premium_pass")
@@ -125,7 +125,7 @@ elif str_platform.session_state["active_gateway"] == "premium_suite":
                 str_platform.error("🛑 Hitilafu: Akaunti ya Premium haijapatikana au password si sahihi!")
 
 # =====================================================================
-# 📂 CHUMBA CHA 3: 💳 LANGO LA PREMIUM BILLING FUNNEL (TABO MBILI ZILIZOTENGANISHWA)
+# 📂 CHUMBA CHA 3: 💳 LANGO LA PREMIUM BILLING FUNNEL (TABO VITATU VILIVYOTENGANISHWA)
 # =====================================================================
 elif str_platform.session_state["active_gateway"] == "premium_billing_funnel":
     if str_platform.button("← Rudi Mlangoni", key="back_from_billing"):
@@ -135,26 +135,24 @@ elif str_platform.session_state["active_gateway"] == "premium_billing_funnel":
     str_platform.markdown("<h2 style='color: #D97706; font-weight: bold; text-align: center;'>💳 PREMIUM ACQUISITION & MALIPO PORTAL</h2>", unsafe_allow_html=True)
     str_platform.write("---")
     
-    # 👑 MAPINDUZI YA TABO: Kutenganisha kabisa njia ya Mtumiaji Mpya na wa Zamani kiofisi!
     tab_mpya, tab_wa_zamani = str_platform.tabs(["📝 MIMI NI MTUMIAJI MPYA (Sign Up First)", "🔑 MIMI NI MTUMIAJI WA ZAMANI (Sign In to Pay)"])
     
-    # 📑 TABO YA A: MTUMIAJI MPYA
     with tab_mpya:
-        col_s1, col_s2, col_s3 = str_platform.columns([1, 2, 1])
+        col_s1, col_s2, col_s3 = str_platform.columns([1,2,1])
         with col_s2:
             str_platform.markdown("### 📝 Hatua ya 1: Jisajili Kwanza")
             jina_jipya = str_platform.text_input("Tengeneza Username Mpya (Herufi Ndogo Pekee):", key="v14_master_new_user")
             siri_mpya = str_platform.text_input("Tengeneza Nenosiri Jipya:", type="password", key="v14_master_new_pass")
-            hadhi_usajili = str_platform.hidden_input = "Premium User"
             
             if "signup_completed" not in str_platform.session_state:
                 str_platform.session_state["signup_completed"] = False
             
             if str_platform.button("Thibitisha Usajili wa Akaunti", key="v14_master_btn_signup_validate"):
                 if jina_jipya.strip() != "" and siri_mpya.strip() != "":
-                    if database.sajili_mtumiaji_mpya(jina_jipya.strip(), siri_mpya.strip(), hadhi_usajili):
+                    if database.sajili_mtumiaji_mpya(jina_jipya.strip(), siri_mpya.strip(), "Premium User"):
                         str_platform.session_state["signup_completed"] = True
                         str_platform.session_state["saved_signup_username"] = jina_jipya.strip()
                         str_platform.session_state["saved_signup_email"] = f"{jina_jipya.strip()}@ourworthlinks.com"
                     else:
-
+                        str_platform.error("🛑 Hitilafu: Jina hili la mtumiaji tayari limeshasajiliwa! Tumia tabo ya pili kulipia.")
+                else:
