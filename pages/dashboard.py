@@ -157,3 +157,4 @@ elif str_platform.session_state["active_gateway"] == "premium_billing_funnel":
                     else:
                         str_platform.error("🛑 Hitilafu: Jina hili la mtumiaji tayari limeshasajiliwa! Tumia tabo ya pili kulipia.")
                 else:
+
