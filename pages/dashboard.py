@@ -1,153 +1,75 @@
 import streamlit as str_platform
 import database
 import pesapal_core
-import time
 
-# 👑 SANIFU MIPANGILI YA SEVA TANZU YANAYO JITEGEMEA
-str_platform.set_page_config(page_title="Ourworthlinks Operations Dashboard", page_icon="🔐", layout="wide")
+str_platform.set_page_config(page_title="Ourworthlinks Dashboard", page_icon="🔐", layout="wide")
+try: database.anzisha_hifadhidata_ya_chuma()
+except Exception: pass
 
-try:
-    database.anzisha_hifadhidata_ya_chuma()
-except Exception:
-    pass
-
-# 🎨 DIRECT ENTERPRISE LUXURY SKIN INJECTION (DARK HIGH-TECH STYLE)
-str_platform.markdown("""
-<style>
-    html, body, [data-testid="stAppViewContainer"] { background-color: #0F172A !important; font-family: 'Segoe UI', sans-serif !important; color: #ffffff !important; }
-    [data-testid="stHeader"] { background-color: rgba(0,0,0,0) !important; }
-    .stTextInput label, .stSelectbox label, .stRadio label { color: #E2E8F0 !important; font-weight: bold !important; font-size: 15px !important; }
-    div.stButton > button { background-color: #1E3A8A !important; color: white !important; font-weight: bold !important; padding: 14px 28px !important; border-radius: 8px !important; width: 100% !important; border: none !important; }
-    div.stButton > button:hover { background-color: #3B82F6 !important; }
-</style>
-""", unsafe_allow_html=True)
-
-str_platform.markdown("<h1 style='text-align: center; color: #D97706; font-weight: 900; margin-bottom: 0;'>🔐 OURWORTHLINKS MANAGEMENT SYSTEM</h1>", unsafe_allow_html=True)
-str_platform.markdown("<p style='text-align: center; color: #94A3B8; font-size: 14px;'>Sovereign Triple-Gateway Identity Portal & B2B Analytics Suite</p>", unsafe_allow_html=True)
+str_platform.markdown("<h1 style='text-align: center; color: #D97706; font-weight: 900;'>🔐 OURWORTHLINKS SYSTEM</h1>", unsafe_allow_html=True)
 str_platform.write("---")
 
 if "active_gateway" not in str_platform.session_state:
     str_platform.session_state["active_gateway"] = "mlangoni"
 
-# =====================================================================
-# 🎛️ NYERERE GATEWAY SELECTOR (UCHAGUZI WA VYUMBA VITATU MBALIKAMBALI)
-# =====================================================================
 if str_platform.session_state["active_gateway"] == "mlangoni":
-    str_platform.markdown("<h4 style='text-align: center; color: #E2E8F0;'>Tafadhali chagua lango lako la kiofisi ili kuingia hewani:</h4>", unsafe_allow_html=True)
-    
     col_g1, col_g2, col_g3 = str_platform.columns(3)
     with col_g1:
-        if str_platform.button("🚪 Fungua Lango la Utawala (Admin)", key="btn_gate_admin"):
-            str_platform.session_state["active_gateway"] = "admin_suite"
-            str_platform.rerun()
+        if str_platform.button("🚪 Lango la Admin", key="g_admin"): str_platform.session_state["active_gateway"] = "admin_s"; str_platform.rerun()
     with col_g2:
-        if str_platform.button("🔐 Kuingia Kama Premium User (Sign In)", key="btn_gate_premium"):
-            str_platform.session_state["active_gateway"] = "premium_suite"
-            str_platform.rerun()
+        if str_platform.button("🔐 Premium Sign In", key="g_prem"): str_platform.session_state["active_gateway"] = "premium_s"; str_platform.rerun()
     with col_g3:
-        if str_platform.button("✨ Lango la Malipo ya Premium (Pesapal)", key="btn_gate_signup"):
-            str_platform.session_state["active_gateway"] = "premium_billing_funnel"
-            str_platform.rerun()
+        if str_platform.button("✨ Lipia Premium (Pesapal)", key="g_pay"): str_platform.session_state["active_gateway"] = "billing_s"; str_platform.rerun()
 
-# =====================================================================
-# 📂 CHUMBA CHA 1: 👑 LANGO LA UTAWALA (ADMIN SUITE LOGIC)
-# =====================================================================
-elif str_platform.session_state["active_gateway"] == "admin_suite":
-    if str_platform.button("← Rudi Mlangoni", key="back_from_admin"):
-        str_platform.session_state["active_gateway"] = "mlangoni"
-        str_platform.rerun()
-        
-    jina_admin = str_platform.text_input("Username ya Siri ya Utawala:", key="v14_admin_user")
-    pass_admin = str_platform.text_input("Nenosiri la Siri la Utawala:", type="password", key="v14_admin_pass")
+elif str_platform.session_state["active_gateway"] == "admin_s":
+    if str_platform.button("← Rudi Mlangoni"): str_platform.session_state["active_gateway"] = "mlangoni"; str_platform.rerun()
+    user = str_platform.text_input("Admin Username:")
+    pas = str_platform.text_input("Admin Password:", type="password")
+    if str_platform.button("Ingia Utawala"):
+        if database.thibitisha_utambulisho_wa_siri(user, pas, "Admin"):
+            str_platform.success("🔓 Karibu Kiongozi!")
+            str_platform.write("💰 **B2B Revenue: $1,240.50 USD**")
+        else: str_platform.error("Hitilafu!")
+
+elif str_platform.session_state["active_gateway"] == "premium_s":
+    if str_platform.button("← Rudi Mlangoni"): str_platform.session_state["active_gateway"] = "mlangoni"; str_platform.rerun()
+    user = str_platform.text_input("Premium Username:")
+    pas = str_platform.text_input("Premium Password:", type="password")
+    if str_platform.button("Thibitisha Kuingia"):
+        if database.thibitisha_utambulisho_wa_siri(user, pas, "Premium User"): str_platform.success("✅ Karibu Kwenye Zana za Premium!")
+        else: str_platform.error("Hitilafu!")
+
+elif str_platform.session_state["active_gateway"] == "billing_s":
+    if str_platform.button("← Rudi Mlangoni"): str_platform.session_state["active_gateway"] = "mlangoni"; str_platform.rerun()
+    t_mpya, t_zamani = str_platform.tabs(["📝 MTUMIAJI MPYA (Sign Up)", "🔑 MTUMIAJI WA ZAMANI (Sign In to Pay)"])
     
-    if str_platform.button("Zindua Mifumo ya Utawala", key="v14_btn_admin_verify"):
-        if database.thibitisha_utambulisho_wa_siri(jina_admin, pass_admin, "Admin"):
-            str_platform.success("🔓 Karibu Kiongozi! Mifumo yote ya B2B Token Channels ipo hai.")
-            str_platform.markdown("### 🏢 Enterprise B2B Active Client Tokens")
-            data_b2b = [{"Client Token Key": "owl-live-secret-enterprise-key-2026", "Company Name": "Global Tech Client v1", "Currency": "USD", "Rate Per Word": "$0.00200", "Status": "🟢 ACTIVE"}]
-            str_platform.table(data_b2b)
-        else:
-            str_platform.error("🛑 Hitilafu: Data si sahihi!")
+    with t_mpya:
+        u_new = str_platform.text_input("Unda Username Mpya:", key="unew")
+        p_new = str_platform.text_input("Unda Password Mpya:", type="password", key="pnew")
+        if str_platform.button("Thibitisha Usajili", key="b_up"):
+            if u_new.strip() != "" and p_new.strip() != "":
+                if database.sajili_mtumiaji_mpya(u_new.strip(), p_new.strip(), "Premium User"):
+                    str_platform.session_state["reg_user"] = u_new.strip()
+                    str_platform.success(f"✅ Usajili wa '{u_new.upper()}' umekubaliwa!")
+                else: str_platform.error("Jina limechukuliwa!")
+        
+        if "reg_user" in str_platform.session_state:
+            if str_platform.button("Bofya Hapa Kulipia Kifurushi ($5.00 USD)", key="b_pay1"):
+                res = pesapal_core.anzisha_muamala_wa_pesapal(str_platform.session_state["reg_user"], f"{str_platform.session_state['reg_user']}@ourworthlinks.com")
+                str_platform.markdown(f"👉 [BOFYA HAPA KUFUNGUA FOMU HALISI YA PESAPAL]({res.get('redirect_url')})")
 
-# =====================================================================
-# 📂 CHUMBA CHA 2: 🚪 LANGO LA MTEJA WA PREMIUM (SIGN IN PREMIUM)
-# =====================================================================
-elif str_platform.session_state["active_gateway"] == "premium_suite":
-    if str_platform.button("← Rudi Mlangoni", key="back_from_premium"):
-        str_platform.session_state["active_gateway"] = "mlangoni"
-        str_platform.rerun()
+    with t_zamani:
+        u_old = str_platform.text_input("Username Yako:", key="uold")
+        p_old = str_platform.text_input("Password Yako:", type="password", key="pold")
+        if str_platform.button("Uhakiki wa Akaunti", key="b_in"):
+            if database.thibitisha_utambulisho_wa_siri(u_old.strip(), p_old.strip(), "Premium User"):
+                str_platform.session_state["pay_user"] = u_old.strip()
+                str_platform.success("🔓 Akaunti imetambuliwa!")
         
-    jina_premium = str_platform.text_input("Ingiza Username Yako ya Premium:", key="v14_premium_user")
-    pass_premium = str_platform.text_input("Ingiza Nenosiri Lako:", type="password", key="v14_premium_pass")
-    
-    if str_platform.button("Thibitisha Identity ya Premium", key="v14_btn_premium_login"):
-        if database.thibitisha_utambulisho_wa_siri(jina_premium, pass_premium, "Premium User"):
-            str_platform.session_state["user_status"] = "standard_premium"
-            str_platform.session_state["active_user_name"] = jina_premium
-            str_platform.success("✅ Karibu Kiongozi! Vifurushi vyote vipo hai sasa hivi.")
-        else:
-            str_platform.error("🛑 Hitilafu: Password au Username si sahihi!")
-
-# =====================================================================
-# 📂 CHUMBA CHA 3: 💳 LANGO LA PREMIUM BILLING FUNNEL (TABO MBILI)
-# =====================================================================
-elif str_platform.session_state["active_gateway"] == "premium_billing_funnel":
-    if str_platform.button("← Rudi Mlangoni", key="back_from_billing"):
-        str_platform.session_state["active_gateway"] = "mlangoni"
-        str_platform.rerun()
-        
-    tab_mpya, tab_wa_zamani = str_platform.tabs(["📝 MIMI NI MTUMIAJI MPYA (Sign Up)", "🔑 MIMI NI MTUMIAJI WA ZAMANI (Sign In to Pay)"])
-    
-    with tab_mpya:
-        str_platform.markdown("### 📝 Hatua ya 1: Jisajili Kwanza")
-        jina_jipya = str_platform.text_input("Tengeneza Username Mpya:", key="v14_master_new_user")
-        siri_mpya = str_platform.text_input("Tengeneza Nenosiri Jipya:", type="password", key="v14_master_new_pass")
-        
-        if "signup_completed" not in str_platform.session_state:
-            str_platform.session_state["signup_completed"] = False
-        
-        if str_platform.button("Thibitisha Usajili wa Akaunti", key="v14_master_btn_signup_validate"):
-            if jina_jipya.strip() != "" and siri_mpya.strip() != "":
-                if database.sajili_mtumiaji_mpya(jina_jipya.strip(), siri_mpya.strip(), "Premium User"):
-                    str_platform.session_state["signup_completed"] = True
-                    str_platform.session_state["saved_signup_username"] = jina_jipya.strip()
-                    str_platform.session_state["saved_signup_email"] = f"{jina_jipya.strip()}@ourworthlinks.com"
-                else:
-                    str_platform.error("🛑 Jina hili limechukuliwa tayari!")
-            else:
-                str_platform.warning("⚠️ Jaza vigezo vyote!")
-                
-        if str_platform.session_state["signup_completed"]:
-            str_platform.success(f"✅ Usajili umekubaliwa kiofisi mwilini mwa database!")
-            str_platform.markdown("### 💳 Hatua ya 2: Kamilisha Malipo ya Pesapal ($5.00 USD)")
-            if str_platform.button("Zindua Ankara ya Pesapal", key="v14_btn_pesapal_tab1"):
-                matokeo_p = pesapal_core.anzisha_muamala_wa_pesapal(str_platform.session_state["saved_signup_username"], str_platform.session_state["saved_signup_email"], 5.00)
-                str_platform.success("📲 Lango la malipo limefunguka!")
-                str_platform.markdown(f"👉 [BOFYA HAPA KUFUNGUA FOMU HALISI YA PESAPAL]({matokeo_p.get('redirect_url')})")
-
-    with tab_wa_zamani:
-        str_platform.markdown("### 🔑 Ingia Ili Kufungua Fomu ya Malipo")
-        jina_luhula = str_platform.text_input("Username Yako Uliyojisajili Nayo:", key="v14_tab2_user")
-        siri_luhula = str_platform.text_input("Nenosiri Lako la Siri:", type="password", key="v14_tab2_pass")
-        
-        if "signin_pay_unlocked" not in str_platform.session_state:
-            str_platform.session_state["signin_pay_unlocked"] = False
-            
-        if str_platform.button("Uhakiki wa Akaunti", key="v14_btn_tab2_verify"):
-            if database.thibitisha_utambulisho_wa_siri(jina_luhula, siri_luhula, "Premium User"):
-                str_platform.session_state["signin_pay_unlocked"] = True
-                str_platform.session_state["saved_pay_username"] = jina_luhula.strip()
-                str_platform.session_state["saved_pay_email"] = f"{jina_luhula.strip()}@ourworthlinks.com"
-            else:
-                str_platform.error("🛑 Jina au password si sahihi!")
-                
-        # 👑 THE ABSOLUTE RESILIENCE SIGN: Kufunga kitalu kizima nadhifu bila kukatika!
-        if str_platform.session_state["signin_pay_unlocked"]:
-            str_platform.success(f"🔓 Akaunti imetambuliwa! Unaelekezwa kwenye fomu ya malipo.")
-            if str_platform.button("Kamilisha na Lipia Kifurushi", key="v14_btn_pesapal_tab2"):
-                matokeo_p2 = pesapal_core.anzisha_muamala_wa_pesapal(str_platform.session_state["saved_pay_username"], str_platform.session_state["saved_pay_email"], 5.00)
-                str_platform.success("📲 Lango la malipo limefunguka!")
-                str_platform.markdown(f"👉 [BOFYA HAPA KUFUNGUA FOMU HALISI YA PESAPAL]({matokeo_p2.get('redirect_url')})")
+        if "pay_user" in str_platform.session_state:
+            if str_platform.button("Bofya Hapa Kulipia Ankara ($5.00 USD)", key="b_pay2"):
+                res2 = pesapal_core.anzisha_muamala_wa_pesapal(str_platform.session_state["pay_user"], f"{str_platform.session_state['pay_user']}@ourworthlinks.com")
+                str_platform.markdown(f"👉 [BOFYA HAPA KUFUNGUA FOMU HALISI YA PESAPAL]({res2.get('redirect_url')})")
 
 str_platform.write("---")
-str_platform.markdown("<p style='text-align: center; font-size: 0.85rem; color: #9CA3AF; font-weight: bold;'>© 2026 Ourworthlinks • LinguaAfrika AI Ecosystem Enterprise</p>", unsafe_allow_html=True)
+str_platform.markdown("<p style='text-align: center; font-size: 12px;'>© 2026 Ourworthlinks</p>", unsafe_allow_html=True)
