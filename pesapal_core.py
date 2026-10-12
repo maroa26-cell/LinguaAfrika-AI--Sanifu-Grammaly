@@ -34,11 +34,11 @@ def anzisha_muamala_wa_pesapal(username, email):
             # HATUA YA 2: Kutengeneza Ankara ya Kiofisi ya Kifurushi cha Premium ($5.00 USD)
             order_payload = {
                 "id": id_ya_muamala,
-                "amount": 5.00,  # 👑 HAKIKISHO LA CHUMA: Thamani imefungwa hapa kuzuia kosa la 0.00!
+                "amount": 5.00,  # 👑 HAKIKISHO LA CHUMA: Thamani imefungwa hapa kuzuia kosa la 400!
                 "description": "LinguaAfrika AI Premium Suite Subscription",
                 "callback_url": url_yako_halisi,
                 "cancellation_url": url_yako_halisi,
-                "notification_id": "00000000-0000-0000-0000-000000000000",
+                "notification_id": "ffa26ad8-4037-4b7a-a122-d9cbf46dc415", # 👑 INJINI IMPLANTED: Namba yako halisi ya IPN ID imesimikwa rasmi!
                 "billing_address": {
                     "email_address": email,
                     "country_code": "TZ",
