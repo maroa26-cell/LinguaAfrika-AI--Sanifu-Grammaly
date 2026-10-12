@@ -18,7 +18,7 @@ if api_key_source:
 else: 
     str_platform.error("🔒 Secrets Error!"); str_platform.stop()
 
-# 🎨 EXCLUSIVE B2B LUXURY SKIN INJECTION & FAMILY-SAFE AD SLOTS
+# 🎨 DIRECT ENTERPRISE LUXURY SKIN INJECTION & FAMILY-SAFE AD SLOTS
 str_platform.markdown("""
 <style>
     html, body, [data-testid="stAppViewContainer"] { background-color: #F8FAFC !important; font-family: 'Segoe UI', sans-serif !important; }
@@ -27,35 +27,15 @@ str_platform.markdown("""
     div[data-testid="stRadio"] > label { background-color: rgba(255, 255, 255, 0.04) !important; padding: 12px 15px !important; border-radius: 8px !important; margin-bottom: 8px !important; }
     div[data-testid="stRadio"] div[aria-checked="true"] { background-color: #D97706 !important; border-radius: 6px !important; padding: 4px 10px !important; }
     div.stButton > button { background-color: #1E3A8A !important; color: white !important; font-weight: bold !important; padding: 14px 28px !important; border-radius: 8px !important; border: none !important; width: 100% !important; }
-    
-    .b2b-safe-ad-banner {
-        background-color: #F8FAFC !important;
-        border: 2px solid #E2E8F0 !important;
-        border-radius: 12px !important;
-        padding: 15px !important;
-        text-align: center !important;
-        color: #94A3B8 !important;
-        font-size: 11px !important;
-        font-weight: 800 !important;
-        margin: 15px 0 !important;
-        box-shadow: inset 0 2px 4px rgba(0,0,0,0.02) !important;
-    }
+    .b2b-safe-ad-banner { background-color: #F8FAFC !important; border: 2px solid #E2E8F0 !important; border-radius: 12px !important; padding: 15px !important; text-align: center !important; color: #94A3B8 !important; font-size: 11px !important; font-weight: 800 !important; margin: 15px 0 !important; }
 </style>
 """, unsafe_allow_html=True)
 
-# 🌐 IDARA YA JUU: LEADERBOARD AD BLOCK (MEDIA.NET / EZOIC CONTEXT SPECIFIC)
+# 🌐 BOX 1: BANGO LA JUU KUU (TOP REVENUE PLACEMENT)
 str_platform.markdown("""
 <div class='b2b-safe-ad-banner'>
-    🛡️ BRAND-SAFE REVENUE NODE (MEDIA.NET B2B PLACEMENT)
-    <div id="media_net_display_slot_top">
-        <script type="text/javascript">
-            window._mNHandle = window._mNHandle || {};
-            window._mNHandle.queue = window._mNHandle.queue || [];
-            window._mNHandle.queue.push(float() {
-                window._mNHandle.showTag("media_net_display_slot_top", "728x90", "OURWORTHLINKS_CID");
-            });
-        </script>
-    </div>
+    🛡️ BRAND-SAFE REVENUE NODE (TOP MEDIA.NET B2B PLACEMENT)
+    <div id="media_net_display_slot_top"></div>
 </div>
 """, unsafe_allow_html=True)
 
@@ -80,13 +60,11 @@ str_platform.sidebar.markdown("<p style='color: #94A3B8; font-size: 13px; font-w
 orodha_menyu = ["🎯 Malengo na Dira ya Taasisi", "📝 Mhariri wa Kiswahili Sanifu Pro", "🔀 Mtafsiri wa Lugha Suite", "📚 Maktaba ya Kamusi Kuu"]
 chaguo_menyu = str_platform.sidebar.radio("", orodha_menyu, key="v14_clean_portal_radio_gate")
 
-# 🌐 IDARA YA SIDEBAR: VERTICAL EZOIC AI PLACEMENT SLOT
+# 🌐 BOX 2: BANGO LA PEMBENI (SIDEBAR VERTICAL AD SLOT)
 str_platform.sidebar.markdown("""
 <div class='b2b-safe-ad-banner' style='padding: 8px;'>
     <p style='color: #D97706; margin: 0; font-size: 10px;'>🔒 SECURE AD BLOCK</p>
-    <div id="ezoic-pub-ad-placeholder-101"> 
-        <!-- Ezoic tag scripts inject inside this context seamlessly -->
-    </div>
+    <div id="ezoic-pub-ad-placeholder-101"></div>
 </div>
 """, unsafe_allow_html=True)
 
@@ -95,10 +73,10 @@ str_platform.sidebar.markdown("<p style='color: #94A3B8; font-size: 13px; font-w
 try: str_platform.sidebar.page_link("pages/dashboard.py", label="Fungua Lango la Utawala (Dashboard) ──►", icon="🔐")
 except Exception: pass
 
-# Local dataset matrices
+# Local dataset matrices (Sub-1ms Cached Memory Matrix)
 kamusi_yetu_ya_ndani = {
     "mshandao": "Mstari imara au kiungo kilichounganishwa katika mtandao wa mawasiliano.",
-    "mnyororo wa kache": "Hifadhi ya muda mfupi ya kumbukumbu ya kompyuta inayozuia mifumo isigande.",
+    "mnyororo wa kache": "Hifadhi ya muda pfupi ya kumbukumbu ya kompyuta inayozuia mifumo isigande.",
     "chujio": "Zana maalum ya kukagua na kusafisha mistari ya msimbo dhidi ya hitilafu za uandishi.",
     "urari": "Usawa kamili uliopo kati ya ankara za kiofisi na fedha zilizochakatwa kupitia lango."
 }
@@ -107,7 +85,7 @@ jozi_za_tafsiri_ndani = {
     "click the link to complete your monthly premium payment profile": "Bofya kiungo kilichopo chini ili kukamilisha wasifu wako wa malipo ya kila mwezi."
 }
 
-# RENDERING GATE
+# RENDERING GATE LOGIC
 if chaguo_menyu == "🎯 Malengo na Dira ya Taasisi":
     str_platform.markdown("<h3 style='color: #1E3A8A;'>🎯 Malengo na Dira ya Taasisi</h3>", unsafe_allow_html=True)
     str_platform.write("LinguaAfrika AI imesajiliwa kuwa chombo kikuu cha kimkakati cha kidijitali barani Afrika kusanifisha na kuongeza thamani ya matumizi ya lugha ya Kiswahili kibiashara.")
@@ -156,7 +134,13 @@ elif chaguo_menyu == "📚 Maktaba ya Kamusi Kuu":
             str_platform.write(jibu_v.choices.message.content)
 
 str_platform.write("---")
-# 🌐 IDARA YA CHINI: BOTTOM STICKY FLOATING ANCHOR AD SLOT
+
+# 🌐 BOX 3: BANGO LA CHINI KUU (EZOIC AI PLACEMENT - LIMEWEKWA VYEMA NA KUFUNGWA!)
 str_platform.markdown("""
 <div class='b2b-safe-ad-banner'>
     🛡️ BOTTOM REVENUE ANCHOR (EZOIC AI BRAND-SAFE PLACEMENT)
+    <div id="ezoic-pub-ad-placeholder-102"></div>
+</div>
+""", unsafe_allow_html=True)
+
+str_platform.markdown("<p style='text-align: center; font-size: 12px; color: #94A3B8;'>© 2026 Ourworthlinks • LinguaAfrika AI Ecosystem</p>", unsafe_allow_html=True)
