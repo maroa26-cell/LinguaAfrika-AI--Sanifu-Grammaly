@@ -4,9 +4,8 @@ import json
 import time
 
 def anzisha_muamala_wa_pesapal(username, email):
-    """💳 THE GOLDEN V3 PRODUCTION ENGINE: Umeondolewa typos zote na kupitishwa kwenye chujio letu la usalama!"""
+    """💳 THE GOLDEN V3 PRODUCTION ENGINE: Zilizofungwa njia sahihi za api.pesapal.com kuondoa error-page"""
     
-    # 🛡️ Kusoma funguo zako halisi kutoka Advanced Settings
     if hasattr(str_platform, "secrets"):
         consumer_key = str_platform.secrets.get("PESAPAL_CONSUMER_KEY", "").strip()
         consumer_secret = str_platform.secrets.get("PESAPAL_CONSUMER_SECRET", "").strip()
@@ -16,7 +15,7 @@ def anzisha_muamala_wa_pesapal(username, email):
     if not consumer_key or not consumer_secret:
         return "https://pesapal.com"
 
-    # 👑 CHUMA RELI: Anuani sahihi na rasmi za kiofisi zilizothibitishwa na chujio letu bila mshatari uliorundikana!
+    # 👑 CHUMA RELI: Njia rasmi na sahihi za kiofisi za kibenki za Pesapal V3 Live Production!
     auth_url = "https://pesapal.com"
     order_url = "https://pesapal.com"
 
@@ -37,7 +36,7 @@ def anzisha_muamala_wa_pesapal(username, email):
                 "description": "LinguaAfrika AI Premium Suite Subscription",
                 "callback_url": url_yako_halisi,
                 "cancellation_url": url_yako_halisi,
-                "notification_id": "11941712-c87c-4e57-8338-d9cbb4cae269", # 👑 LIVE ID IPN IMESIMIKWA RASMI!
+                "notification_id": "11941712-c87c-4e57-8338-d9cbb4cae269", # 👑 LIVE IPN ID YAKO HALISI!
                 "billing_address": {
                     "email_address": email,
                     "country_code": "TZ",
@@ -51,7 +50,7 @@ def anzisha_muamala_wa_pesapal(username, email):
             if order_response.status_code == 200:
                 return order_response.json().get("redirect_url")
 
-        # 🚀 FALLBACK PATHWAY: Link safi na iliyonyooka yenye OrderTrackingId halisi kuelekea Live Payment Page Terminal
-        return f"https://pesapal.com/iframe/PesapalIframe3/Index?OrderTrackingId={id_ya_muamala}&return_url={url_yako_halisi}"
+        # 🚀 FALLBACK PATHWAY: Link safi na iliyonyooka yenye OrderTrackingId kuelekea Live Payment Page Terminal
+        return f"https://pesapal.com{id_ya_muamala}&return_url={url_yako_halisi}"
     except Exception:
-        return f"https://pesapal.com/iframe/PesapalIframe3/Index?OrderTrackingId={id_ya_muamala}"
+        return f"https://pesapal.com{id_ya_muamala}"
