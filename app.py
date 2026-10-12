@@ -1,4 +1,3 @@
-
 import streamlit as str_platform
 import os
 import time
@@ -19,7 +18,7 @@ if api_key_source:
 else: 
     str_platform.error("🔒 Secrets Error!"); str_platform.stop()
 
-# 🎨 DIRECT ENTERPRISE LUXURY SKIN INJECTION & SAFE AD LAYOUTS
+# 🎨 EXCLUSIVE B2B LUXURY SKIN INJECTION & FAMILY-SAFE AD SLOTS
 str_platform.markdown("""
 <style>
     html, body, [data-testid="stAppViewContainer"] { background-color: #F8FAFC !important; font-family: 'Segoe UI', sans-serif !important; }
@@ -29,33 +28,34 @@ str_platform.markdown("""
     div[data-testid="stRadio"] div[aria-checked="true"] { background-color: #D97706 !important; border-radius: 6px !important; padding: 4px 10px !important; }
     div.stButton > button { background-color: #1E3A8A !important; color: white !important; font-weight: bold !important; padding: 14px 28px !important; border-radius: 8px !important; border: none !important; width: 100% !important; }
     
-    /* 🛡️ SAFE BRAND AD CONTAINERS STYLE */
-    .safe-ad-banner {
-        background-color: #F1F5F9 !important;
-        border: 2px dashed #94A3B8 !important;
-        border-radius: 8px !important;
+    .b2b-safe-ad-banner {
+        background-color: #F8FAFC !important;
+        border: 2px solid #E2E8F0 !important;
+        border-radius: 12px !important;
         padding: 15px !important;
         text-align: center !important;
-        color: #64748B !important;
-        font-size: 12px !important;
-        font-weight: bold !important;
+        color: #94A3B8 !important;
+        font-size: 11px !important;
+        font-weight: 800 !important;
         margin: 15px 0 !important;
+        box-shadow: inset 0 2px 4px rgba(0,0,0,0.02) !important;
     }
 </style>
 """, unsafe_allow_html=True)
 
-# 🌐 BOX 1: BANGO LA JUU KUU (TOP LEADERBOARD AD SLOT - LIMEWEKWA MAADILI)
-# Ukipata Publisher ID yako, badilisha tu sehemu ya data-ad-client na data-ad-slot kiotomatiki
+# 🌐 IDARA YA JUU: LEADERBOARD AD BLOCK (MEDIA.NET / EZOIC CONTEXT SPECIFIC)
 str_platform.markdown("""
-<div class='safe-ad-banner'>
-    🌐 MATANGAZO YALIYOLINDWA (SAFE AD ENCLAVE)<br>
-    <ins class="adsbygoogle"
-         style="display:block; text-align:center;"
-         data-ad-layout="in-article"
-         data-ad-format="fluid"
-         data-ad-client="ca-pub-CHAGUA-ID-YAKO-BAADAE"
-         data-ad-slot="SLOT-ID-YAKO"></ins>
-    <script> (adsbygoogle = window.adsbygoogle || []).push({}); </script>
+<div class='b2b-safe-ad-banner'>
+    🛡️ BRAND-SAFE REVENUE NODE (MEDIA.NET B2B PLACEMENT)
+    <div id="media_net_display_slot_top">
+        <script type="text/javascript">
+            window._mNHandle = window._mNHandle || {};
+            window._mNHandle.queue = window._mNHandle.queue || [];
+            window._mNHandle.queue.push(float() {
+                window._mNHandle.showTag("media_net_display_slot_top", "728x90", "OURWORTHLINKS_CID");
+            });
+        </script>
+    </div>
 </div>
 """, unsafe_allow_html=True)
 
@@ -66,14 +66,13 @@ str_platform.write("---")
 
 kasi_ya_radi = (time.time() - muda_mwanzo) * 1000
 
-# 📊 Bango la Telemetry (Rada ya Ubongo Kuu)
+# Telemetry sidebar dashboard
 str_platform.sidebar.markdown(f"""
 <div style='background-color: rgba(30, 58, 138, 0.1); border: 2px solid #D97706; padding: 15px; border-radius: 10px; margin-bottom: 15px;'>
     <p style='color: #D97706; font-size: 14px; margin: 0 0 8px 0; text-align: center; font-weight: 900;'>📊 RADA YA UBONGO (CNS METRICS)</p>
-    <p style='color: #25D366; font-size: 12px; margin: 0;'>🫁 <b>Respiratory:</b> 🟢 RAM/CPU Stable</p>
-    <p style='color: #25D366; font-size: 12px; margin: 4px 0;'>🩸 <b>Circulation:</b> 🟢 Traffic Safe</p>
+    <p style='color: #25D366; font-size: 12px; margin: 0;'>🫁 <b>Respiratory:</b> 🟢 Stable</p>
+    <p style='color: #25D366; font-size: 12px; margin: 4px 0;'>🩸 <b>Circulation:</b> 🟢 Safe</p>
     <p style='color: #25D366; font-size: 12px; margin: 0 0 4px 0;'>⚡ <b>Synapse Latency:</b> {kasi_ya_radi:.3f}ms</p>
-    <p style='color: #E2E8F0; font-size: 11px; margin: 0;'>🩺 <b>Self-Regulatory:</b> {self_healing_status}</p>
 </div>
 """, unsafe_allow_html=True)
 
@@ -81,24 +80,22 @@ str_platform.sidebar.markdown("<p style='color: #94A3B8; font-size: 13px; font-w
 orodha_menyu = ["🎯 Malengo na Dira ya Taasisi", "📝 Mhariri wa Kiswahili Sanifu Pro", "🔀 Mtafsiri wa Lugha Suite", "📚 Maktaba ya Kamusi Kuu"]
 chaguo_menyu = str_platform.sidebar.radio("", orodha_menyu, key="v14_clean_portal_radio_gate")
 
-# 🌐 BOX 2: BANGO LA PEMBENI (SIDEBAR VERTICAL AD SLOT)
+# 🌐 IDARA YA SIDEBAR: VERTICAL EZOIC AI PLACEMENT SLOT
 str_platform.sidebar.markdown("""
-<div class='safe-ad-banner' style='padding: 10px; font-size: 11px;'>
-    🛡️ SECURE ENTERPRISE AD ENCLAVE<br>
-    <ins class="adsbygoogle" style="display:inline-block;width:160px;height:600px" data-ad-client="ca-pub-ID" data-ad-slot="SLOT"></ins>
-    <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+<div class='b2b-safe-ad-banner' style='padding: 8px;'>
+    <p style='color: #D97706; margin: 0; font-size: 10px;'>🔒 SECURE AD BLOCK</p>
+    <div id="ezoic-pub-ad-placeholder-101"> 
+        <!-- Ezoic tag scripts inject inside this context seamlessly -->
+    </div>
 </div>
 """, unsafe_allow_html=True)
 
 str_platform.sidebar.write("---")
 str_platform.sidebar.markdown("<p style='color: #94A3B8; font-size: 13px; font-weight: bold; margin-bottom: 2px;'>🔐 MANAGEMENT PORTAL:</p>", unsafe_allow_html=True)
-
 try: str_platform.sidebar.page_link("pages/dashboard.py", label="Fungua Lango la Utawala (Dashboard) ──►", icon="🔐")
 except Exception: pass
 
-# =====================================================================
-# 📚 MNYORORO WA DATASET ZAKO ZA SIRI (LOCAL MEMORY MATRIX)
-# =====================================================================
+# Local dataset matrices
 kamusi_yetu_ya_ndani = {
     "mshandao": "Mstari imara au kiungo kilichounganishwa katika mtandao wa mawasiliano.",
     "mnyororo wa kache": "Hifadhi ya muda mfupi ya kumbukumbu ya kompyuta inayozuia mifumo isigande.",
@@ -106,7 +103,7 @@ kamusi_yetu_ya_ndani = {
     "urari": "Usawa kamili uliopo kati ya ankara za kiofisi na fedha zilizochakatwa kupitia lango."
 }
 jozi_za_tafsiri_ndani = {
-    "our company agrees to deliver the commodity within seven business days": "Kampuni yetu inakubali kutoa bidhaa hiyo ndani ya siku saba za kazi kulingana na urari wa mkataba.",
+    "our company agrees to deliver the commodity within seven business days": "Kampuni yetu inakubali kutoa bidhaa hiyo ndani ya siku saba za kazi kulinagana na urari wa mkataba.",
     "click the link to complete your monthly premium payment profile": "Bofya kiungo kilichopo chini ili kukamilisha wasifu wako wa malipo ya kila mwezi."
 }
 
@@ -155,3 +152,11 @@ elif chaguo_menyu == "📚 Maktaba ya Kamusi Kuu":
         else:
             prompt_v = f"Ufafanuzi wa kina kwa neno: {msamiati.strip()}"
             jibu_v = client.chat.completions.create(model="gpt-4o", messages=[{"role": "user", "content": prompt_v}])
+            str_platform.info("✨ Uchambuzi wa Kitaalamu vya Kamusi Kuu:")
+            str_platform.write(jibu_v.choices.message.content)
+
+str_platform.write("---")
+# 🌐 IDARA YA CHINI: BOTTOM STICKY FLOATING ANCHOR AD SLOT
+str_platform.markdown("""
+<div class='b2b-safe-ad-banner'>
+    🛡️ BOTTOM REVENUE ANCHOR (EZOIC AI BRAND-SAFE PLACEMENT)
