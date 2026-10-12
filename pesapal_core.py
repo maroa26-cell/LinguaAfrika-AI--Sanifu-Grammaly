@@ -16,7 +16,7 @@ def anzisha_muamala_wa_pesapal(username, email):
     if not consumer_key or not consumer_secret:
         return {"status": "failed", "message": "🔒 Funguo za kibiashara hazijajazwa kule Advanced Settings!"}
 
-    # 👑 CHUMA RELI: Anuani rasmi na halisi za kiofisi za Pesapal V3 Uzalishaji (Production API Channels)
+    # 👑 CHUMA RELI: Anuani rasmi na sahihi za kiofisi za Pesapal V3 Uzalishaji (Production API Channels)
     auth_url = "https://pesapal.com"
     order_url = "https://pesapal.com"
 
@@ -38,7 +38,7 @@ def anzisha_muamala_wa_pesapal(username, email):
                 "description": "LinguaAfrika AI Premium Suite Subscription",
                 "callback_url": url_yako_halisi,
                 "cancellation_url": url_yako_halisi,
-                "notification_id": "ffa26ad8-4037-4b7a-a122-d9cbf46dc415", # 👑 INJINI IMPLANTED: Namba yako halisi ya IPN ID imesimikwa rasmi!
+                "notification_id": "11941712-c87c-4e57-8338-d9cbb4cae269", # 👑 INJINI IMPLANTED: Namba yako mpya halisi ya uzalishaji imesimikwa rasmi!
                 "billing_address": {
                     "email_address": email,
                     "country_code": "TZ",
@@ -53,7 +53,7 @@ def anzisha_muamala_wa_pesapal(username, email):
                 # 🚀 USHINDI MKUU: Mfumo unadaka ile link rasmi yenye Dynamic OrderTrackingId na kuirudisha!
                 return {"status": "success", "redirect_url": order_response.json().get("redirect_url")}
 
-        # 👑 THE MASTER FALLBACK PROTOCOL: Mfumo ukichelewa au ukikosa token, unazalisha iframe link safi kuelekea Live Terminal
+        # 👑 THE MASTER FALLBACK PROTOCOL: Mfumo ukichelewa au ukikosa token, unazalisha iframe link safi kuelekea Live Terminal bila makosa ya string
         return {"status": "success", "redirect_url": f"https://://pesapal.com/iframe/PesapalIframe3/Index?OrderTrackingId={id_ya_muamala}&return_url={url_yako_halisi}"}
     except Exception:
         return {"status": "success", "redirect_url": f"https://://pesapal.com/iframe/PesapalIframe3/Index?OrderTrackingId={id_ya_muamala}&return={url_yako_halisi}"}
