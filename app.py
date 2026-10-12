@@ -1,3 +1,4 @@
+
 import streamlit as str_platform
 import os
 import time
@@ -18,7 +19,7 @@ if api_key_source:
 else: 
     str_platform.error("🔒 Secrets Error!"); str_platform.stop()
 
-# 🎨 DIRECT ENTERPRISE LUXURY SKIN INJECTION
+# 🎨 DIRECT ENTERPRISE LUXURY SKIN INJECTION & SAFE AD LAYOUTS
 str_platform.markdown("""
 <style>
     html, body, [data-testid="stAppViewContainer"] { background-color: #F8FAFC !important; font-family: 'Segoe UI', sans-serif !important; }
@@ -27,7 +28,35 @@ str_platform.markdown("""
     div[data-testid="stRadio"] > label { background-color: rgba(255, 255, 255, 0.04) !important; padding: 12px 15px !important; border-radius: 8px !important; margin-bottom: 8px !important; }
     div[data-testid="stRadio"] div[aria-checked="true"] { background-color: #D97706 !important; border-radius: 6px !important; padding: 4px 10px !important; }
     div.stButton > button { background-color: #1E3A8A !important; color: white !important; font-weight: bold !important; padding: 14px 28px !important; border-radius: 8px !important; border: none !important; width: 100% !important; }
+    
+    /* 🛡️ SAFE BRAND AD CONTAINERS STYLE */
+    .safe-ad-banner {
+        background-color: #F1F5F9 !important;
+        border: 2px dashed #94A3B8 !important;
+        border-radius: 8px !important;
+        padding: 15px !important;
+        text-align: center !important;
+        color: #64748B !important;
+        font-size: 12px !important;
+        font-weight: bold !important;
+        margin: 15px 0 !important;
+    }
 </style>
+""", unsafe_allow_html=True)
+
+# 🌐 BOX 1: BANGO LA JUU KUU (TOP LEADERBOARD AD SLOT - LIMEWEKWA MAADILI)
+# Ukipata Publisher ID yako, badilisha tu sehemu ya data-ad-client na data-ad-slot kiotomatiki
+str_platform.markdown("""
+<div class='safe-ad-banner'>
+    🌐 MATANGAZO YALIYOLINDWA (SAFE AD ENCLAVE)<br>
+    <ins class="adsbygoogle"
+         style="display:block; text-align:center;"
+         data-ad-layout="in-article"
+         data-ad-format="fluid"
+         data-ad-client="ca-pub-CHAGUA-ID-YAKO-BAADAE"
+         data-ad-slot="SLOT-ID-YAKO"></ins>
+    <script> (adsbygoogle = window.adsbygoogle || []).push({}); </script>
+</div>
 """, unsafe_allow_html=True)
 
 muda_mwanzo = time.time()
@@ -52,6 +81,15 @@ str_platform.sidebar.markdown("<p style='color: #94A3B8; font-size: 13px; font-w
 orodha_menyu = ["🎯 Malengo na Dira ya Taasisi", "📝 Mhariri wa Kiswahili Sanifu Pro", "🔀 Mtafsiri wa Lugha Suite", "📚 Maktaba ya Kamusi Kuu"]
 chaguo_menyu = str_platform.sidebar.radio("", orodha_menyu, key="v14_clean_portal_radio_gate")
 
+# 🌐 BOX 2: BANGO LA PEMBENI (SIDEBAR VERTICAL AD SLOT)
+str_platform.sidebar.markdown("""
+<div class='safe-ad-banner' style='padding: 10px; font-size: 11px;'>
+    🛡️ SECURE ENTERPRISE AD ENCLAVE<br>
+    <ins class="adsbygoogle" style="display:inline-block;width:160px;height:600px" data-ad-client="ca-pub-ID" data-ad-slot="SLOT"></ins>
+    <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+</div>
+""", unsafe_allow_html=True)
+
 str_platform.sidebar.write("---")
 str_platform.sidebar.markdown("<p style='color: #94A3B8; font-size: 13px; font-weight: bold; margin-bottom: 2px;'>🔐 MANAGEMENT PORTAL:</p>", unsafe_allow_html=True)
 
@@ -62,26 +100,20 @@ except Exception: pass
 # 📚 MNYORORO WA DATASET ZAKO ZA SIRI (LOCAL MEMORY MATRIX)
 # =====================================================================
 kamusi_yetu_ya_ndani = {
-    "mshandao": "Mstari imara au kiungo kilichounganishwa katika mtandao wa mawasiliano (Network Pathway / Pipeline Node).",
-    "mnyororo wa kache": "Hifadhi ya muda mfupi ya kumbukumbu ya kompyuta inayozuia mifumo isigande kiofisi.",
-    "chujio": "Zana maalum ya kukagua na kusafisha mistari ya msimbo dhidi ya hitilafu za uandishi au kiusalama.",
-    "urari": "Usawa kamili uliopo kati ya ankara za kiofisi na fedha zilizochakatwa kupitia lango la malipo."
+    "mshandao": "Mstari imara au kiungo kilichounganishwa katika mtandao wa mawasiliano.",
+    "mnyororo wa kache": "Hifadhi ya muda mfupi ya kumbukumbu ya kompyuta inayozuia mifumo isigande.",
+    "chujio": "Zana maalum ya kukagua na kusafisha mistari ya msimbo dhidi ya hitilafu za uandishi.",
+    "urari": "Usawa kamili uliopo kati ya ankara za kiofisi na fedha zilizochakatwa kupitia lango."
 }
-
 jozi_za_tafsiri_ndani = {
     "our company agrees to deliver the commodity within seven business days": "Kampuni yetu inakubali kutoa bidhaa hiyo ndani ya siku saba za kazi kulingana na urari wa mkataba.",
-    "click the link to complete your monthly premium payment profile": "Bofya kiungo kilichopo chini ili kukamilisha wasifu wako wa malipo ya kifurushi cha kila mwezi."
+    "click the link to complete your monthly premium payment profile": "Bofya kiungo kilichopo chini ili kukamilisha wasifu wako wa malipo ya kila mwezi."
 }
 
-# =====================================================================
-# ⚙️ DIRECT MONOLITHIC COGNITIVE SYSTEM RENDERING
-# =====================================================================
+# RENDERING GATE
 if chaguo_menyu == "🎯 Malengo na Dira ya Taasisi":
     str_platform.markdown("<h3 style='color: #1E3A8A;'>🎯 Malengo na Dira ya Taasisi</h3>", unsafe_allow_html=True)
     str_platform.write("LinguaAfrika AI imesajiliwa kuwa chombo kikuu cha kimkakati cha kidijitali barani Afrika kusanifisha na kuongeza thamani ya matumizi ya lugha ya Kiswahili kibiashara.")
-    col_m1, col_m2 = str_platform.columns(2)
-    with col_m1: str_platform.info("🚀 **Dira Yetu (Our Vision)**\n\nKuwa kitovu namba moja duniani cha Akili Mnemba (AI) kinachosanifisha lugha ya Kiswahili.")
-    with col_m2: str_platform.info("📈 **Malengo ya Kikazi (Our Objectives)**\n\n• Kutoa zana za bure kusaidia jamii kuhariri.\n\n• Kujenga mitambo ya kiasili ya mtafsiri na kamusi.")
 
 elif chaguo_menyu == "📝 Mhariri wa Kiswahili Sanifu Pro":
     str_platform.markdown("<h3 style='color: #1E3A8A;'>📝 Mhariri wa Kiswahili Sanifu Pro</h3>", unsafe_allow_html=True)
@@ -95,40 +127,31 @@ elif chaguo_menyu == "📝 Mhariri wa Kiswahili Sanifu Pro":
 
 elif chaguo_menyu == "🔀 Mtafsiri wa Lugha Suite":
     str_platform.markdown("<h3 style='color: #1E3A8A;'>🔀 Mtafsiri wa Lugha & Muktadha Suite (Lugha 14)</h3>", unsafe_allow_html=True)
-    orodha_lugha = ["Kiswahili", "Kiingereza (English)", "Kinyarwanda", "Kiganda (Luganda)", "Lingala", "Kichewa (Chewa)", "Kinyanja", "Kiafrikana (Afrikana)", "Kifaransa (French)", "Kiarabu (Arabic)", "Kihindi (Hindi)", "Kireno (Portuguese)", "Kichina (Chinese)"]
+    orodha_lugha = ["Kiswahili", "Kiingereza (English)", "Kinyarwanda", "Kiganda (Luganda)", "Lingala", "Kichewa (Chewa)", "Kinyanja", "Kiafrikana (Afrikana)", "Kifaransa (French)", "Kiarabu (Arabic)"]
     col1, col2 = str_platform.columns(2)
     with col1: lugha_chanzo = str_platform.selectbox("Kutoka Lugha:", orodha_lugha, index=1, key="src_v14_clean")
     with col2: lugha_lengwa = str_platform.selectbox("Kwenda Lugha:", orodha_lugha, index=0, key="trg_v14_clean")
     muktadha_chaguo = str_platform.selectbox("🎯 Chagua Muktadha:", ["Kawaida", "Kibiashara", "Kisheria", "Kitiba", "Kielimu"], key="context_v14_clean")
     maandishi_t = str_platform.text_area("Ingiza maandishi ya kutafsiri hapa:", key="trans_v14_clean_box")
-    
     if str_platform.button("Zindua Tafsiri Pro", key="v14_btn_tr_clean"):
         graw_text = maandishi_t.strip().lower().replace(".", "").replace(",", "")
         if graw_text in jozi_za_tafsiri_ndani:
             str_platform.success("🔮 Matokeo Timilifu ya Tafsiri (Imedakwa kutoka Dataset Yako):")
             str_platform.write(jozi_za_tafsiri_ndani[graw_text])
         else:
-            prompt_t = f"Translate the following text from {lugha_chanzo} to {lugha_lengwa} in a '{muktadha_chaguo}' context:\n\n{maandishi_t}"
+            prompt_t = f"Translate from {lugha_chanzo} to {lugha_lengwa} in a '{muktadha_chaguo}' context:\n\n{maandishi_t}"
             jibu_t = client.chat.completions.create(model="gpt-4o", messages=[{"role": "user", "content": prompt_t}])
             str_platform.success("🔮 Matokeo ya Tafsiri Pro ya Muktadha:")
             str_platform.write(jibu_t.choices.message.content)
 
-# 👑 THE ABSOLUTE REPAIR: Kitalu kizima cha line 132 kimefungwa nadhifu kwa rula ya chuma!
 elif chaguo_menyu == "📚 Maktaba ya Kamusi Kuu":
     str_platform.markdown("<h3 style='color: #1E3A8A;'>📚 Maktaba ya Msamiati na Kamusi Kuu</h3>", unsafe_allow_html=True)
     msamiati = str_platform.text_input("Andika neno la Kiswahili hapa:", key="kamusi_input_v14_clean")
-    
     if str_platform.button("Tafuta Kwenye Kamusi Kuu", key="v14_btn_kam_clean"):
         g_word = msamiati.strip().lower()
         if g_word in kamusi_yetu_ya_ndani:
             str_platform.info("✨ Uchambuzi wa Kitaalamu (Imedakwa kutoka Dataset Yako):")
             str_platform.write(kamusi_yetu_ya_ndani[g_word])
         else:
-            prompt_v = f"Ufafanuzi wa kina na mifano ya sentensi kwa neno la Kiswahili: {msamiati.strip()}"
+            prompt_v = f"Ufafanuzi wa kina kwa neno: {msamiati.strip()}"
             jibu_v = client.chat.completions.create(model="gpt-4o", messages=[{"role": "user", "content": prompt_v}])
-            str_platform.info("✨ Uchambuzi wa Kitaalamu vya Kamusi Kuu:")
-            str_platform.write(jibu_v.choices.message.content)
-
-str_platform.write("---")
-str_platform.markdown("<p style='text-align: center; font-size: 12px;'>© 2026 Ourworthlinks • LinguaAfrika AI Ecosystem</p>", unsafe_allow_html=True)
-
