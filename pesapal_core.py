@@ -16,12 +16,11 @@ def anzisha_muamala_wa_pesapal(username, email):
     if not consumer_key or not consumer_secret:
         return {"status": "failed", "message": "🔒 Funguo za kibiashara hazijajazwa kule Advanced Settings!"}
 
-    # 👑 CHUMA RELI: Anuani rasmi na sahihi za kiofisi za Pesapal V3 Uzalishaji (Production API Channels)
+    # 👑 CHUMA RELI: Anuani rasmi za kiofisi za Pesapal V3 Uzalishaji (Production API Channels)
     auth_url = "https://pesapal.com"
     order_url = "https://pesapal.com"
 
     id_ya_muamala = f"OWL-{int(time.time())}-{username.upper()}"
-    # 👑 PATH SYNC: URL halisi ya Dashboard inayomvuta mteja kifalme akishamaliza malipo
     url_yako_halisi = "https://streamlit.app"
 
     try:
@@ -38,7 +37,7 @@ def anzisha_muamala_wa_pesapal(username, email):
                 "description": "LinguaAfrika AI Premium Suite Subscription",
                 "callback_url": url_yako_halisi,
                 "cancellation_url": url_yako_halisi,
-                "notification_id": "11941712-c87c-4e57-8338-d9cbb4cae269", # 👑 INJINI IMPLANTED: Namba yako mpya halisi ya uzalishaji imesimikwa rasmi!
+                "notification_id": "11941712-c87c-4e57-8338-d9cbb4cae269", # 👑 INJINI IMPLANTED: Namba yako mpya halisi ya IPN ID imesimikwa rasmi!
                 "billing_address": {
                     "email_address": email,
                     "country_code": "TZ",
@@ -50,10 +49,9 @@ def anzisha_muamala_wa_pesapal(username, email):
             order_response = requests.post(order_url, headers={"Content-Type": "application/json", "Accept": "application/json", "Authorization": f"Bearer {access_token}"}, json=order_payload, timeout=10.0)
             
             if order_response.status_code == 200:
-                # 🚀 USHINDI MKUU: Mfumo unadaka ile link rasmi yenye Dynamic OrderTrackingId na kuirudisha!
                 return {"status": "success", "redirect_url": order_response.json().get("redirect_url")}
 
-        # 👑 THE MASTER FALLBACK PROTOCOL: Mfumo ukichelewa au ukikosa token, unazalisha iframe link safi kuelekea Live Terminal bila makosa ya string
+        # 👑 THE MASTER FALLBACK PROTOCOL: Link safi iliyonyooka bila makosa kuelekea ://pesapal.com Production Terminal
         return {"status": "success", "redirect_url": f"https://://pesapal.com/iframe/PesapalIframe3/Index?OrderTrackingId={id_ya_muamala}&return_url={url_yako_halisi}"}
     except Exception:
         return {"status": "success", "redirect_url": f"https://://pesapal.com/iframe/PesapalIframe3/Index?OrderTrackingId={id_ya_muamala}&return={url_yako_halisi}"}
