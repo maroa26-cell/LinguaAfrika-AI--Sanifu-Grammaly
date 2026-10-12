@@ -3,17 +3,43 @@ import database
 import pesapal_core
 
 str_platform.set_page_config(page_title="Ourworthlinks Dashboard", page_icon="🔐", layout="wide")
-try: database.anzisha_hifadhidata_ya_chuma()
-except Exception: pass
+try: 
+    database.anzisha_hifadhidata_ya_chuma()
+except Exception: 
+    pass
 
-str_platform.markdown("<h1 style='text-align: center; color: #D97706; font-weight: 900;'>🔐 OURWORTHLINKS SYSTEM</h1>", unsafe_allow_html=True)
+# 🎨 EXCLUSIVE B2B LUXURY INTERFACE SKIN INJECTION
+str_platform.markdown("""
+<style>
+    html, body, [data-testid="stAppViewContainer"] { background-color: #0F172A !important; font-family: 'Segoe UI', sans-serif !important; color: #ffffff !important; }
+    [data-testid="stHeader"] { background-color: rgba(0,0,0,0) !important; }
+    .stTextInput label, .stSelectbox label, .stRadio label { color: #E2E8F0 !important; font-weight: bold !important; font-size: 15px !important; }
+    div.stButton > button { background-color: #1E3A8A !important; color: white !important; font-weight: bold !important; padding: 14px 28px !important; border-radius: 8px !important; width: 100% !important; border: none !important; transition: all 0.3s ease !important; }
+    div.stButton > button:hover { background-color: #3B82F6 !important; }
+    
+    /* 👑 ENTERPRISE PRICING CARD CSS FRAMEWORK */
+    .pricing-card {
+        background: linear-gradient(135deg, #1E293B 0%, #0F172A 100%) !important;
+        border: 3px solid #D97706 !important;
+        border-radius: 16px !important;
+        padding: 35px !important;
+        text-align: center !important;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.5) !important;
+        margin: 20px auto !important;
+        max-width: 450px !important;
+    }
+</style>
+""", unsafe_allow_html=True)
+
+str_platform.markdown("<h1 style='text-align: center; color: #D97706; font-weight: 900; margin-bottom: 0;'>🔐 OURWORTHLINKS MANAGEMENT SYSTEM</h1>", unsafe_allow_html=True)
+str_platform.markdown("<p style='text-align: center; color: #94A3B8; font-size: 14px;'>Sovereign Triple-Gateway Identity Portal & B2B Analytics Suite</p>", unsafe_allow_html=True)
 str_platform.write("---")
 
 if "active_gateway" not in str_platform.session_state:
     str_platform.session_state["active_gateway"] = "mlangoni"
 
 # =====================================================================
-# 🎛️ NYERERE GATEWAY SELECTOR (VYUMBA VIWILI PEKEE MLANGONI)
+# 🎛️ NYERERE GATEWAY SELECTOR (MLANGONI VIFUNGO VIWILI)
 # =====================================================================
 if str_platform.session_state["active_gateway"] == "mlangoni":
     str_platform.markdown("<h4 style='text-align: center; color: #E2E8F0;'>Tafadhali chagua lango lako la kiofisi:</h4>", unsafe_allow_html=True)
@@ -42,7 +68,7 @@ elif str_platform.session_state["active_gateway"] == "client_auth_s":
     if str_platform.button("← Rudi Mlangoni", key="b_cl"): 
         str_platform.session_state["active_gateway"] = "mlangoni"; str_platform.rerun()
         
-    t_mpya, t_zamani = str_platform.tabs(["📝 MTUMIAJI MPYA (Sign Up)", "🔑 MTUMIAJI WA ZAMANI (Sign In)"])
+    t_mpya, t_zamani = str_platform.tabs(["📝 MTUMIAJI MPYA (Sign Up)", "🔑 TIMILIFU SIGN IN (Sign In)"])
     
     with t_mpya:
         u_new = str_platform.text_input("Unda Username Mpya:", key="unew")
@@ -64,21 +90,38 @@ elif str_platform.session_state["active_gateway"] == "client_auth_s":
             else: str_platform.error("Hadhi au password si sahihi!")
 
 # =====================================================================
-# 📂 CHUMBA CHA 3: KATI KATI YA MFUMO PEKEE (PREMIUM MEMBER SUITE & PESAPAL)
+# 📂 CHUMBA CHA 3: 👑 THE LIVE PREMIUM PRICING CARD ENVIRONMENT (LIVE PRICING NODE)
 # =====================================================================
 elif str_platform.session_state["active_gateway"] == "premium_member_suite":
-    str_platform.markdown(f"### 👑 KARIBU NDANI YA MFUMO WA LINGUAAFRIKA AI, {str_platform.session_state['member_username'].upper()}!")
+    str_platform.markdown(f"<h3 style='text-align: center; color: #3B82F6;'>👋 Karibu Ndani ya Mfumo, {str_platform.session_state['member_username'].upper()}!</h3>", unsafe_allow_html=True)
     str_platform.write("---")
     
-    # 👑 HOOK YA BIASHARA: Lango la malipo sasa hivi limefichwa ndani ya chumba cha siri cha mteja pekee!
-    str_platform.warning("⚠️ Hadhi ya Akaunti Yako: MTUMIAJI WA KAWAIDA. Ili kuwasha mitambo ya Sauti ya Premium, unapaswa kusafisha ankara ya mwezi.")
+    # 👑 MAPINDUZI YA UI: Kuunda kadi ile halisi ya kifahari ya Pricing mwilini mwa skrini!
+    str_platform.markdown("""
+    <div class='pricing-card'>
+        <h2 style='color: #D97706; margin-bottom: 5px;'>💎 LINGUAAFRIKA PREMIUM</h2>
+        <p style='color: #94A3B8; font-size: 14px;'>Advanced Swahili Voice & AI Phonetic Core</p>
+        <hr style='border-color: rgba(217,119,6,0.2);'>
+        <h1 style='color: #ffffff; font-size: 48px; margin: 15px 0;'>$5.00 <span style='font-size: 16px; color: #94A3B8;'>/ Mwezi</span></h1>
+        <ul style='text-align: left; color: #E2E8F0; font-size: 14px; padding-left: 20px; line-height: 1.8;'>
+            <li>✨ Ukaguzi wa Sarufi na Ukalimani wa Lugha 14 Pro</li>
+            <li>⚡ Kasi ya Radi ya Chini ya 150ms Synapse Latency</li>
+            <li>🫁 Uchambuzi wa Muktadha wa Kisheria na Kibiashara</li>
+            <li>🩺 Mfumo wa Kingamwili wa Autonomous Shield Node</li>
+        </ul>
+        <br>
+    </div>
+    """, unsafe_allow_html=True)
     
-    if str_platform.button("💳 Amsha Huduma za Premium ($5.00 USD via Pesapal)", key="b_live_pay"):
-        user_active = str_platform.session_state["member_username"]
-        res = pesapal_core.anzisha_muamala_wa_pesapal(user_active, f"{user_active}@ourworthlinks.com")
-        str_platform.success("📲 Ankara ya kiofisi imezalishwa salama!")
-        str_platform.markdown(f"👉 [BOFYA HAPA KUFUNGUA FOMU HALISI YA PESAPAL KULIPIA]({res.get('redirect_url')})")
-        
+    col_c1, col_c2, col_c3 = str_platform.columns(3)
+    with col_c2:
+        # Kitufe kimesimikwa hapa chini nadhifu ili mteja akibofya afunguliwe Pesapal ya kulipia ile kadi ya juu!
+        if str_platform.button("💳 Lipia Kifurushi cha Premium Sasa", key="b_live_pay"):
+            user_active = str_platform.session_state["member_username"]
+            res = pesapal_core.anzisha_muamala_wa_pesapal(user_active, f"{user_active}@ourworthlinks.com")
+            str_platform.success("🟢 Ankara imezalishwa! Bofya kiungo kilichopo chini kuelekea kadi ya kibenki:")
+            str_platform.markdown(f"👉 [BOFYA HAPA KUFUNGUA FOMU HALISI YA PESAPAL KULIPIA]({res.get('redirect_url')})")
+            
     str_platform.write("---")
     if str_platform.button("← Toka Kwenye Akaunti Yako (Log Out)", key="b_logout"):
         str_platform.session_state["active_gateway"] = "mlangoni"
