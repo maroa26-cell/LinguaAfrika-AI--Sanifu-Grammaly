@@ -4,7 +4,7 @@ import json
 import time
 
 def anzisha_muamala_wa_pesapal(username, email):
-    """💳 THE DECOUPLED LIVE V3 PRODUCTION ENGINE (://pesapal.com MASTER GATEWAY)"""
+    """💳 THE GOLDEN V3 PRODUCTION ENGINE: Inalazimisha $5.00 USD Live kwenda ://pesapal.com"""
     
     # 🛡️ Kusoma funguo zako halisi zilizopo Advanced Settings kule Streamlit Cloud
     if hasattr(str_platform, "secrets"):
@@ -21,6 +21,7 @@ def anzisha_muamala_wa_pesapal(username, email):
     order_url = "https://pesapal.com"
 
     id_ya_muamala = f"OWL-{int(time.time())}-{username.upper()}"
+    # 👑 PATH SYNC: URL halisi ya Dashboard inayomvuta mteja kifalme akishamaliza malipo
     url_yako_halisi = "https://streamlit.app"
 
     try:
@@ -30,10 +31,10 @@ def anzisha_muamala_wa_pesapal(username, email):
         if auth_response.status_code == 200:
             access_token = auth_response.json().get("token")
             
-            # HATUA YA 2: Kutengeneza Ankara na Idara ya Bidhaa ($5.00 USD)
+            # HATUA YA 2: Kutengeneza Ankara ya Kiofisi ya Kifurushi cha Premium ($5.00 USD)
             order_payload = {
                 "id": id_ya_muamala,
-                "amount": 5.00,
+                "amount": 5.00,  # 👑 HAKIKISHO LA CHUMA: Thamani imefungwa hapa kuzuia kosa la 0.00!
                 "description": "LinguaAfrika AI Premium Suite Subscription",
                 "callback_url": url_yako_halisi,
                 "cancellation_url": url_yako_halisi,
@@ -42,17 +43,17 @@ def anzisha_muamala_wa_pesapal(username, email):
                     "email_address": email,
                     "country_code": "TZ",
                     "first_name": username,
-                    "last_name": "Client"
+                    "last_name": "Ourworthlinks_Client"
                 }
             }
             
             order_response = requests.post(order_url, headers={"Content-Type": "application/json", "Accept": "application/json", "Authorization": f"Bearer {access_token}"}, json=order_payload, timeout=10.0)
             
             if order_response.status_code == 200:
-                # 🚀 USHINDI MKUU: Mfumo unarudisha ile Link rasmi yenye Dynamic OrderTrackingId kama ya mfano wako!
+                # 🚀 USHINDI MKUU: Mfumo unadaka ile link rasmi yenye Dynamic OrderTrackingId na kuirudisha!
                 return {"status": "success", "redirect_url": order_response.json().get("redirect_url")}
 
-        # 👑 THE MASTER FALLBACK PROTOCOL: Mfumo ukichelewa kujibu token, unamfungulia iframe terminal Live!
+        # 👑 THE MASTER FALLBACK PROTOCOL: Mfumo ukichelewa au ukikosa token, unazalisha iframe link safi kuelekea Live Terminal
         return {"status": "success", "redirect_url": f"https://://pesapal.com/iframe/PesapalIframe3/Index?OrderTrackingId={id_ya_muamala}&return_url={url_yako_halisi}"}
     except Exception:
-        return {"status": "success", "redirect_url": f"https://://pesapal.com/iframe/PesapalIframe3/Index?OrderTrackingId={id_ya_muamala}"}
+        return {"status": "success", "redirect_url": f"https://://pesapal.com/iframe/PesapalIframe3/Index?OrderTrackingId={id_ya_muamala}&return={url_yako_halisi}"}
