@@ -8,26 +8,15 @@ try:
 except Exception: 
     pass
 
-# 🎨 EXCLUSIVE B2B LUXURY INTERFACE SKIN INJECTION
+# 🎨 EXCLUSIVE B2B LUXURY SKIN INJECTION
 str_platform.markdown("""
 <style>
     html, body, [data-testid="stAppViewContainer"] { background-color: #0F172A !important; font-family: 'Segoe UI', sans-serif !important; color: #ffffff !important; }
     [data-testid="stHeader"] { background-color: rgba(0,0,0,0) !important; }
     .stTextInput label, .stSelectbox label, .stRadio label { color: #E2E8F0 !important; font-weight: bold !important; font-size: 15px !important; }
-    div.stButton > button { background-color: #1E3A8A !important; color: white !important; font-weight: bold !important; padding: 14px 28px !important; border-radius: 8px !important; width: 100% !important; border: none !important; transition: all 0.3s ease !important; }
-    div.stButton > button:hover { background-color: #3B82F6 !important; }
-    
-    /* 👑 ENTERPRISE PRICING CARD CSS FRAMEWORK */
-    .pricing-card {
-        background: linear-gradient(135deg, #1E293B 0%, #0F172A 100%) !important;
-        border: 3px solid #D97706 !important;
-        border-radius: 16px !important;
-        padding: 35px !important;
-        text-align: center !important;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.5) !important;
-        margin: 20px auto !important;
-        max-width: 450px !important;
-    }
+    div.stButton > button, div.stLinkButton > a { background-color: #1E3A8A !important; color: white !important; font-weight: bold !important; padding: 14px 28px !important; border-radius: 8px !important; width: 100% !important; border: none !important; text-align: center !important; text-decoration: none !important; display: inline-block !important; }
+    div.stButton > button:hover, div.stLinkButton > a:hover { background-color: #3B82F6 !important; box-shadow: 0 4px 15px rgba(59,130,246,0.4) !important; }
+    .pricing-card { background: linear-gradient(135deg, #1E293B 0%, #0F172A 100%) !important; border: 3px solid #D97706 !important; border-radius: 16px !important; padding: 35px !important; text-align: center !important; box-shadow: 0 10px 30px rgba(0,0,0,0.5) !important; margin: 20px auto !important; max-width: 450px !important; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -39,7 +28,7 @@ if "active_gateway" not in str_platform.session_state:
     str_platform.session_state["active_gateway"] = "mlangoni"
 
 # =====================================================================
-# 🎛️ NYERERE GATEWAY SELECTOR (MLANGONI VIFUNGO VIWILI)
+# 🎛️ NYERERE GATEWAY SELECTOR (VIFUNGO VIWILI PEKEE MLANGONI)
 # =====================================================================
 if str_platform.session_state["active_gateway"] == "mlangoni":
     str_platform.markdown("<h4 style='text-align: center; color: #E2E8F0;'>Tafadhali chagua lango lako la kiofisi:</h4>", unsafe_allow_html=True)
@@ -90,13 +79,12 @@ elif str_platform.session_state["active_gateway"] == "client_auth_s":
             else: str_platform.error("Hadhi au password si sahihi!")
 
 # =====================================================================
-# 📂 CHUMBA CHA 3: 👑 THE LIVE PREMIUM PRICING CARD ENVIRONMENT (LIVE PRICING NODE)
+# 📂 CHUMBA CHA 3: KADI YA BEI YA KIFAHARI (PREMIUM MEMBER SUITE)
 # =====================================================================
 elif str_platform.session_state["active_gateway"] == "premium_member_suite":
     str_platform.markdown(f"<h3 style='text-align: center; color: #3B82F6;'>👋 Karibu Ndani ya Mfumo, {str_platform.session_state['member_username'].upper()}!</h3>", unsafe_allow_html=True)
     str_platform.write("---")
     
-    # 👑 MAPINDUZI YA UI: Kuunda kadi ile halisi ya kifahari ya Pricing mwilini mwa skrini!
     str_platform.markdown("""
     <div class='pricing-card'>
         <h2 style='color: #D97706; margin-bottom: 5px;'>💎 LINGUAAFRIKA PREMIUM</h2>
@@ -107,7 +95,7 @@ elif str_platform.session_state["active_gateway"] == "premium_member_suite":
             <li>✨ Ukaguzi wa Sarufi na Ukalimani wa Lugha 14 Pro</li>
             <li>⚡ Kasi ya Radi ya Chini ya 150ms Synapse Latency</li>
             <li>🫁 Uchambuzi wa Muktadha wa Kisheria na Kibiashara</li>
-            <li>🩺 Mfumo wa Kingamwili wa Autonomous Shield Node</li>
+            <li>🩺 Mfumo vya Kingamwili vya Autonomous Shield</li>
         </ul>
         <br>
     </div>
@@ -115,12 +103,13 @@ elif str_platform.session_state["active_gateway"] == "premium_member_suite":
     
     col_c1, col_c2, col_c3 = str_platform.columns(3)
     with col_c2:
-        # Kitufe kimesimikwa hapa chini nadhifu ili mteja akibofya afunguliwe Pesapal ya kulipia ile kadi ya juu!
-        if str_platform.button("💳 Lipia Kifurushi cha Premium Sasa", key="b_live_pay"):
-            user_active = str_platform.session_state["member_username"]
-            res = pesapal_core.anzisha_muamala_wa_pesapal(user_active, f"{user_active}@ourworthlinks.com")
-            str_platform.success("🟢 Ankara imezalishwa! Bofya kiungo kilichopo chini kuelekea kadi ya kibenki:")
-            str_platform.markdown(f"👉 [BOFYA HAPA KUFUNGUA FOMU HALISI YA PESAPAL KULIPIA]({res.get('redirect_url')})")
+        user_active = str_platform.session_state["member_username"]
+        # 🧠 INJINI YA REBOOT SYNC: Kiungo kiofisi kinazalishwa hapa na kurudishwa kama String safi!
+        live_link_halisi = pesapal_core.anzisha_muamala_wa_pesapal(user_active, f"{user_active}@ourworthlinks.com")
+        
+        str_platform.success("🟢 Ankara imezalishwa salama!")
+        # 🚀 CHUMA RELI: st.link_button asilia inasoma variable ya string moja kwa moja bila .get() kuzuia crash!
+        str_platform.link_button("👉 BOFYA HAPA KUFUNGUA FOMU YA MALIPO", url=live_link_halisi, key="b_live_pay_link_btn")
             
     str_platform.write("---")
     if str_platform.button("← Toka Kwenye Akaunti Yako (Log Out)", key="b_logout"):
