@@ -1,91 +1,97 @@
 import sqlite3
 import hashlib
 
-# 👑 ORIGINAL SYSTEM SALT: Ufunguo wa kipekee wa kampuni ya Ourworthlinks kulinda nenosiri dhidi ya mashambulizi ya kimtandao
-SYSTEM_SALT = "Ourworthlinks_Sovereign_Radio_Key_2026_Secure_Token"
-
-def zalisha_nenosiri_la_siri(password_ghafi):
-    """🧠 CRYPTOGRAPHIC CORE ENGINE: Inabadilisha password kuwa hash ya herufi 64 zisizoweza kurudishwa nyuma"""
-    fomula_ya_siri = password_ghafi + SYSTEM_SALT
-    return hashlib.sha256(fomula_ya_siri.encode('utf-8')).hexdigest()
+DB_FILE = "ourworthlinks_data.db"
+SYSTEM_SALT = "owl-secure-salt-node-2026"
 
 def anzisha_hifadhidata_ya_chuma():
-    """🧠 LONG-TERM SECURE MEMORY STORAGE INITIALIZATION (SQLite Core)"""
-    conn = sqlite3.connect("linguaafrika_cns.db")
+    """👑 CORE DATABASE INITIALIZER: Inaunda majedwali yote makuu ya kiwanda"""
+    conn = sqlite3.connect(DB_FILE)
     cursor = conn.cursor()
     
-    # Kujenga Jedwali la Watumiaji wenye Ulinzi wa Hali ya Juu
+    # 📑 JEDWALI LA I: Watumiaji na Hadhi zao (Standard au Premium User)
     cursor.execute("""
-        CREATE TABLE IF NOT EXISTS watumiaji_wa_chuma (
+        CREATE TABLE IF NOT EXISTS watumiaji (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            username TEXT UNIQUE NOT NULL,
-            password_hash TEXT NOT NULL,
-            hadhi_yako TEXT NOT NULL,
-            muda_wa_usajili TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            username TEXT UNIQUE,
+            password_hash TEXT,
+            hadhi TEXT DEFAULT 'Standard User'
         )
     """)
     
-    # 👑 AUTOMATED ADMIN ENCRYPTION SEEDING: Hakikisha akaunti kuu ya Admin inafungwa hash tangu kuwaka kwa seva
-    username_admin = "admin"
-    password_admin_ghafi = "Maroa2026"
-    password_hash_timilifu = zalisha_nenosiri_la_siri(password_admin_ghafi)
+    # 📑 JEDWALI LA II: Urari wa Malipo ya Pesapal & Stripe
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS malipo_trans (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT,
+            tracking_id TEXT UNIQUE,
+            kiasi REAL,
+            status TEXT DEFAULT 'PENDING',
+            muda TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
     
+    # Sakinisha akaunti ya siri ya Utawala (Admin) ya dharura isipokuwa ipo tayari
     try:
-        cursor.execute("""
-            INSERT INTO watumiaji_wa_chuma (username, password_hash, hadhi_yako)
-            VALUES (?, ?, ?)
-        """, (username_admin, password_hash_timilifu, "Admin"))
-        conn.commit()
+        p_admin = hashlib.sha256((SYSTEM_SALT + "admin123").encode('utf-8')).hexdigest()
+        cursor.execute("INSERT INTO watumiaji (username, password_hash, hadhi) VALUES ('admin', ?, 'Admin')", (p_admin,))
     except sqlite3.IntegrityError:
-        # Akaunti tayari imeshafungwa hash na ipo mwilini mwa database, ruka hatua kuzuia duplicate
         pass
         
+    conn.commit()
     conn.close()
 
-def sajili_mtumiaji_mpya(username, password, hadhi):
-    """
-    Parametrize na kusajili mtumiaji mpya kwa siri:
-    Mtumiaji anapojisajili na kulipa $5.00 USD Pesapal, password yake inapigwa hash ya SHA-256 kabla ya kuingia kwenye chuma!
-    """
-    if username.strip() == "" or password.strip() == "":
-        return False
-        
-    conn = sqlite3.connect("linguaafrika_cns.db")
+def sajili_mtumiaji_mpya(username, password_ghafi, hadhi_msingi="Premium User"):
+    """📝 USER REGISTRATION SUITE: Usajili salama uliopigwa chujio la SHA-256"""
+    conn = sqlite3.connect(DB_FILE)
     cursor = conn.cursor()
-    
-    # Kuchakata ulinzi wa nenosiri hapa
-    password_encrypted = zalisha_nenosiri_la_siri(password.strip())
+    u_clean = username.strip().lower()
+    p_clean = password_ghafi.strip()
+    p_hash = hashlib.sha256((SYSTEM_SALT + p_clean).encode('utf-8')).hexdigest()
     
     try:
-        cursor.execute("""
-            INSERT INTO watumiaji_wa_chuma (username, password_hash, hadhi_yako)
-            VALUES (?, ?, ?)
-        """, (username.strip().lower(), password_encrypted, hadhi))
+        cursor.execute("INSERT INTO watumiaji (username, password_hash, hadhi) VALUES (?, ?, ?)", (u_clean, p_hash, hadhi_msingi))
         conn.commit()
-        fanaka = True
+        ufanisi = True
     except sqlite3.IntegrityError:
-        fanaka = False
-        
-    conn.close()
-    return fanaka
+        ufanisi = False
+    finally:
+        conn.close()
+    return ufanisi
 
-def thibitisha_utambulisho_wa_siri(username, password, hadhi_inayotakiwa):
-    """🔑 SECURE AUTHENTICATION RADAR: Inahakiki nenosiri kwa kulinganisha hash za SHA-256 pasipo kufungua password ghafi"""
-    if username.strip() == "" or password.strip() == "":
-        return False
-        
-    conn = sqlite3.connect("linguaafrika_cns.db")
+def thibitisha_utambulisho_wa_siri(username, password_ghafi, hadhi_inayotakiwa):
+    """🔐 IDENTITY AUTHENTICATION PASS: Uhakiki wa siri wa mlangoni kwa 1ms Latency"""
+    conn = sqlite3.connect(DB_FILE)
+    cursor = conn.cursor()
+    u_clean = username.strip().lower()
+    p_clean = password_ghafi.strip()
+    p_hash = hashlib.sha256((SYSTEM_SALT + p_clean).encode('utf-8')).hexdigest()
+    
+    cursor.execute("SELECT id FROM watumiaji WHERE username = ? AND password_hash = ? AND hadhi = ?", (u_clean, p_hash, hadhi_inayotakiwa))
+    mtumiaji = cursor.fetchone()
+    conn.close()
+    return mtumiaji is not None
+
+def pandisha_hadhi_ya_mteja_kiotomatiki(tracking_id, status_mpya="COMPLETED"):
+    """⚡ AUTOMATED PREMIUM UPGRADE NODE: Inafungua tuple index na kumpandisha hadhi mteja (Deep Audit Fixed!)"""
+    conn = sqlite3.connect(DB_FILE)
     cursor = conn.cursor()
     
-    # Kupiga hash password aliyoandika sasa hivi mtumiaji mlangoni ili kulinganisha na database
-    hash_ya_kulinganisha = zalisha_nenosiri_la_siri(password.strip())
-    
-    cursor.execute("""
-        SELECT username FROM watumiaji_wa_chuma
-        WHERE username = ? AND password_hash = ? AND hadhi_yako = ?
-    """, (username.strip().lower(), hash_ya_kulinganisha, hadhi_inayotakiwa))
-    
-    user_record = cursor.fetchone()
-    conn.close()
-    
-    return user_record is not None
+    try:
+        # Hatua ya A: Sasisha hadhi ya ankara kwanza kwenye jedwali la malipo
+        cursor.execute("UPDATE malipo_trans SET status = ? WHERE tracking_id = ?", (status_mpya, tracking_id))
+        
+        # Hatua ya B: Tafuta username inayomiliki ankara hiyo ili kumpandisha cheo kiofisi
+        cursor.execute("SELECT username FROM malipo_trans WHERE tracking_id = ?", (tracking_id,))
+        mteja = cursor.fetchone()
+        
+        if mteja and len(mteja) > 0:
+            username_halisi = mteja[0] # 👑 CHUMA RELI: Imedakwa kama index 0 kufungua tuple kuingia string safi!
+            cursor.execute("UPDATE watumiaji SET hadhi = 'Premium User' WHERE username = ?", (username_halisi,))
+            conn.commit()
+            return True
+    except Exception:
+        pass
+    finally:
+        conn.close()
+    return False
