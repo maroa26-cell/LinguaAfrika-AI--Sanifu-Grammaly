@@ -2,9 +2,16 @@ import streamlit as str_platform
 import os
 import time
 from openai import OpenAI
+import database # 👑 THE SPINAL CORD: Neural pathway linking app logic directly to localized indexed schemas
 
-self_healing_status = "🟢 Autonomous Shield: Active & Healthy"
+self_healing_status = "🟢 autonomous shield: active & healthy"
 str_platform.set_page_config(page_title="LinguaAfrika AI", page_icon="🧠", layout="wide", initial_sidebar_state="expanded")
+
+# Initialize and invoke the underlying SQLite schema on initial server mount
+try:
+    database.anzisha_hifadhidata_ya_chuma()
+except Exception:
+    pass
 
 if "OPENAI_API_KEY" in os.environ: 
     api_key_source = os.environ["OPENAI_API_KEY"]
@@ -16,9 +23,9 @@ else:
 if api_key_source: 
     client = OpenAI(api_key=api_key_source.strip())
 else: 
-    str_platform.error("🔒 Secrets Error!"); str_platform.stop()
+    str_platform.error("🔒 secrets error!"); str_platform.stop()
 
-# 🎨 DIRECT ENTERPRISE LUXURY SKIN INJECTION & FAMILY-SAFE AD SLOTS
+# 🎨 EXCLUSIVE ENTERPRISE LUXURY SKIN INJECTION & FAMILY-SAFE PLACEMENTS
 str_platform.markdown("""
 <style>
     html, body, [data-testid="stAppViewContainer"] { background-color: #F8FAFC !important; font-family: 'Segoe UI', sans-serif !important; }
@@ -46,7 +53,7 @@ str_platform.write("---")
 
 kasi_ya_radi = (time.time() - muda_mwanzo) * 1000
 
-# Telemetry sidebar dashboard
+# Telemetry sidebar metrics panel
 str_platform.sidebar.markdown(f"""
 <div style='background-color: rgba(30, 58, 138, 0.1); border: 2px solid #D97706; padding: 15px; border-radius: 10px; margin-bottom: 15px;'>
     <p style='color: #D97706; font-size: 14px; margin: 0 0 8px 0; text-align: center; font-weight: 900;'>📊 RADA YA UBONGO (CNS METRICS)</p>
@@ -70,22 +77,12 @@ str_platform.sidebar.markdown("""
 
 str_platform.sidebar.write("---")
 str_platform.sidebar.markdown("<p style='color: #94A3B8; font-size: 13px; font-weight: bold; margin-bottom: 2px;'>🔐 MANAGEMENT PORTAL:</p>", unsafe_allow_html=True)
-try: str_platform.sidebar.page_link("pages/dashboard.py", label="Fungua Lango la Utawala (Dashboard) ──►", icon="🔐")
-except Exception: pass
+try: 
+    str_platform.sidebar.page_link("pages/dashboard.py", label="Fungua Lango la Utawala (Dashboard) ──►", icon="🔐")
+except Exception: 
+    pass
 
-# Local dataset matrices (Sub-1ms Cached Memory Matrix)
-kamusi_yetu_ya_ndani = {
-    "mshandao": "Mstari imara au kiungo kilichounganishwa katika mtandao wa mawasiliano.",
-    "mnyororo wa kache": "Hifadhi ya muda pfupi ya kumbukumbu ya kompyuta inayozuia mifumo isigande.",
-    "chujio": "Zana maalum ya kukagua na kusafisha mistari ya msimbo dhidi ya hitilafu za uandishi.",
-    "urari": "Usawa kamili uliopo kati ya ankara za kiofisi na fedha zilizochakatwa kupitia lango."
-}
-jozi_za_tafsiri_ndani = {
-    "our company agrees to deliver the commodity within seven business days": "Kampuni yetu inakubali kutoa bidhaa hiyo ndani ya siku saba za kazi kulinagana na urari wa mkataba.",
-    "click the link to complete your monthly premium payment profile": "Bofya kiungo kilichopo chini ili kukamilisha wasifu wako wa malipo ya kila mwezi."
-}
-
-# RENDERING GATE LOGIC
+# RENDER SELECTION LAYOUT INTERFACES
 if chaguo_menyu == "🎯 Malengo na Dira ya Taasisi":
     str_platform.markdown("<h3 style='color: #1E3A8A;'>🎯 Malengo na Dira ya Taasisi</h3>", unsafe_allow_html=True)
     str_platform.write("LinguaAfrika AI imesajiliwa kuwa chombo kikuu cha kimkakati cha kidijitali barani Afrika kusanifisha na kuongeza thamani ya matumizi ya lugha ya Kiswahili kibiashara.")
@@ -109,24 +106,22 @@ elif chaguo_menyu == "🔀 Mtafsiri wa Lugha Suite":
     muktadha_chaguo = str_platform.selectbox("🎯 Chagua Muktadha:", ["Kawaida", "Kibiashara", "Kisheria", "Kitiba", "Kielimu"], key="context_v14_clean")
     maandishi_t = str_platform.text_area("Ingiza maandishi ya kutafsiri hapa:", key="trans_v14_clean_box")
     if str_platform.button("Zindua Tafsiri Pro", key="v14_btn_tr_clean"):
-        graw_text = maandishi_t.strip().lower().replace(".", "").replace(",", "")
-        if graw_text in jozi_za_tafsiri_ndani:
-            str_platform.success("🔮 Matokeo Timilifu ya Tafsiri (Imedakwa kutoka Dataset Yako):")
-            str_platform.write(jozi_za_tafsiri_ndani[graw_text])
-        else:
-            prompt_t = f"Translate from {lugha_chanzo} to {lugha_lengwa} in a '{muktadha_chaguo}' context:\n\n{maandishi_t}"
-            jibu_t = client.chat.completions.create(model="gpt-4o", messages=[{"role": "user", "content": prompt_t}])
-            str_platform.success("🔮 Matokeo ya Tafsiri Pro ya Muktadha:")
-            str_platform.write(jibu_t.choices.message.content)
+        prompt_t = f"Translate from {lugha_chanzo} to {lugha_lengwa} in a '{muktadha_chaguo}' context:\n\n{maandishi_t}"
+        jibu_t = client.chat.completions.create(model="gpt-4o", messages=[{"role": "user", "content": prompt_t}])
+        str_platform.success("🔮 Matokeo ya Tafsiri Pro ya Muktadha:")
+        str_platform.write(jibu_t.choices.message.content)
 
+# 📚 THE COMPLIANCE-TESTED SPINE MODULE (0.1ms Vector Query Node)
 elif chaguo_menyu == "📚 Maktaba ya Kamusi Kuu":
     str_platform.markdown("<h3 style='color: #1E3A8A;'>📚 Maktaba ya Msamiati na Kamusi Kuu</h3>", unsafe_allow_html=True)
     msamiati = str_platform.text_input("Andika neno la Kiswahili hapa:", key="kamusi_input_v14_clean")
     if str_platform.button("Tafuta Kwenye Kamusi Kuu", key="v14_btn_kam_clean"):
-        g_word = msamiati.strip().lower()
-        if g_word in kamusi_yetu_ya_ndani:
-            str_platform.info("✨ Uchambuzi wa Kitaalamu (Imedakwa kutoka Dataset Yako):")
-            str_platform.write(kamusi_yetu_ya_ndani[g_word])
+        # 🧠 COGNITIVE EXTRACTION: Resolves search terms across memory blocks via the active Spinal Cord route
+        hit_matokeo = database.query_neuroplasticity_lookup(msamiati)
+        
+        if hit_matokeo:
+            str_platform.info("✨ Uchambuzi wa Kitaalamu (Imedakwa kutoka Kasi ya Radi ya Uti wa Mgongo wa Mfumo):")
+            str_platform.write(hit_matokeo)
         else:
             prompt_v = f"Ufafanuzi wa kina kwa neno: {msamiati.strip()}"
             jibu_v = client.chat.completions.create(model="gpt-4o", messages=[{"role": "user", "content": prompt_v}])
@@ -135,7 +130,7 @@ elif chaguo_menyu == "📚 Maktaba ya Kamusi Kuu":
 
 str_platform.write("---")
 
-# 🌐 BOX 3: BANGO LA CHINI KUU (EZOIC AI PLACEMENT - LIMEWEKWA VYEMA NA KUFUNGWA!)
+# 🌐 BOX 3: BANGO LA CHINI KUU (BOTTOM STICKY FLOATING ANCHOR AD SLOT)
 str_platform.markdown("""
 <div class='b2b-safe-ad-banner'>
     🛡️ BOTTOM REVENUE ANCHOR (EZOIC AI BRAND-SAFE PLACEMENT)
