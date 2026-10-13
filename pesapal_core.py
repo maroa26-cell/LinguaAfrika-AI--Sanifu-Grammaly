@@ -6,7 +6,7 @@ import time
 def anzisha_muamala_wa_pesapal(username, email, kiasi=5.00):
     """💳 LOCAL PAYMENT NODE: Programmatic V3 trigger mapping strictly locked to live production hubs"""
     if hasattr(str_platform, "secrets"):
-        # 🛡️ Inasoma vigezo vyako vya HERUFI KUBWA kutoka Advanced Settings
+        # 🛡️ Inasoma vigezo vyako vya HERUFI KUBWA kutoka Advanced Settings ya Streamlit Secrets
         consumer_key = str_platform.secrets.get("PESAPAL_CONSUMER_KEY", "").strip()
         consumer_secret = str_platform.secrets.get("PESAPAL_CONSUMER_SECRET", "").strip()
     else:
@@ -63,4 +63,3 @@ def generate_stripe_global_checkout(username, client_package="code_auditor_licen
     base_stripe_vault_link = "https://stripe.com"
     query_parameters = f"?package={client_package}&user={username.lower()}&amount={dynamic_cost}&currency=usd"
     return f"{base_stripe_vault_link}{query_parameters}"
-
