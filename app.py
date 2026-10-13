@@ -3,17 +3,22 @@ import os
 import time
 from openai import OpenAI
 import database
-import owths_sovereign_automaton  # 👑 THE INTEGRATED SOVEREIGN MASTER ENGINE
+import owths_sovereign_automaton  # 🛡️ THE AUTOMATON: Combined Chujio + Memory Core
+import skin_appearance            # 🎨 THE EPITHELIAL MATRIX: Master Design Core
 
 muda_mwanzo = time.time()
 self_healing_status = "🟢 autonomous shield: active & healthy"
 str_platform.set_page_config(page_title="LinguaAfrika AI Premium", page_icon="🧠", layout="wide", initial_sidebar_state="expanded")
 
+# 🧠 HYPOTHALAMUS EXECUTION: Purges memory waste, monitors latency, and fires up database
 try:
     cns_report = owths_sovereign_automaton.master_core.coordinate_hormonal_balance(muda_mwanzo)
     database.anzisha_hifadhidata_ya_chuma()
 except Exception:
     pass
+
+# 🎨 NEURAL CONNECTION INJECTION: Spreads the global premium glassmorphic skin instantly
+skin_appearance.inject_premium_glassmorphic_skin()
 
 if "OPENAI_API_KEY" in os.environ: 
     api_key_source = os.environ["OPENAI_API_KEY"]
@@ -27,59 +32,8 @@ if api_key_source:
 else: 
     str_platform.error("🔒 secrets error!"); str_platform.stop()
 
-str_platform.markdown("""
-<style>
-    html, body, [data-testid="stAppViewContainer"], [data-testid="stHeader"] { 
-        background: radial-gradient(circle at 50% 50%, #0F172A 0%, #090D1A 100%) !important; 
-        font-family: 'Segoe UI', system-ui, sans-serif !important; 
-        color: #F8FAFC !important; 
-    }
-    [data-testid="stSidebar"] { 
-        background-color: #05070F !important; 
-        border-right: 2px solid rgba(217, 119, 6, 0.2) !important; 
-        box-shadow: 10px 0 30px rgba(0,0,0,0.5) !important;
-    }
-    [data-testid="stSidebar"] p, [data-testid="stSidebar"] label, [data-testid="stSidebar"] span { 
-        color: #E2E8F0 !important; font-weight: 700 !important; 
-    }
-    div[data-testid="stRadio"] > label { 
-        background: rgba(255, 255, 255, 0.02) !important; 
-        border: 1px solid rgba(255, 255, 255, 0.05) !important;
-        padding: 14px 18px !important; border-radius: 12px !important; margin-bottom: 10px !important;
-    }
-    div[data-testid="stRadio"] div[aria-checked="true"] { 
-        background: linear-gradient(135deg, #D97706 0%, #B45309 100%) !important; 
-        box-shadow: 0 4px 15px rgba(217, 119, 6, 0.4) !important;
-        border-radius: 8px !important; padding: 6px 12px !important; 
-    }
-    div.stButton > button { 
-        background: linear-gradient(135deg, #1E3A8A 0%, #1D4ED8 100%) !important; 
-        color: #FFFFFF !important; font-weight: 800 !important; 
-        padding: 16px 32px !important; border-radius: 12px !important; 
-        border: 1px solid rgba(59, 131, 246, 0.3) !important; width: 100% !important;
-    }
-    div.stButton > button:hover { 
-        background: linear-gradient(135deg, #2563EB 0%, #3B82F6 100%) !important; 
-        box-shadow: 0 0 25px rgba(59, 130, 246, 0.6) !important; transform: translateY(-2px) !important;
-    }
-    .b2b-safe-ad-banner, div[data-testid="stBlock"] {
-        background: rgba(255, 255, 255, 0.02) !important;
-        backdrop-filter: blur(12px) !important;
-        border: 1px solid rgba(255, 255, 255, 0.05) !important;
-        border-radius: 16px !important; padding: 20px !important; margin: 20px 0 !important;
-    }
-    .stTextArea textarea, .stTextInput input {
-        background-color: #0B132B !important; border: 1px solid rgba(255,255,255,0.1) !important; color: #FFFFFF !important;
-    }
-</style>
-""", unsafe_allow_html=True)
-
-str_platform.markdown("""
-<div class='b2b-safe-ad-banner' style='border: 1px solid rgba(217, 119, 6, 0.2) !important;'>
-    <p style='color: #D97706; font-size: 11px; margin: 0 0 5px 0; font-weight: 900; letter-spacing: 1px;'>🛡️ BRAND-SAFE REVENUE NODE (TOP MEDIA.NET B2B PLACEMENT)</p>
-    <div id="media_net_display_slot_top"></div>
-</div>
-""", unsafe_allow_html=True)
+# 💰 BRAND-SAFE AD REVENUE PLACEMENT: Top Placement
+skin_appearance.render_top_revenue_banner()
 
 str_platform.markdown("<h1 style='text-align: center; color: #D97706; font-size: 54px; margin-bottom: 0; text-shadow: 0 0 30px rgba(217,119,6,0.3);'>👑 LinguaAfrika AI</h1>", unsafe_allow_html=True)
 str_platform.markdown("<p style='text-align: center; color: #94A3B8; font-size: 14px; font-weight: 600; margin-top: 5px; letter-spacing: 2px;'>THE AUTONOMOUS BIOMIMETIC ENTERPRISE SUITE</p>", unsafe_allow_html=True)
@@ -87,6 +41,7 @@ str_platform.write("---")
 
 kasi_ya_radi = (time.time() - muda_mwanzo) * 1000
 
+# Glowing Telemetry Dashboard mapping real autonomic engine metrics
 str_platform.sidebar.markdown(f"""
 <div style='background: linear-gradient(135deg, #1E293B 0%, #0F172A 100%); border: 2px solid #D97706; padding: 18px; border-radius: 14px; margin-bottom: 20px; box-shadow: 0 10px 25px rgba(217,119,6,0.15);'>
     <p style='color: #D97706; font-size: 13px; margin: 0 0 10px 0; text-align: center; font-weight: 900; letter-spacing: 1px;'>📊 RADA YA UBONGO (CNS METRICS)</p>
@@ -125,7 +80,6 @@ elif chaguo_menyu == "🔀 Mtafsiri wa Lugha Suite":
     col1, col2 = str_platform.columns(2)
     with col1: str_platform.selectbox("Kutoka Lugha:", orodha_lugha, index=1, key="src_v14_clean")
     with col2: str_platform.selectbox("Kwenda Lugha:", orodha_lugha, index=0, key="trg_v14_clean")
-    muktadha_chaguo = str_platform.selectbox("🎯 Chagua Muktadha wa Kiwanda:", ["Kawaida", "Kibiashara", "Kisheria", "Kitiba", "Kielimu"], key="context_v14_clean")
     maandishi_t = str_platform.text_area("Ingiza maandishi ya kutafsiri hapa:", key="trans_v14_clean_box")
     
     if str_platform.button("Zindua Tafsiri Pro", key="v14_btn_tr_clean"):
@@ -145,4 +99,9 @@ elif chaguo_menyu == "📚 Maktaba ya Kamusi Kuu":
             prompt_v = f"Ufafanuzi wa kina kwa neno: {msamiati.strip()}"
             jibu_v = client.chat.completions.create(model="gpt-4o", messages=[{"role": "user", "content": prompt_v}])
             str_platform.markdown("<div style='background: rgba(255,255,255,0.02); padding: 20px; border-radius: 10px; margin-top: 15px;'><b>✨ Uchambuzi wa Kitaalamu vya Kamusi Kuu:</b><br><br>" + jibu_v.choices.message.content + "</div>", unsafe_allow_html=True)
+
+str_platform.write("---")
+# 💰 BRAND-SAFE AD REVENUE PLACEMENT: Bottom Placement
+skin_appearance.render_bottom_revenue_banner()
+str_platform.markdown("<p style='text-align: center; font-size: 12px; color: #94A3B8;'>© 2026 Ourworthlinks • LinguaAfrika AI Sovereign Ecosystem • Autonomic Architecture</p>", unsafe_allow_html=True)
 
