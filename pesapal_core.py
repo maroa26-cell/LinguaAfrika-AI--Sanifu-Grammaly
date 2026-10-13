@@ -45,7 +45,7 @@ def anzisha_muamala_wa_pesapal(username, email, kiasi=5.00):
                 "description": "linguaafrika premium utility tier license",
                 "callback_url": url_yako_halisi,
                 "cancellation_url": url_yako_halisi,
-                "notification_id": "ffa26ad8-4037-4b7a-a122-d9cbf46dc415", # Weka IPN ID mpya hapa ukihitaji mbeleni
+                "notification_id": "7160bd27-3594-4456-8aa7-d9ca66d19636",
                 "billing_address": {
                     "email_address": email,
                     "country_code": "tz",
