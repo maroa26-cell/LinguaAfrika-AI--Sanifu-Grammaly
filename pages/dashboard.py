@@ -16,7 +16,7 @@ elif str_platform.session_state["active_gateway"] == "premium_member_suite":
         """, unsafe_allow_html=True)
         pesapal_redirect = pesapal_core.anzisha_muamala_wa_pesapal(username_active, f"{username_active}@ourworthlinks.com", kiasi=5.00)
         
-        # 👑 ST.LINK_BUTTON VACCINE: Inafungua tab mpya salama ya nje kuvunja X-Frame Clickjacking block!
+        # 👑 ST.LINK_BUTTON ANTI-IFRAME VACCINE: Launches a fresh top-level secure tab view to bypass clickjacking protections
         str_platform.link_button("💳 Subscribe via Local Mobile Money ($5.00)", url=pesapal_redirect, key="sub_premium_btn")
 
     with col_package_2:
@@ -30,7 +30,7 @@ elif str_platform.session_state["active_gateway"] == "premium_member_suite":
         """, unsafe_allow_html=True)
         stripe_redirect = pesapal_core.generate_stripe_global_checkout(username_active, client_package="code_auditor_license", dynamic_cost=49.00)
         
-        # 👑 ST.LINK_BUTTON VACCINE: Inafungua tab mpya salama ya nje kuvunja X-Frame Clickjacking block!
+        # 👑 ST.LINK_BUTTON ANTI-IFRAME VACCINE: Launches a fresh top-level secure tab view to bypass clickjacking protections
         str_platform.link_button("💳 Purchase Commercial B2B License ($49.00)", url=stripe_redirect, key="buy_auditor_btn")
 
     str_platform.write("---")
@@ -40,4 +40,3 @@ elif str_platform.session_state["active_gateway"] == "premium_member_suite":
 
 str_platform.write("---")
 str_platform.markdown("<p style='text-align: center; font-size: 12px; color: #64748B;'>© 2026 Ourworthlinks • Automated Monetization Nodes Connected</p>", unsafe_allow_html=True)
-
