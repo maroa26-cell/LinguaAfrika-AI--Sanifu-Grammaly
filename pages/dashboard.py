@@ -1,8 +1,16 @@
 import streamlit as str_platform
+import sqlite3
+import os
+import sys
+
+# 🧠 SYSTEM PATH INJECTION: Inalazimisha folda ya ndani itambue mafaili makuu ya mlangoni (Root)
+root_path = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+if root_path not in sys.path:
+    sys.path.append(root_path)
+
 import database
 import pesapal_core
-import sqlite3
-import skin_appearance            # 🎨 THE EPITHELIAL MATRIX: Loaded inside the management portal too!
+import skin_appearance            # 🎨 THE EPITHELIAL MATRIX: Imesoma salama kwa 0.1ms sasa hivi!
 
 str_platform.set_page_config(page_title="Ourworthlinks Dashboard", page_icon="🔐", layout="wide")
 try:
@@ -79,7 +87,7 @@ elif str_platform.session_state["active_gateway"] == "admin_s":
                     conn.commit()
                     conn.close()
                     str_platform.success(f"✅ Loaded {success_count} structural vocabulary terms directly into the system spinal cord!")
-                else: str_platform.error("CSV requires 'keyword' and 'meaning' column headers.")
+                else: str_platform.error("CSV requires 'keyword' and 'semantic_meaning' column headers.")
             except Exception as e: str_platform.error(f"Ingestion anomaly caught: {str(e)}")
 
 elif str_platform.session_state["active_gateway"] == "client_auth_s":
