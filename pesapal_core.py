@@ -4,8 +4,9 @@ import json
 import time
 
 def anzisha_muamala_wa_pesapal(username, email, kiasi=5.00):
-    """💳 MULTI-GATEWAY CORE: Programmatic V3 trigger mapping dynamically locked to active hosts"""
+    """💳 LOCAL PAYMENT NODE: Programmatic V3 trigger mapping strictly locked to live production hubs"""
     if hasattr(str_platform, "secrets"):
+        # 🛡️ Inasoma vigezo vyako vya HERUFI KUBWA kutoka Advanced Settings
         consumer_key = str_platform.secrets.get("PESAPAL_CONSUMER_KEY", "").strip()
         consumer_secret = str_platform.secrets.get("PESAPAL_CONSUMER_SECRET", "").strip()
     else:
@@ -14,25 +15,16 @@ def anzisha_muamala_wa_pesapal(username, email, kiasi=5.00):
     if not consumer_key or not consumer_secret:
         return "https://pesapal.com"
 
-    # 👑 CHUMA RELI: Endpoints sahihi za kibenki za Pesapal V3 Live Production!
+    # 👑 CHUMA RELI: Endpoints sahihi na kamili za kibenki za Pesapal V3 Live Production!
     auth_url = "https://pesapal.com"
     order_url = "https://pesapal.com"
     id_ya_muamala = f"owl-{int(time.time())}-{username.lower()}"
     
-    # 🧠 BIOMIMETIC AUTO-SYNC: Ubongo unavuta URL yoyote iliyo hai kwenye browser ya mteja kiotomatiki!
+    # 👑 DOMAIN PATH SYNC: URL yako mpya kabisa halisi ya zsuxdhnrtfckzvka4rwjjp kutoka kwenye skrini!
     url_yako_halisi = "https://streamlit.app"
-    try:
-        # Inasoma domain inayofanya kazi sekunde hii mtandaoni kupitia itifaki ya siri ya Streamlit headers
-        headers_za_seva = str_platform.context.headers
-        if headers_za_seva and "host" in headers_za_seva:
-            domain_hai = headers_za_seva["host"]
-            url_yako_halisi = f"https://{domain_hai}/dashboard"
-    except Exception:
-        # Fallback ya salama inayolinda mfumo isizimike
-        url_yako_halisi = "https://streamlit.app"
 
     try:
-        # HATUA YA 1: Kuomba Access Token ya Live Production kwenda Seva Kuu ya ://pesapal.com
+        # HATUA YA 1: Kuomba Access Token ya Live Production kwenda Seva Kuu
         auth_response = requests.post(auth_url, headers={"content-type": "application/json", "accept": "application/json"}, json={"consumer_key": consumer_key, "consumer_secret": consumer_secret}, timeout=10.0)
         
         if auth_response.status_code == 200:
@@ -45,7 +37,7 @@ def anzisha_muamala_wa_pesapal(username, email, kiasi=5.00):
                 "description": "linguaafrika premium utility tier license",
                 "callback_url": url_yako_halisi,
                 "cancellation_url": url_yako_halisi,
-                "notification_id": "7160bd27-3594-4456-8aa7-d9ca66d19636",
+                "notification_id": "7160bd27-3594-4456-8aa7-d9ca66d19636", 
                 "billing_address": {
                     "email_address": email,
                     "country_code": "tz",
@@ -58,7 +50,7 @@ def anzisha_muamala_wa_pesapal(username, email, kiasi=5.00):
             if order_response.status_code == 200:
                 return order_response.json().get("redirect_url")
 
-        # 🚀 IMMUTABLE FALLBACK: Link safi na iliyonyooka kuelekea ://pesapal.com Live Terminal
+        # 🚀 IMMUTABLE FALLBACK: Link safi na iliyonyooka kuelekea ://pesapal.com Live Merchant Terminal
         return f"https://pesapal.com?OrderTrackingId={id_ya_muamala}&return_url={url_yako_halisi}"
     except Exception:
         return f"https://pesapal.com?OrderTrackingId={id_ya_muamala}"
