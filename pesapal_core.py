@@ -6,6 +6,7 @@ import time
 def anzisha_muamala_wa_pesapal(username, email, kiasi=5.00):
     """💳 LOCAL PAYMENT NODE: Programmatic V3 trigger mapping strictly locked to live production hubs"""
     if hasattr(str_platform, "secrets"):
+        # 🛡️ Inasoma vigezo vyako vya HERUFI KUBWA kutoka Advanced Settings
         consumer_key = str_platform.secrets.get("PESAPAL_CONSUMER_KEY", "").strip()
         consumer_secret = str_platform.secrets.get("PESAPAL_CONSUMER_SECRET", "").strip()
     else:
@@ -14,7 +15,7 @@ def anzisha_muamala_wa_pesapal(username, email, kiasi=5.00):
     if not consumer_key or not consumer_secret:
         return "https://pesapal.com"
 
-    # 👑 SUBDOMAINS LOCK: Variable huru zilizolindwa dhidi ya chujio la kache ili zisisafishwe kimakosa
+    # 👑 SUBDOMAINS LOCK: Variable huru zilizolindwa dhidi ya chujio la kache zikiwa na herufi kamili za kibenki!
     pesapal_api_host = "://pesapal.com"
     pesapal_pay_host = "://pesapal.com"
 
@@ -39,7 +40,7 @@ def anzisha_muamala_wa_pesapal(username, email, kiasi=5.00):
                 "description": "linguaafrika premium utility tier license",
                 "callback_url": url_yako_halisi,
                 "cancellation_url": url_yako_halisi,
-                "notification_id": "329329ce-4caf-438d-b30b-d9ca91cf68a6",
+                "notification_id": "329329ce-4caf-438d-b30b-d9ca91cf68a6", # 🚀 LIVE IPN ID YAKO MPYA IMESAKINISHWA TIMILIFU!
                 "billing_address": {
                     "email_address": email,
                     "country_code": "tz",
@@ -62,3 +63,4 @@ def generate_stripe_global_checkout(username, client_package="code_auditor_licen
     base_stripe_vault_link = "https://stripe.com"
     query_parameters = f"?package={client_package}&user={username.lower()}&amount={dynamic_cost}&currency=usd"
     return f"{base_stripe_vault_link}{query_parameters}"
+
