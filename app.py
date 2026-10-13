@@ -2,12 +2,11 @@ import streamlit as str_platform
 import os
 import time
 from openai import OpenAI
-import database # 👑 THE SPINAL CORD: Continuous neural database integration loop
+import database
 
 self_healing_status = "🟢 autonomous shield: active & healthy"
 str_platform.set_page_config(page_title="LinguaAfrika AI Premium", page_icon="🧠", layout="wide", initial_sidebar_state="expanded")
 
-# Initialize and invoke the underlying SQLite schema on initial server mount
 try:
     database.anzisha_hifadhidata_ya_chuma()
 except Exception:
@@ -25,87 +24,54 @@ if api_key_source:
 else: 
     str_platform.error("🔒 secrets error!"); str_platform.stop()
 
-# 🎨 THE ULTIMATE ULTRA-PREMIUM GLOWING NEON GLASSMORPHISM UI SKIN INJECTION
+# 🎨 THE ULTIMATE ULTRA-PREMIUM GLOWING NEON GLASSMORPHISM SKIN
 str_platform.markdown("""
 <style>
-    /* Midnight Cybernetic Canvas Root Base */
     html, body, [data-testid="stAppViewContainer"], [data-testid="stHeader"] { 
         background: radial-gradient(circle at 50% 50%, #0F172A 0%, #090D1A 100%) !important; 
         font-family: 'Segoe UI', system-ui, sans-serif !important; 
         color: #F8FAFC !important; 
     }
-    
-    /* Elegant Dark Sidebar Overhaul */
     [data-testid="stSidebar"] { 
         background-color: #05070F !important; 
         border-right: 2px solid rgba(217, 119, 6, 0.2) !important; 
         box-shadow: 10px 0 30px rgba(0,0,0,0.5) !important;
     }
     [data-testid="stSidebar"] p, [data-testid="stSidebar"] label, [data-testid="stSidebar"] span { 
-        color: #E2E8F0 !important; 
-        font-weight: 700 !important; 
+        color: #E2E8F0 !important; font-weight: 700 !important; 
     }
-    
-    /* Futuristic Cybernetic Radio Component Selection Grid */
     div[data-testid="stRadio"] > label { 
         background: rgba(255, 255, 255, 0.02) !important; 
         border: 1px solid rgba(255, 255, 255, 0.05) !important;
-        padding: 14px 18px !important; 
-        border-radius: 12px !important; 
-        margin-bottom: 10px !important;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        padding: 14px 18px !important; border-radius: 12px !important; margin-bottom: 10px !important;
     }
     div[data-testid="stRadio"] div[aria-checked="true"] { 
         background: linear-gradient(135deg, #D97706 0%, #B45309 100%) !important; 
         box-shadow: 0 4px 15px rgba(217, 119, 6, 0.4) !important;
-        border-radius: 8px !important; 
-        padding: 6px 12px !important; 
+        border-radius: 8px !important; padding: 6px 12px !important; 
     }
-    
-    /* Imperial Amber Pulse Active Action Buttons */
     div.stButton > button { 
         background: linear-gradient(135deg, #1E3A8A 0%, #1D4ED8 100%) !important; 
-        color: #FFFFFF !important; 
-        font-weight: 800 !important; 
-        letter-spacing: 0.5px !important;
-        padding: 16px 32px !important; 
-        border-radius: 12px !important; 
-        border: 1px solid rgba(59, 131, 246, 0.3) !important; 
-        width: 100% !important;
-        box-shadow: 0 4px 12px rgba(29, 78, 216, 0.3) !important;
-        transition: all 0.25s ease !important;
+        color: #FFFFFF !important; font-weight: 800 !important; 
+        padding: 16px 32px !important; border-radius: 12px !important; 
+        border: 1px solid rgba(59, 131, 246, 0.3) !important; width: 100% !important;
     }
     div.stButton > button:hover { 
         background: linear-gradient(135deg, #2563EB 0%, #3B82F6 100%) !important; 
-        box-shadow: 0 0 25px rgba(59, 130, 246, 0.6) !important;
-        transform: translateY(-2px) !important;
-        border-color: #3B82F6 !important;
+        box-shadow: 0 0 25px rgba(59, 130, 246, 0.6) !important; transform: translateY(-2px) !important;
     }
-    
-    /* Premium Glassmorphic Container Layout Structures */
     .b2b-safe-ad-banner, div[data-testid="stBlock"] {
         background: rgba(255, 255, 255, 0.02) !important;
         backdrop-filter: blur(12px) !important;
-        -webkit-backdrop-filter: blur(12px) !important;
         border: 1px solid rgba(255, 255, 255, 0.05) !important;
-        border-radius: 16px !important;
-        padding: 20px !important;
-        margin: 20px 0 !important;
-        box-shadow: 0 15px 35px rgba(0,0,0,0.3) !important;
+        border-radius: 16px !important; padding: 20px !important; margin: 20px 0 !important;
     }
-    
-    /* Typography Fine Tuning */
-    h1, h2, h3, h4 { font-weight: 900 !important; letter-spacing: -0.5px !important; }
     .stTextArea textarea, .stTextInput input {
-        background-color: #0B132B !important;
-        border: 1px solid rgba(255,255,255,0.1) !important;
-        color: #FFFFFF !important;
-        border-radius: 10px !important;
+        background-color: #0B132B !important; border: 1px solid rgba(255,255,255,0.1) !important; color: #FFFFFF !important;
     }
 </style>
 """, unsafe_allow_html=True)
 
-# 🌐 BOX 1: BANGO LA JUU KUU (TOP HIGH-YIELD B2B PLACEMENT)
 str_platform.markdown("""
 <div class='b2b-safe-ad-banner' style='border: 1px solid rgba(217, 119, 6, 0.2) !important;'>
     <p style='color: #D97706; font-size: 11px; margin: 0 0 5px 0; font-weight: 900; letter-spacing: 1px;'>🛡️ BRAND-SAFE REVENUE NODE (TOP MEDIA.NET B2B PLACEMENT)</p>
@@ -120,7 +86,6 @@ str_platform.write("---")
 
 kasi_ya_radi = (time.time() - muda_mwanzo) * 1000
 
-# Glowing Telemetry sidebar metrics panel
 str_platform.sidebar.markdown(f"""
 <div style='background: linear-gradient(135deg, #1E293B 0%, #0F172A 100%); border: 2px solid #D97706; padding: 18px; border-radius: 14px; margin-bottom: 20px; box-shadow: 0 10px 25px rgba(217,119,6,0.15);'>
     <p style='color: #D97706; font-size: 13px; margin: 0 0 10px 0; text-align: center; font-weight: 900; letter-spacing: 1px;'>📊 RADA YA UBONGO (CNS METRICS)</p>
@@ -136,22 +101,10 @@ str_platform.sidebar.markdown("<p style='color: #94A3B8; font-size: 12px; font-w
 orodha_menyu = ["🎯 Malengo na Dira ya Taasisi", "📝 Mhariri wa Kiswahili Sanifu Pro", "🔀 Mtafsiri wa Lugha Suite", "📚 Maktaba ya Kamusi Kuu"]
 chaguo_menyu = str_platform.sidebar.radio("", orodha_menyu, key="v14_clean_portal_radio_gate")
 
-# 🌐 BOX 2: BANGO LA PEMBENI (SIDEBAR VERTICAL AD SLOT)
-str_platform.sidebar.markdown("""
-<div class='b2b-safe-ad-banner' style='padding: 10px; margin-top: 25px; border-color: rgba(255,255,255,0.05) !important;'>
-    <p style='color: #64748B; margin: 0 0 5px 0; font-size: 10px; font-weight: 900;'>🔒 SECURE AD BLOCK (EZOIC AI)</p>
-    <div id="ezoic-pub-ad-placeholder-101"></div>
-</div>
-""", unsafe_allow_html=True)
-
 str_platform.sidebar.write("---")
-str_platform.sidebar.markdown("<p style='color: #94A3B8; font-size: 12px; font-weight: 800; letter-spacing: 1px; margin-bottom: 5px;'>🔐 MANAGEMENT PORTAL:</p>", unsafe_allow_html=True)
-try: 
-    str_platform.sidebar.page_link("pages/dashboard.py", label="Fungua Lango la Utawala (Dashboard) ──►", icon="🔐")
-except Exception: 
-    pass
+try: str_platform.sidebar.page_link("pages/dashboard.py", label="Fungua Lango la Utawala (Dashboard) ──►", icon="🔐")
+except Exception: pass
 
-# RENDER SELECTION LAYOUT INTERFACES WITH HIGH-TIER EMBEDDINGS
 if chaguo_menyu == "🎯 Malengo na Dira ya Taasisi":
     str_platform.markdown("<h3 style='color: #D97706;'>🎯 Malengo na Dira ya Taasisi</h3>", unsafe_allow_html=True)
     str_platform.markdown("<div style='background: rgba(255,255,255,0.01); padding: 25px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.03); line-height: 1.8; font-size: 16px;'>LinguaAfrika AI imesajiliwa kuwa chombo kikuu cha kimkakati cha kidijitali barani Afrika kusanifisha na kuongeza thamani ya matumizi ya lugha ya Kiswahili kibiashara na kiviwanda duniani.</div>", unsafe_allow_html=True)
@@ -173,3 +126,20 @@ elif chaguo_menyu == "🔀 Mtafsiri wa Lugha Suite":
     with col2: lugha_lengwa = str_platform.selectbox("Kwenda Lugha:", orodha_lugha, index=0, key="trg_v14_clean")
     muktadha_chaguo = str_platform.selectbox("🎯 Chagua Muktadha wa Kiwanda:", ["Kawaida", "Kibiashara", "Kisheria", "Kitiba", "Kielimu"], key="context_v14_clean")
     maandishi_t = str_platform.text_area("Ingiza maandishi ya kutafsiri hapa:", key="trans_v14_clean_box")
+    
+    if str_platform.button("Zindua Tafsiri Pro", key="v14_btn_tr_clean"):
+        if maandishi_t.strip() != "":
+            prompt_t = f"Translate from {lugha_chanzo} to {lugha_lengwa} in a '{muktadha_chaguo}' context:\n\n{maandishi_t.strip()}"
+            jibu_t = client.chat.completions.create(model="gpt-4o", messages=[{"role": "user", "content": prompt_t}])
+            str_platform.markdown("<div style='background: rgba(59,130,246,0.1); border: 1px solid #3B82F6; padding: 20px; border-radius: 10px; margin-top: 15px;'><b>🔮 Matokeo ya Tafsiri Pro ya Muktadha:</b><br><br>" + jibu_t.choices.message.content + "</div>", unsafe_allow_html=True)
+
+elif chaguo_menyu == "📚 Maktaba ya Kamusi Kuu":
+    str_platform.markdown("<h3 style='color: #D97706;'>📚 Maktaba ya Msamiati na Kamusi Kuu</h3>", unsafe_allow_html=True)
+    msamiati = str_platform.text_input("Andika neno la Kiswahili hapa kwa ajili ya uchambuzi wa kasi ya radi:", key="kamusi_input_v14_clean")
+    if str_platform.button("Tafuta Kwenye Kamusi Kuu", key="v14_btn_kam_clean"):
+        hit_matokeo = database.query_neuroplasticity_lookup(msamiati)
+        if hit_matokeo:
+            str_platform.markdown("<div style='background: rgba(217,119,6,0.1); border: 1px solid #D97706; padding: 20px; border-radius: 10px; margin-top: 15px;'><b>✨ Uchambuzi wa Kitaalamu (Uti wa Mgongo wa Mfumo):</b><br><br>" + str(hit_matokeo) + "</div>", unsafe_allow_html=True)
+        else:
+            prompt_v = f"Ufafanuzi wa kina kwa neno: {msamiati.strip()}"
+            jibu_v = client.chat.completions.create(model="gpt-4o", messages=[{"role": "user", "content": prompt_v}])
