@@ -2,6 +2,7 @@ import streamlit as str_platform
 import database
 import pesapal_core
 import sqlite3
+import skin_appearance            # 🎨 THE EPITHELIAL MATRIX: Loaded inside the management portal too!
 
 str_platform.set_page_config(page_title="Ourworthlinks Dashboard", page_icon="🔐", layout="wide")
 try:
@@ -9,22 +10,12 @@ try:
 except Exception:
     pass
 
-str_platform.markdown("""
-<style>
-    html, body, [data-testid="stAppViewContainer"], [data-testid="stHeader"] { background-color: #0F172A !important; font-family: 'Segoe UI', sans-serif !important; color: #ffffff !important; }
-    .stTextInput label, .stSelectbox label { color: #E2E8F0 !important; font-weight: bold !important; }
-    div.stButton > button, div.stLinkButton > a { background: linear-gradient(135deg, #D97706 0%, #B45309 100%) !important; color: white !important; font-weight: bold !important; padding: 14px 28px !important; border-radius: 12px !important; border: none !important; text-align: center !important; text-decoration: none !important; width: 100% !important; display: inline-block !important; }
-    div.stButton > button:hover, div.stLinkButton > a:hover { box-shadow: 0 0 20px rgba(217, 119, 6, 0.5) !important; }
-    .monetize-card { background: rgba(255,255,255,0.02) !important; border: 1px solid rgba(255,255,255,0.05) !important; border-radius: 16px !important; padding: 30px !important; margin-bottom: 20px !important; box-shadow: 0 10px 30px rgba(0,0,0,0.3) !important; }
-</style>
-""", unsafe_allow_html=True)
+# 🎨 INTERFACE SKIN TRIGGER: Applies the glowing neon theme across the administrative space
+skin_appearance.inject_premium_glassmorphic_skin()
 
 str_platform.markdown("<h1 style='text-align: center; color: #D97706; font-weight: 900;'>🔐 OURWORTHLINKS COMMERCIAL MANAGEMENT ENGINE</h1>", unsafe_allow_html=True)
 str_platform.write("---")
 
-# =====================================================================
-# 🪝 AUTOMATED WEBHOOK LISTENER NODE (THE IMMUNE IMMULOGICAL BRIDGE)
-# =====================================================================
 try:
     if hasattr(str_platform, "experimental_get_query_params"):
         vigezo_vya_url = str_platform.experimental_get_query_params()
@@ -42,7 +33,7 @@ if "active_gateway" not in str_platform.session_state:
     str_platform.session_state["active_gateway"] = "mlangoni"
 
 if str_platform.session_state["active_gateway"] == "mlangoni":
-    str_platform.info("👋 Karibu Kiongozi! Tafadhali chagua lango unalotaka kufungua hapa chini iti kuanza utambuzi wa mfumo:")
+    str_platform.info("👋 Karibu Kiongozi! Tafadhali chagua lango unalotaka kufungua hapa chini ili kuanza utambuzi wa mfumo:")
     col_g1, col_g2 = str_platform.columns(2)
     with col_g1:
         if str_platform.button("🚪 Lango la Admin (Utawala)", key="g_admin"):
@@ -88,7 +79,7 @@ elif str_platform.session_state["active_gateway"] == "admin_s":
                     conn.commit()
                     conn.close()
                     str_platform.success(f"✅ Loaded {success_count} structural vocabulary terms directly into the system spinal cord!")
-                else: str_platform.error("CSV requires 'keyword' and 'semantic_meaning' column headers.")
+                else: str_platform.error("CSV requires 'keyword' and 'meaning' column headers.")
             except Exception as e: str_platform.error(f"Ingestion anomaly caught: {str(e)}")
 
 elif str_platform.session_state["active_gateway"] == "client_auth_s":
