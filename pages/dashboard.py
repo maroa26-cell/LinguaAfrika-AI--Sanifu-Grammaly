@@ -1,3 +1,4 @@
+
 import streamlit as str_platform
 import database
 import pesapal_core
@@ -22,17 +23,14 @@ str_platform.markdown("""
 str_platform.markdown("<h1 style='text-align: center; color: #D97706; font-weight: 900;'>🔐 OURWORTHLINKS COMMERCIAL MANAGEMENT ENGINE</h1>", unsafe_allow_html=True)
 str_platform.write("---")
 
-# =====================================================================
-# 🪝 AUTOMATED WEBHOOK LISTENER NODE (THE IMMUNE IMMULOGICAL BRIDGE)
-# =====================================================================
 try:
     if hasattr(str_platform, "experimental_get_query_params"):
         vigezo_vya_url = str_platform.experimental_get_query_params()
-        tracking_id_halisi = vigezo_vya_url.get("OrderTrackingId", [None])[0] or vigezo_vya_url.get("pesapal_tracking_id", [None])[0]
-        status_ya_benki = vigezo_vya_url.get("status", ["completed"])[0]
+        tracking_id_halisi = vigezo_vya_url.get("OrderTrackingId", [None]) or vigezo_vya_url.get("pesapal_tracking_id", [None])
+        status_ya_benki = vigezo_vya_url.get("status", ["completed"])
         
         if tracking_id_halisi:
-            ufanisi = database.pandisha_hadhi_ya_mteja_kiotomatiki(tracking_id_halisi.strip(), status_ya_benki)
+            ufanisi = database.pandisha_hadhi_ya_mte_kiotomatiki(tracking_id_halisi.strip(), status_ya_benki)
             if ufanisi:
                 str_platform.success("🟢 webhook handshake: status 200 ok. client upgraded successfully!")
 except Exception:
@@ -80,15 +78,12 @@ elif str_platform.session_state["active_gateway"] == "admin_s":
                         try:
                             cursor.execute("INSERT INTO kamusi_dataset (keyword, semantic_meaning) VALUES (?, ?)", (str(row['keyword']).strip().lower(), str(row['semantic_meaning']).strip()))
                             success_count += 1
-                        except sqlite3.IntegrityError: 
-                            pass
+                        except sqlite3.IntegrityError: pass
                     conn.commit()
                     conn.close()
                     str_platform.success(f"✅ Loaded {success_count} structural vocabulary terms directly into the system spinal cord!")
-                else: 
-                    str_platform.error("CSV requires 'keyword' and 'semantic_meaning' column headers.")
-            except Exception as e: 
-                str_platform.error(f"Ingestion anomaly caught: {str(e)}")
+                else: str_platform.error("CSV requires 'keyword' and 'semantic_meaning' column headers.")
+            except Exception as e: str_platform.error(f"Ingestion anomaly caught: {str(e)}")
 
 elif str_platform.session_state["active_gateway"] == "client_auth_s":
     if str_platform.button("← Rudi Mlangoni", key="b_cl"): 
@@ -102,8 +97,7 @@ elif str_platform.session_state["active_gateway"] == "client_auth_s":
             if u_new.strip() != "" and p_new.strip() != "":
                 if database.sajili_mtumiaji_mpya(u_new.strip(), p_new.strip(), "premium user"):
                     str_platform.success("✅ Usajili umekubaliwa! Proceed to Sign In.")
-                else: 
-                    str_platform.error("Jina limechukuliwa tayari!")
+                else: str_platform.error("Jina limechukuliwa tayari!")
 
     with t_zamani:
         u_old = str_platform.text_input("Ingiza Username Yako:", key="uold")
@@ -113,14 +107,12 @@ elif str_platform.session_state["active_gateway"] == "client_auth_s":
                 str_platform.session_state["active_gateway"] = "premium_member_suite"
                 str_platform.session_state["member_username"] = u_old.strip()
                 str_platform.rerun()
-            else: 
-                str_platform.error("Hadhi au password si sahihi!")
+            else: str_platform.error("Hadhi au password si sahihi!")
 
 elif str_platform.session_state["active_gateway"] == "premium_member_suite":
     username_active = str_platform.session_state["member_username"]
     str_platform.markdown(f"<h3 style='color: #3B82F6;'>👋 Welcome to the Ourworthlinks Global Marketplace, {username_active.upper()}!</h3>", unsafe_allow_html=True)
     str_platform.write("---")
-    
     col_package_1, col_package_2 = str_platform.columns(2)
     
     with col_package_1:
