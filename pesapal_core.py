@@ -1,11 +1,10 @@
-
 import streamlit as str_platform
 import requests
 import json
 import time
 
 def anzisha_muamala_wa_pesapal(username, email, kiasi=5.00):
-    """💳 LOCAL PAYMENT NODE: Programmatic V3 trigger mapping dynamically locked to active hosts"""
+    """💳 MULTI-GATEWAY CORE: Programmatic V3 trigger mapping dynamically locked to active hosts"""
     if hasattr(str_platform, "secrets"):
         consumer_key = str_platform.secrets.get("PESAPAL_CONSUMER_KEY", "").strip()
         consumer_secret = str_platform.secrets.get("PESAPAL_CONSUMER_SECRET", "").strip()
@@ -15,24 +14,38 @@ def anzisha_muamala_wa_pesapal(username, email, kiasi=5.00):
     if not consumer_key or not consumer_secret:
         return "https://pesapal.com"
 
+    # 👑 CHUMA RELI: Endpoints sahihi za kibenki za Pesapal V3 Live Production!
     auth_url = "https://pesapal.com"
     order_url = "https://pesapal.com"
     id_ya_muamala = f"owl-{int(time.time())}-{username.lower()}"
     
-    # 👑 BIOMIMETIC AUTO-SYNC: Inajaza URL mpya ya cskzagdyajoucs9sw42ynx kiotomatiki bila mkwamo!
-    url_yako_halisi = "https://linguaafrika-ai--sanifu-grammaly-cskzagdyajoucs9sw42ynx.streamlit.app/dashboard"
+    # 🧠 BIOMIMETIC AUTO-SYNC: Ubongo unavuta URL yoyote iliyo hai kwenye browser ya mteja kiotomatiki!
+    url_yako_halisi = "https://streamlit.app"
+    try:
+        # Inasoma domain inayofanya kazi sekunde hii mtandaoni kupitia itifaki ya siri ya Streamlit headers
+        headers_za_seva = str_platform.context.headers
+        if headers_za_seva and "host" in headers_za_seva:
+            domain_hai = headers_za_seva["host"]
+            url_yako_halisi = f"https://{domain_hai}/dashboard"
+    except Exception:
+        # Fallback ya salama inayolinda mfumo isizimike
+        url_yako_halisi = "https://streamlit.app"
 
     try:
+        # HATUA YA 1: Kuomba Access Token ya Live Production kwenda Seva Kuu ya ://pesapal.com
         auth_response = requests.post(auth_url, headers={"content-type": "application/json", "accept": "application/json"}, json={"consumer_key": consumer_key, "consumer_secret": consumer_secret}, timeout=10.0)
+        
         if auth_response.status_code == 200:
             access_token = auth_response.json().get("token")
+            
+            # HATUA YA 2: Kutengeneza Ankara ya Kiofisi ya Kifurushi cha Premium ($5.00 USD)
             order_payload = {
                 "id": id_ya_muamala,
                 "amount": kiasi,
                 "description": "linguaafrika premium utility tier license",
                 "callback_url": url_yako_halisi,
                 "cancellation_url": url_yako_halisi,
-                "notification_id": "ffa26ad8-4037-4b7a-a122-d9cbf46dc415",
+                "notification_id": "ffa26ad8-4037-4b7a-a122-d9cbf46dc415", # Weka IPN ID mpya hapa ukihitaji mbeleni
                 "billing_address": {
                     "email_address": email,
                     "country_code": "tz",
@@ -40,9 +53,12 @@ def anzisha_muamala_wa_pesapal(username, email, kiasi=5.00):
                     "last_name": "client"
                 }
             }
+            
             order_response = requests.post(order_url, headers={"content-type": "application/json", "accept": "application/json", "authorization": f"Bearer {access_token}"}, json=order_payload, timeout=10.0)
             if order_response.status_code == 200:
                 return order_response.json().get("redirect_url")
+
+        # 🚀 IMMUTABLE FALLBACK: Link safi na iliyonyooka kuelekea ://pesapal.com Live Terminal
         return f"https://pesapal.com?OrderTrackingId={id_ya_muamala}&return_url={url_yako_halisi}"
     except Exception:
         return f"https://pesapal.com?OrderTrackingId={id_ya_muamala}"
