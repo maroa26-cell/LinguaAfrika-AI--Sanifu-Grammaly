@@ -3,8 +3,8 @@ import os
 import time
 from openai import OpenAI
 import database
-import owths_sovereign_automaton  # 🛡️ THE AUTOMATON: Combined Chujio + Memory Core
-import skin_appearance            # 🎨 THE EPITHELIAL MATRIX: Master Design Core
+import owths_sovereign_automaton  # 👑 CHUJO + OWTHS INFRASTRUCTURE: Combined Master Core
+import skin_appearance            # 🎨 THE EPITHELIAL MATRIX: Loaded inside central view
 
 muda_mwanzo = time.time()
 self_healing_status = "🟢 autonomous shield: active & healthy"
@@ -17,7 +17,7 @@ try:
 except Exception:
     pass
 
-# 🎨 NEURAL CONNECTION INJECTION: Spreads the global premium glassmorphic skin instantly
+# 🎨 INTERFACE SKIN TRIGGER: Applies the glowing neon theme across the entire application workspace
 skin_appearance.inject_premium_glassmorphic_skin()
 
 if "OPENAI_API_KEY" in os.environ: 
@@ -78,13 +78,17 @@ elif chaguo_menyu == "🔀 Mtafsiri wa Lugha Suite":
     str_platform.markdown("<h3 style='color: #D97706;'>🔀 Mtafsiri wa Lugha & Muktadha Suite (Lugha 14)</h3>", unsafe_allow_html=True)
     orodha_lugha = ["Kiswahili", "Kiingereza (English)", "Kinyarwanda", "Kiganda (Luganda)", "Lingala", "Kichewa (Chewa)", "Kinyanja", "Kiafrikana (Afrikana)", "Kifaransa (French)", "Kiarabu (Arabic)"]
     col1, col2 = str_platform.columns(2)
-    with col1: str_platform.selectbox("Kutoka Lugha:", orodha_lugha, index=1, key="src_v14_clean")
-    with col2: str_platform.selectbox("Kwenda Lugha:", orodha_lugha, index=0, key="trg_v14_clean")
+    with col1: lugha_chanzo = str_platform.selectbox("Kutoka Lugha:", orodha_lugha, index=1, key="src_v14_clean")
+    with col2: lugha_lengwa = str_platform.selectbox("Kwenda Lugha:", orodha_lugha, index=0, key="trg_v14_clean")
+    
+    # 👑 CONTEXT RESTORED: Kurudisha sanduku rasmi la muktadha wa kiwanda kulingana na picha ya skrini!
+    muktadha_chaguo = str_platform.selectbox("🎯 Chagua Muktadha wa Kiwanda:", ["Kawaida", "Kibiashara", "Kisheria", "Kitiba", "Kielimu"], key="context_v14_clean")
+    
     maandishi_t = str_platform.text_area("Ingiza maandishi ya kutafsiri hapa:", key="trans_v14_clean_box")
     
     if str_platform.button("Zindua Tafsiri Pro", key="v14_btn_tr_clean"):
         if maandishi_t.strip() != "":
-            prompt_t = f"Translate text context:\n\n{maandishi_t.strip()}"
+            prompt_t = f"Translate from {lugha_chanzo} to {lugha_lengwa} strictly within a '{muktadha_chaguo}' context frame:\n\n{maandishi_t.strip()}"
             jibu_t = client.chat.completions.create(model="gpt-4o", messages=[{"role": "user", "content": prompt_t}])
             str_platform.markdown("<div style='background: rgba(255,255,255,0.02); padding: 20px; border-radius: 10px; margin-top: 15px;'><b>🔮 Matokeo ya Tafsiri Pro ya Muktadha:</b><br><br>" + jibu_t.choices.message.content + "</div>", unsafe_allow_html=True)
 
@@ -104,4 +108,3 @@ str_platform.write("---")
 # 💰 BRAND-SAFE AD REVENUE PLACEMENT: Bottom Placement
 skin_appearance.render_bottom_revenue_banner()
 str_platform.markdown("<p style='text-align: center; font-size: 12px; color: #94A3B8;'>© 2026 Ourworthlinks • LinguaAfrika AI Sovereign Ecosystem • Autonomic Architecture</p>", unsafe_allow_html=True)
-
