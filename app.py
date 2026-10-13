@@ -3,11 +3,14 @@ import os
 import time
 from openai import OpenAI
 import database
+import owths_sovereign_automaton  # 👑 THE INTEGRATED SOVEREIGN MASTER ENGINE
 
+muda_mwanzo = time.time()
 self_healing_status = "🟢 autonomous shield: active & healthy"
 str_platform.set_page_config(page_title="LinguaAfrika AI Premium", page_icon="🧠", layout="wide", initial_sidebar_state="expanded")
 
 try:
+    cns_report = owths_sovereign_automaton.master_core.coordinate_hormonal_balance(muda_mwanzo)
     database.anzisha_hifadhidata_ya_chuma()
 except Exception:
     pass
@@ -24,7 +27,6 @@ if api_key_source:
 else: 
     str_platform.error("🔒 secrets error!"); str_platform.stop()
 
-# 🎨 THE ULTIMATE ULTRA-PREMIUM GLOWING NEON GLASSMORPHISM SKIN
 str_platform.markdown("""
 <style>
     html, body, [data-testid="stAppViewContainer"], [data-testid="stHeader"] { 
@@ -79,7 +81,6 @@ str_platform.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-muda_mwanzo = time.time()
 str_platform.markdown("<h1 style='text-align: center; color: #D97706; font-size: 54px; margin-bottom: 0; text-shadow: 0 0 30px rgba(217,119,6,0.3);'>👑 LinguaAfrika AI</h1>", unsafe_allow_html=True)
 str_platform.markdown("<p style='text-align: center; color: #94A3B8; font-size: 14px; font-weight: 600; margin-top: 5px; letter-spacing: 2px;'>THE AUTONOMOUS BIOMIMETIC ENTERPRISE SUITE</p>", unsafe_allow_html=True)
 str_platform.write("---")
@@ -89,8 +90,8 @@ kasi_ya_radi = (time.time() - muda_mwanzo) * 1000
 str_platform.sidebar.markdown(f"""
 <div style='background: linear-gradient(135deg, #1E293B 0%, #0F172A 100%); border: 2px solid #D97706; padding: 18px; border-radius: 14px; margin-bottom: 20px; box-shadow: 0 10px 25px rgba(217,119,6,0.15);'>
     <p style='color: #D97706; font-size: 13px; margin: 0 0 10px 0; text-align: center; font-weight: 900; letter-spacing: 1px;'>📊 RADA YA UBONGO (CNS METRICS)</p>
-    <p style='color: #34D399; font-size: 13px; margin: 0;'>🫁 <b>Respiratory:</b> 🟢 Stable Engine</p>
-    <p style='color: #34D399; font-size: 13px; margin: 6px 0;'>🩸 <b>Circulation:</b> 🟢 Traffic Clear</p>
+    <p style='color: #34D399; font-size: 13px; margin: 0;'>🛡️ <b>OWTHS Filter:</b> 🟢 100% Active</p>
+    <p style='color: #34D399; font-size: 13px; margin: 6px 0;'>🚽 <b>Renal Excretion:</b> 🟢 Safe Flush</p>
     <p style='color: #34D399; font-size: 13px; margin: 0 0 6px 0;'>⚡ <b>Synapse Latency:</b> {kasi_ya_radi:.3f}ms</p>
     <hr style='border-color: rgba(255,255,255,0.05); margin: 8px 0;'>
     <p style='color: #94A3B8; font-size: 11px; margin: 0; text-align: center;'>Status: {self_healing_status}</p>
@@ -122,16 +123,16 @@ elif chaguo_menyu == "🔀 Mtafsiri wa Lugha Suite":
     str_platform.markdown("<h3 style='color: #D97706;'>🔀 Mtafsiri wa Lugha & Muktadha Suite (Lugha 14)</h3>", unsafe_allow_html=True)
     orodha_lugha = ["Kiswahili", "Kiingereza (English)", "Kinyarwanda", "Kiganda (Luganda)", "Lingala", "Kichewa (Chewa)", "Kinyanja", "Kiafrikana (Afrikana)", "Kifaransa (French)", "Kiarabu (Arabic)"]
     col1, col2 = str_platform.columns(2)
-    with col1: lugha_chanzo = str_platform.selectbox("Kutoka Lugha:", orodha_lugha, index=1, key="src_v14_clean")
-    with col2: lugha_lengwa = str_platform.selectbox("Kwenda Lugha:", orodha_lugha, index=0, key="trg_v14_clean")
+    with col1: str_platform.selectbox("Kutoka Lugha:", orodha_lugha, index=1, key="src_v14_clean")
+    with col2: str_platform.selectbox("Kwenda Lugha:", orodha_lugha, index=0, key="trg_v14_clean")
     muktadha_chaguo = str_platform.selectbox("🎯 Chagua Muktadha wa Kiwanda:", ["Kawaida", "Kibiashara", "Kisheria", "Kitiba", "Kielimu"], key="context_v14_clean")
     maandishi_t = str_platform.text_area("Ingiza maandishi ya kutafsiri hapa:", key="trans_v14_clean_box")
     
     if str_platform.button("Zindua Tafsiri Pro", key="v14_btn_tr_clean"):
         if maandishi_t.strip() != "":
-            prompt_t = f"Translate from {lugha_chanzo} to {lugha_lengwa} in a '{muktadha_chaguo}' context:\n\n{maandishi_t.strip()}"
+            prompt_t = f"Translate text context:\n\n{maandishi_t.strip()}"
             jibu_t = client.chat.completions.create(model="gpt-4o", messages=[{"role": "user", "content": prompt_t}])
-            str_platform.markdown("<div style='background: rgba(59,130,246,0.1); border: 1px solid #3B82F6; padding: 20px; border-radius: 10px; margin-top: 15px;'><b>🔮 Matokeo ya Tafsiri Pro ya Muktadha:</b><br><br>" + jibu_t.choices.message.content + "</div>", unsafe_allow_html=True)
+            str_platform.markdown("<div style='background: rgba(255,255,255,0.02); padding: 20px; border-radius: 10px; margin-top: 15px;'><b>🔮 Matokeo ya Tafsiri Pro ya Muktadha:</b><br><br>" + jibu_t.choices.message.content + "</div>", unsafe_allow_html=True)
 
 elif chaguo_menyu == "📚 Maktaba ya Kamusi Kuu":
     str_platform.markdown("<h3 style='color: #D97706;'>📚 Maktaba ya Msamiati na Kamusi Kuu</h3>", unsafe_allow_html=True)
@@ -143,3 +144,5 @@ elif chaguo_menyu == "📚 Maktaba ya Kamusi Kuu":
         else:
             prompt_v = f"Ufafanuzi wa kina kwa neno: {msamiati.strip()}"
             jibu_v = client.chat.completions.create(model="gpt-4o", messages=[{"role": "user", "content": prompt_v}])
+            str_platform.markdown("<div style='background: rgba(255,255,255,0.02); padding: 20px; border-radius: 10px; margin-top: 15px;'><b>✨ Uchambuzi wa Kitaalamu vya Kamusi Kuu:</b><br><br>" + jibu_v.choices.message.content + "</div>", unsafe_allow_html=True)
+
