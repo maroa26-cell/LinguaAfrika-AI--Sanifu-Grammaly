@@ -6,14 +6,18 @@ import time
 def anzisha_muamala_wa_pesapal(username, email, kiasi_usd=5.00, sarafu="TZS"):
     """👑 LIVE PRODUCTION GATEWAY: High-security pipeline for Ourworthlinks BUSINESS"""
     if hasattr(str_platform, "secrets"):
+        # 🛡️ Inasoma vigezo vyako vya siri kutoka Advanced Settings ya Streamlit Secrets
         consumer_key = str_platform.secrets.get("PESAPAL_CONSUMER_KEY", "").strip()
         consumer_secret = str_platform.secrets.get("PESAPAL_CONSUMER_SECRET", "").strip()
     else:
         consumer_key = ""
         consumer_secret = ""
 
-    auth_url = "https://pesapal.com"
-    order_url = "https://pesapal.com"
+    # 👑 CHUMA RELI LOCK: Subdomains sahihi na kamili za kibenki za Live Production (Zilizorekebishwa)
+    pesapal_api_host = "://pesapal.com"
+    auth_url = f"https://{pesapal_api_host}/api/Auth/RegisterToken"
+    order_url = f"https://{pesapal_api_host}/api/Transactions/SubmitOrderRequest"
+    
     id_ya_muamala = f"owl-{int(time.time())}-{username.lower()}"
 
     sarafu_halisi = str(sarafu).upper().strip()
@@ -32,7 +36,7 @@ def anzisha_muamala_wa_pesapal(username, email, kiasi_usd=5.00, sarafu="TZS"):
         return "#"
 
     try:
-        # 🔥 DAWA YA UTAMBULISHO: Tumesimika headers zenye User-Agent kuzuia ulinzi wa seva ya Pesapal usibloqi kodi
+        # 🔥 DAWA YA UTAMBULISHO: Headers zenye User-Agent thabiti kuzuia ulinzi wa seva usibloqi kodi
         headers_auth = {
             "Content-Type": "application/json", 
             "Accept": "application/json",
@@ -46,11 +50,12 @@ def anzisha_muamala_wa_pesapal(username, email, kiasi_usd=5.00, sarafu="TZS"):
             try:
                 access_token = auth_response.json().get("token")
             except Exception:
-                # Kama bado inarudisha maandishi, tunaonyesha herufi 200 za mwanzo ili ujue seva inasema nini kiofisi
                 str_platform.error(f"❌ Mfumo umeshindwa kusoma token. Seva imejibu: {auth_response.text[:200]}")
                 return "#"
                 
             nchi = "TZ" if sarafu_halisi == "TZS" else ("KE" if sarafu_halisi == "KES" else "US")
+            
+            # 👑 DOMAIN PATH SYNC: URL yako mpya kabisa halisi iliyosawazishwa kuzuia hitilafu
             domain_kamili = "https://streamlit.app"
             
             order_payload = {
@@ -60,7 +65,7 @@ def anzisha_muamala_wa_pesapal(username, email, kiasi_usd=5.00, sarafu="TZS"):
                 "description": f"Ourworthlinks BUSINESS premium suite access authorization (base: ${kiasi_usd} usd)",
                 "callback_url": domain_kamili,
                 "cancellation_url": domain_kamili,
-                "notification_id": "329329ce-4caf-438d-b30b-d9ca91cf68a6",
+                "notification_id": "329329ce-4caf-438d-b30b-d9ca91cf68a6",  # Live IPN ID yako halisi
                 "billing_address": {
                     "email_address": email,
                     "phone_number": "0712345678",
