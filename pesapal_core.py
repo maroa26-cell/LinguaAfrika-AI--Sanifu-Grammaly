@@ -4,7 +4,7 @@ import json
 import time
 
 def anzisha_muamala_wa_pesapal(username, email, kiasi_usd=5.00, sarafu="TZS"):
-    """专 LIVE PRODUCTION PAYMENT NODE: Automated Live Production Trigger for exact web domain"""
+    """专 LIVE PRODUCTION PAYMENT NODE: Automated Live Production Trigger with explicit diagnostic error display"""
     if hasattr(str_platform, "secrets"):
         consumer_key = str_platform.secrets.get("PESAPAL_CONSUMER_KEY", "").strip()
         consumer_secret = str_platform.secrets.get("PESAPAL_CONSUMER_SECRET", "").strip()
@@ -15,9 +15,6 @@ def anzisha_muamala_wa_pesapal(username, email, kiasi_usd=5.00, sarafu="TZS"):
     auth_url = "https://pesapal.com"
     order_url = "https://pesapal.com"
     id_ya_muamala = f"owl-{int(time.time())}-{username.lower()}"
-    
-    # 🎯 FIX YA MTANDAO: Inalazimisha kubaki ndani ya ukurasa uleule wa ndani badala ya kuruka nje
-    url_yako_halisi = "dashboard"
 
     sarafu_halisi = str(sarafu).upper().strip()
     if sarafu_halisi == "TZS":
@@ -30,35 +27,41 @@ def anzisha_muamala_wa_pesapal(username, email, kiasi_usd=5.00, sarafu="TZS"):
 
     kiasi_kilichozungushwa = round(kiasi_cha_malipo, 2)
 
-    try:
-        if not consumer_key or not consumer_secret:
-            return f"{url_yako_halisi}?error=Missing_Secrets"
+    if not consumer_key or not consumer_secret:
+        str_platform.error("❌ Hitilafu: Consumer Key au Secret hazijasomwa kwenye Streamlit Secrets!")
+        return "#"
 
-        # HATUA YA 1: Kuomba Access Token (verify=False inaondoa vizuizi vya SSL kwenye seva)
+    try:
+        # HATUA YA 1: Kuingia Live Pesapal Portal
         headers_auth = {"content-type": "application/json", "accept": "application/json"}
         payload_auth = {"consumer_key": consumer_key, "consumer_secret": consumer_secret}
-        auth_response = requests.post(auth_url, headers=headers_auth, json=payload_auth, timeout=15.0, verify=False)
+        auth_response = requests.post(auth_url, headers=headers_auth, json=payload_auth, timeout=15.0)
         
         if auth_response.status_code == 200:
-            access_token = auth_response.json().get("token")
+            try:
+                access_token = auth_response.json().get("token")
+            except Exception:
+                str_platform.error(f"❌ Pesapal Live imerudisha data zisizo sahihi (Auth JSON Fail). Status: {auth_response.status_code}")
+                return "#"
+                
             nchi = "TZ" if sarafu_halisi == "TZS" else ("KE" if sarafu_halisi == "KES" else "US")
-
-            # HATUA YA 2: Kuandaa Ankara (Callback sasa hivi inatumia link yako ndefu rasmi ya Streamlit)
             domain_kamili = "https://streamlit.app"
+            
+            # HATUA YA 2: Kuandaa Ankara (Jina la description limebadilishwa kuwa Ourworthlinks BUSINESS)
             order_payload = {
                 "id": id_ya_muamala,
                 "currency": sarafu_halisi,  
                 "amount": kiasi_kilichozungushwa,  
-                "description": f"linguaafrika premium utility tier license (base: ${kiasi_usd} usd)",
+                "description": f"Ourworthlinks BUSINESS premium suite access authorization (base: ${kiasi_usd} usd)",
                 "callback_url": domain_kamili,
                 "cancellation_url": domain_kamili,
-                "notification_id": "329329ce-4caf-438d-b30b-d9ca91cf68a6",
+                "notification_id": "329329ce-4caf-438d-b30b-d9ca91cf68a6", # IPN ID yako rasmi halisi ya Live
                 "billing_address": {
                     "email_address": email,
                     "phone_number": "0712345678",
                     "country_code": nchi,
                     "first_name": username if len(username) >= 2 else "Mteja",
-                    "last_name": "Premium"
+                    "last_name": "Business"
                 }
             }
             
@@ -67,19 +70,21 @@ def anzisha_muamala_wa_pesapal(username, email, kiasi_usd=5.00, sarafu="TZS"):
                 "accept": "application/json", 
                 "authorization": f"Bearer {access_token}"
             }
-            order_response = requests.post(order_url, json=order_payload, headers=headers_order, timeout=15.0, verify=False)
+            order_response = requests.post(order_url, json=order_payload, headers=headers_order, timeout=15.0)
             
             if order_response.status_code == 200:
                 return order_response.json().get("redirect_url")
             else:
-                return f"{url_yako_halisi}?error=Pesapal_Order_Failed_{order_response.status_code}"
+                str_platform.error(f"❌ Pesapal Live Imekataa Oda ({order_response.status_code}): {order_response.text}")
+                return "#"
         else:
-            return f"{url_yako_halisi}?error=Auth_Failed_{auth_response.status_code}"
+            # Utambuzi wa kosa mwilini mwa skrini ikiwa funguo za siri zimefeli
+            str_platform.error(f"🔒 Pesapal Live Auth Failed ({auth_response.status_code}): Tafadhali hakiki Consumer Key na Secret zako kule Streamlit Secrets. Seva imesema: {auth_response.text}")
+            return "#"
 
     except Exception as e:
-        # SULUHISHO: Inasafisha maandishi ya kosa ili yasivunje URL ya kivinjari chako
-        kosa_safu = str(e).replace(" ", "_").replace(":", "_")[:50]
-        return f"{url_yako_halisi}?error=Exception_{kosa_safu}"
+        str_platform.error(f"💥 Hitilafu ya Mtandao wa Mfumo: {str(e)}")
+        return "#"
 
 def generate_stripe_global_checkout(username, client_package="code_auditor_license", dynamic_cost=49.00):
     base_stripe_vault_link = "https://stripe.com"
