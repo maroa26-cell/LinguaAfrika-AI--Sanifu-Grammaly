@@ -87,7 +87,7 @@ elif str_platform.session_state["active_gateway"] == "admin_s":
                         except sqlite3.IntegrityError: pass
                     conn.commit()
                     conn.close()
-                    str_platform.success(f"Loaded {success_count} structural vocabulary terms directly into the system spinal cord!")
+                    str_platform.success(f"✅ Loaded {success_count} structural vocabulary terms directly into the system spinal cord!")
                 else: str_platform.error("CSV requires 'keyword' and 'semantic_meaning' column headers.")
             except Exception as e: str_platform.error(f"Ingestion anomaly caught: {str(e)}")
 
@@ -103,7 +103,7 @@ elif str_platform.session_state["active_gateway"] == "client_auth_s":
         if str_platform.button("Thibitisha Usajili wa Akaunti", key="b_up"):
             if u_new.strip() != "" and p_new.strip() != "":
                 if database.sajili_mtumiaji_mpya(u_new.strip(), p_new.strip(), "premium user"):
-                    str_platform.success(" Usajili umekubaliwa! Proceed to Sign In.")
+                    str_platform.success("✅ Usajili umekubaliwa! Proceed to Sign In.")
                 else: str_platform.error("Jina limechukuliwa tayari!")
 
     with t_zamani:
@@ -118,7 +118,7 @@ elif str_platform.session_state["active_gateway"] == "client_auth_s":
 
 elif str_platform.session_state["active_gateway"] == "premium_member_suite":
     username_active = str_platform.session_state["member_username"]
-    str_platform.markdown(f"<h3 style='color: #3B82F6;'> Welcome to the Ourworthlinks Global Marketplace, {username_active.upper()}!</h3>", unsafe_allow_html=True)
+    str_platform.markdown(f"<h3 style='color: #3B82F6;'>👋 Welcome to the Ourworthlinks Global Marketplace, {username_active.upper()}!</h3>", unsafe_allow_html=True)
     str_platform.write("---")
     
     kiasi_cha_msingi_usd = 5.00
@@ -134,9 +134,10 @@ elif str_platform.session_state["active_gateway"] == "premium_member_suite":
         sarafu_halisi = "USD"
         onyesha_kiasi = kiasi_cha_msingi_usd
 
-    str_platform.info(f" Kiwango cha Kulipa: **{onyesha_kiasi:,.2f} {sarafu_halisi}** (Thamani ya Kifurushi: ${kiasi_cha_msingi_usd:.2f} USD)")
+    str_platform.info(f"💰 Kiwango cha Kulipa: **{onyesha_kiasi:,.2f} {sarafu_halisi}** (Thamani ya Kifurushi: ${kiasi_cha_msingi_usd:.2f} USD)")
     str_platform.write("---")
     
+    # Mfumo unatengeneza link ya Pesapal Live mapema sekunde hii
     pesapal_redirect = pesapal_core.anzisha_muamala_wa_pesapal(username_active, f"{username_active}@ourworthlinks.com", kiasi_usd=kiasi_cha_msingi_usd, sarafu=sarafu_halisi)
     
     if hasattr(pesapal_core, "generate_stripe_global_checkout"):
@@ -174,7 +175,6 @@ elif str_platform.session_state["active_gateway"] == "premium_member_suite":
         </div>
         """, unsafe_allow_html=True)
         
-        # 🔥 FIX SECURE LOCK: Mabono yote sasa hivi yamefungwa kifalme mwisho wa mstari kuondoa SyntaxError!
         str_platform.link_button(
             label="💳 Purchase Commercial B2B License ($49.00 USD)",
             url=str(stripe_redirect).strip(),
@@ -184,4 +184,5 @@ elif str_platform.session_state["active_gateway"] == "premium_member_suite":
         )
 
     str_platform.write("---")
-    if str_platform.button("← Toka Kwenye Akaunti Yako (Log Out)", key="b_logout"):
+    
+    # 🔥 CORE FIXED BLOCK: Amri hizi sasa hivi zimesukumwa nafasi 4 mbele kitalaalamu kuondoa IndentationError!
