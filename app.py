@@ -3,8 +3,8 @@ import os
 import time
 from openai import OpenAI
 import database
-import owths_sovereign_automaton  # 👑 MASTER AUTOMATON: Combined security cell
-import skin_appearance            # 🎨 EPITHELIAL MATRIX: Decoupled design architecture
+import owths_sovereign_automaton  # 👑 MASTER AUTOMATON: Combined filter & metabolic cell
+import skin_appearance            # 🎨 EPITHELIAL MATRIX: Central design architecture
 
 muda_mwanzo = time.time()
 self_healing_status = "🟢 autonomous shield: active & healthy"
@@ -17,7 +17,7 @@ try:
 except Exception:
     pass
 
-# 🎨 GLOBAL DESIGN INJECTION: Spreads the premium glassmorphic stylesheet
+# 🎨 GLOBAL DESIGN INJECTION: Spreads the premium glassmorphic stylesheet globally
 skin_appearance.inject_premium_glassmorphic_skin()
 
 if "OPENAI_API_KEY" in os.environ: 
@@ -39,7 +39,7 @@ skin_appearance.render_top_revenue_banner()
 # 🌐 WEBPAGE IDARA YA 1: THE ENTERPRISE SAAS CORPORATE MARKETING HERO
 # =====================================================================
 str_platform.markdown("<h1 style='text-align: center; color: #D97706; font-size: 56px; margin-bottom: 0; font-weight: 900; text-shadow: 0 0 40px rgba(217,119,6,0.3);'>👑 Ourworthlinks Business</h1>", unsafe_allow_html=True)
-str_platform.markdown("<p style='text-align: center; color: #94A3B8; font-size: 16px; font-weight: 700; margin-top: 5px; letter-spacing: 3px;'>LINGUAAFRIKA AI • THE AUTONOMOUS BIOMIMETIC WEB APPLICATION</p>", unsafe_allow_html=True)
+str_platform.markdown("<p style='text-align: center; color: #94A3B8; font-size: 14px; font-weight: 700; margin-top: 5px; letter-spacing: 3px;'>LINGUAAFRIKA AI • THE AUTONOMOUS BIOMIMETIC WEB APPLICATION</p>", unsafe_allow_html=True)
 str_platform.write("---")
 
 str_platform.markdown("""
@@ -68,21 +68,24 @@ str_platform.sidebar.markdown(f"""
 """, unsafe_allow_html=True)
 
 str_platform.sidebar.markdown("<p style='color: #94A3B8; font-size: 12px; font-weight: 800; letter-spacing: 1px; margin-bottom: 5px;'>🌐 FILTER MENYU YA WEBSITE:</p>", unsafe_allow_html=True)
-orodha_menyu = ["📝 Mhariri wa Kiswahili Sanifu Pro & Tafsiri", "📚 Maktaba ya Kamusi Kuu"]
+orodha_menyu = ["📝 Mhariri wa Kiswahili Sanifu Pro & Tafsiri Suite", "📚 Maktaba ya Kamusi Kuu"]
 chaguo_menyu = str_platform.sidebar.radio("", orodha_menyu, key="v14_clean_portal_radio_gate")
 
 str_platform.sidebar.write("---")
-# 🔐 LANGO LA UTAWALA PORTAL LINK
+# 🔐 LANGO LA UTAWALA PORTAL LINK SYNC
 try: str_platform.sidebar.page_link("pages/dashboard.py", label="Fungua Lango la Utawala (Dashboard) ──►", icon="🔐")
 except Exception: pass
 
-# =====================================================================
-# 👑 WEBPAGE IDARA YA 2: REAL-TIME GRAMMARLY ENGINE INTERFACE
-# =====================================================================
+# Initialize dynamic toggle cache variables inside execution pipeline
 if "last_processed_text" not in str_platform.session_state:
     str_platform.session_state["last_processed_text"] = ""
+if "show_translation_sub_gate" not in str_platform.session_state:
+    str_platform.session_state["show_translation_sub_gate"] = False
 
-if chaguo_menyu == "📝 Mhariri wa Kiswahili Sanifu Pro & Tafsiri":
+# =====================================================================
+# 👑 WEBPAGE IDARA YA 2: THE UNIFIED REAL-TIME INTERFACE
+# =====================================================================
+if chaguo_menyu == "📝 Mhariri wa Kiswahili Sanifu Pro & Tafsiri Suite":
     str_platform.markdown("<h3 style='color: #D97706;'>📝 Real-Time Swahili Editor Suite (Grammarly Mode)</h3>", unsafe_allow_html=True)
     
     # Sanduku kuu la mtumiaji ambalo algorithm inalifanyia doria masaa 24
@@ -98,11 +101,12 @@ if chaguo_menyu == "📝 Mhariri wa Kiswahili Sanifu Pro & Tafsiri":
         </div>
         """, unsafe_allow_html=True)
         
-        col_opt1, col_opt2, col_opt3 = str_platform.columns([2, 2, 3])
+        col_opt1, col_opt2, col_opt3 = str_platform.columns(3)
         
         with col_opt1:
             if str_platform.button("✨ Sahihisha Sarufi Sasa", key="btn_auto_correct"):
                 str_platform.session_state["last_processed_text"] = maandishi.strip()
+                str_platform.session_state["show_translation_sub_gate"] = False
                 with str_platform.spinner("Inasafisha sarufi ya Kiswahili..."):
                     prompt = f"Sahihisha sarufi ya matini haya kitalaalamu kwa Kiswahili Sanifu na uonyeshe makosa yaliyorekebishwa:\n\n{maandishi.strip()}"
                     jibu = client.chat.completions.create(model="gpt-4o", messages=[{"role": "user", "content": prompt}])
@@ -111,29 +115,27 @@ if chaguo_menyu == "📝 Mhariri wa Kiswahili Sanifu Pro & Tafsiri":
         with col_opt2:
             if str_platform.button("🔀 Fungua Lango la Tafsiri", key="btn_activate_trans"):
                 str_platform.session_state["show_translation_sub_gate"] = True
+                str_platform.rerun()
                 
         with col_opt3:
             if str_platform.button("❌ Futa na Upuuze", key="btn_ignore_prompt"):
                 str_platform.session_state["last_processed_text"] = maandishi.strip()
+                str_platform.session_state["show_translation_sub_gate"] = False
                 str_platform.rerun()
 
-        # Ukurasa mdogo wa Tafsiri unaoibuka mtumiaji akichagua chaguo la Pili
-        if str_platform.session_state.get("show_translation_sub_gate"):
-            str_platform.write("---")
-            str_platform.markdown("<p style='color: #3B82F6; font-weight: bold; margin-bottom: 5px;'>🔮 CHAGUA LUGHA NA MUKTADHA WA TAFSIRI:</p>", unsafe_allow_html=True)
-            orodha_lugha = ["Kiswahili", "Kiingereza (English)", "Kinyarwanda", "Kiganda (Luganda)", "Lingala", "Kichewa (Chewa)", "Kinyanja", "Kiafrikana (Afrikana)", "Kifaransa (French)", "Kiarabu (Arabic)"]
-            
-            sub_col1, sub_col2, sub_col3 = str_platform.columns(3)
-            with sub_col1: lugha_chanzo = sub_col1.selectbox("Kutoka Lugha:", orodha_lugha, index=0, key="live_src_lang")
-            with sub_col2: lugha_lengwa = sub_col2.selectbox("Kwenda Lugha:", orodha_lugha, index=1, key="live_trg_lang")
-            with sub_col3: muktadha_chaguo = sub_col3.selectbox("🎯 Muktadha wa Kiwanda:", ["Kawaida", "Kibiashara", "Kisheria", "Kitiba", "Kielimu"], key="live_context_node")
-            
-            if str_platform.button("🚀 Tekeleza Tafsiri ya Muktadha Sasa", key="btn_execute_live_trans"):
+    # 👑 TAFSIRI SUITE IS RESTORED: Kurudisha idara kamili ya vichaguzi vya lugha 14 na Muktadha!
+    if str_platform.session_state["show_translation_sub_gate"]:
+        str_platform.write("---")
+        str_platform.markdown("<p style='color: #3B82F6; font-weight: bold; margin-bottom: 5px; font-size: 16px;'>🔮 CHAGUA LUGHA NA MUKTADHA WA TAFSIRI SUITE (LUGHA 14):</p>", unsafe_allow_html=True)
+        orodha_lugha = ["Kiswahili", "Kiingereza (English)", "Kinyarwanda", "Kiganda (Luganda)", "Lingala", "Kichewa (Chewa)", "Kinyanja", "Kiafrikana (Afrikana)", "Kifaransa (French)", "Kiarabu (Arabic)"]
+        
+        sub_col1, sub_col2, sub_col3 = str_platform.columns(3)
+        with sub_col1: lugha_chanzo = sub_col1.selectbox("Kutoka Lugha:", orodha_lugha, index=0, key="live_src_lang")
+        with sub_col2: lugha_lengwa = sub_col2.selectbox("Kwenda Lugha:", orodha_lugha, index=1, key="live_trg_lang")
+        with sub_col3: muktadha_chaguo = sub_col3.selectbox("🎯 Muktadha wa Kiwanda:", ["Kawaida", "Kibiashara", "Kisheria", "Kitiba", "Kielimu"], key="live_context_node")
+        
+        if str_platform.button("🚀 Tekeleza Tafsiri ya Muktadha Sasa", key="btn_execute_live_trans"):
+            if maandishi.strip() != "":
                 with str_platform.spinner("Mshipa wa fahamu unatafsiri lugha..."):
                     prompt_t = f"Translate from {lugha_chanzo} to {lugha_lengwa} strictly within a '{muktadha_chaguo}' context frame:\n\n{maandishi.strip()}"
                     jibu_t = client.chat.completions.create(model="gpt-4o", messages=[{"role": "user", "content": prompt_t}])
-                    str_platform.markdown("<div style='background: rgba(59, 130, 246, 0.1); border: 1px solid #3B82F6; padding: 20px; border-radius: 10px; margin-top: 10px;'><b>🔮 Matokeo ya Tafsiri Pro ya Muktadha:</b><br><br>" + jibu_t.choices.message.content + "</div>", unsafe_allow_html=True)
-                    str_platform.session_state["show_translation_sub_gate"] = False
-
-elif chaguo_menyu == "📚 Maktaba ya Kamusi Kuu":
-    str_platform.markdown("<h3 style='color: #D97706;'>📚 Maktaba ya Msamiati na Kamusi Kuu</h3>", unsafe_allow_html=True)
