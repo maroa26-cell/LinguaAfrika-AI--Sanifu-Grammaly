@@ -23,8 +23,8 @@ def anzisha_muamala_wa_pesapal(username, email, kiasi=5.00):
     order_url = f"https://{pesapal_api_host}/api/Transactions/SubmitOrderRequest"
     id_ya_muamala = f"owl-{int(time.time())}-{username.lower()}"
     
-    # 👑 HARDWIRED PATHWAY: URL yako mpya kabisa rasmi niliyofunga kufuatia amri yako ya kiutawala!
-    url_yako_halisi = "https://linguaafrika-ai--sanifu-grammaly-tya2uyfj2xz73eiqu8tear.streamlit.app/dashboard"
+    # 👑 DOMAIN PATH SYNC: URL yako mpya kabisa niliyofunga kufuatia amri yako ya kiutawala!
+    url_yako_halisi = "https://streamlit.app"
 
     try:
         # HATUA YA 1: Kuomba Access Token ya Live Production kwenda Seva Kuu
@@ -36,6 +36,7 @@ def anzisha_muamala_wa_pesapal(username, email, kiasi=5.00):
             # HATUA YA 2: Kutengeneza Ankara ya Kiofisi ya Kifurushi cha Premium
             order_payload = {
                 "id": id_ya_muamala,
+                "currency": "TZS",
                 "amount": float(kiasi),  # Kulazimisha mfumo usome namba halisi ya decimal (Float)
                 "description": "linguaafrika premium utility tier license",
                 "callback_url": url_yako_halisi,
@@ -49,7 +50,7 @@ def anzisha_muamala_wa_pesapal(username, email, kiasi=5.00):
                 }
             }
             
-            # 🔥 INLINE SECURE PAYLOAD: Tumesimika json= vizuri asilimia 100 kuzuia kosa la uimport
+            # 🔥 INLINE SECURE PAYLOAD: Inasafirisha data kwa usahihi kwa kutumia 'json=' kuzuia kosa la 400
             order_response = requests.post(order_url, json=order_payload, headers={"content-type": "application/json", "accept": "application/json", "authorization": f"Bearer {access_token}"}, timeout=10.0)
             if order_response.status_code == 200:
                 return order_response.json().get("redirect_url")
