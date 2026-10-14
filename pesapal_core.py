@@ -6,7 +6,7 @@ import time
 def anzisha_muamala_wa_pesapal(username, email, kiasi=5.00):
     """💳 LOCAL PAYMENT NODE: Programmatic V3 trigger mapping strictly locked to live production hubs"""
     if hasattr(str_platform, "secrets"):
-        # 🛡️ Inasoma vigezo vyako vya siri kutoka Advanced Settings ya Streamlit
+        # 🛡️ Inasoma vigezo vyako vya siri kutoka Advanced Settings ya Streamlit Secrets
         consumer_key = str_platform.secrets.get("PESAPAL_CONSUMER_KEY", "").strip()
         consumer_secret = str_platform.secrets.get("PESAPAL_CONSUMER_SECRET", "").strip()
     else:
@@ -23,15 +23,8 @@ def anzisha_muamala_wa_pesapal(username, email, kiasi=5.00):
     order_url = f"https://{pesapal_api_host}/api/Transactions/SubmitOrderRequest"
     id_ya_muamala = f"owl-{int(time.time())}-{username.lower()}"
     
-    # 👑 AUTOMATED HOST SYNC: Inasoma URL iliyo hai kwenye kivinjari cha mteja kiotomatiki
+    # 👑 HARDWIRED PATHWAY: URL mpya kabisa rasmi uliyotoa masekunde haya kulinda mnyororo!
     url_yako_halisi = "https://streamlit.app"
-    try:
-        headers_za_seva = str_platform.context.headers
-        if headers_za_seva and "host" in headers_za_seva:
-            domain_hai = headers_za_seva["host"]
-            url_yako_halisi = f"https://{domain_hai}/dashboard"
-    except Exception:
-        url_yako_halisi = "https://streamlit.app"
 
     try:
         # HATUA YA 1: Kuomba Access Token ya Live Production kwenda Seva Kuu
@@ -40,14 +33,14 @@ def anzisha_muamala_wa_pesapal(username, email, kiasi=5.00):
         if auth_response.status_code == 200:
             access_token = auth_response.json().get("token")
             
-            # HATUA YA 2: Kutengeneza Ankara ya Kiofisi ya Kifurushi cha Premium (Kiasi cha Dola kinalindwa hapa)
+            # HATUA YA 2: Kutengeneza Ankara ya Kiofisi ya Kifurushi cha Premium
             order_payload = {
                 "id": id_ya_muamala,
-                "amount": float(kiasi),  # Kulazimisha mfumo usome namba halisi ya decimal
+                "amount": float(kiasi),  # Kulazimisha mfumo usome namba halisi ya decimal (Float)
                 "description": "linguaafrika premium utility tier license",
                 "callback_url": url_yako_halisi,
                 "cancellation_url": url_yako_halisi,
-                "notification_id": "329329ce-4caf-438d-b30b-d9ca91cf68a6",  # 🚀 LIVE IPN ID YAKO HALISI
+                "notification_id": "329329ce-4caf-438d-b30b-d9ca91cf68a6",  # 🚀 LIVE IPN ID YAKO MPYA HALISI
                 "billing_address": {
                     "email_address": email,
                     "country_code": "tz",
@@ -56,7 +49,7 @@ def anzisha_muamala_wa_pesapal(username, email, kiasi=5.00):
                 }
             }
             
-            # 🔥 REKEDEBISHO KUU: Imetumia 'json=' badala ya 'requests_json=' ili kusafirisha kiasi cha fedha vizuri
+            # 🔥 INLINE SECURE PAYLOAD RECOVERY: Tumesimika json= vizuri ili kiasi kisosomeke 0.00
             order_response = requests.post(order_url, json=order_payload, headers={"content-type": "application/json", "accept": "application/json", "authorization": f"Bearer {access_token}"}, timeout=10.0)
             if order_response.status_code == 200:
                 return order_response.json().get("redirect_url")
@@ -71,3 +64,4 @@ def generate_stripe_global_checkout(username, client_package="code_auditor_licen
     base_stripe_vault_link = "https://stripe.com"
     query_parameters = f"?package={client_package}&user={username.lower()}&amount={dynamic_cost}&currency=usd"
     return f"{base_stripe_vault_link}{query_parameters}"
+
