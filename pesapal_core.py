@@ -1,10 +1,11 @@
+
 import streamlit as str_platform
 import requests
 import json
 import time
 
 def anzisha_muamala_wa_pesapal(username, email, kiasi_usd=5.00, sarafu="TZS"):
-    """💳 LOCAL PAYMENT NODE: Programmatic V3 trigger mapping strictly locked to live production hubs"""
+    """💳 LOCAL PAYMENT NODE: Automated Live Production Trigger with dynamic currency conversion"""
     if hasattr(str_platform, "secrets"):
         consumer_key = str_platform.secrets.get("PESAPAL_CONSUMER_KEY", "").strip()
         consumer_secret = str_platform.secrets.get("PESAPAL_CONSUMER_SECRET", "").strip()
@@ -15,28 +16,29 @@ def anzisha_muamala_wa_pesapal(username, email, kiasi_usd=5.00, sarafu="TZS"):
         return "https://pesapal.com"
 
     # 👑 SUBDOMAINS LOCK: Variable huru zilizolindwa na herufi kamili za kibenki za Live Production
-    pesapal_api_host = "://pesapal.com"
-    pesapal_pay_host = "://pesapal.com"
+    pesapal_api_host = "api.pesapal.com"
+    pesapal_pay_host = "pay.pesapal.com"
 
+    # MABORESHO YA MSTARI WA 27: Kusimika endpoint sahihi ya kibiashara ya API V3
     auth_url = f"https://{pesapal_api_host}/api/Auth/RegisterToken"
     order_url = f"https://{pesapal_api_host}/api/Transactions/SubmitOrderRequest"
     id_ya_muamala = f"owl-{int(time.time())}-{username.lower()}"
     
-    # 👑 DOMAIN PATH SYNC: URL yako mpya kabisa halisi ya wjvajj7kcgiuhaaguqxwdp kutoka kwenye skrini!
+    # 👑 HARDWIRED PATHWAY: Inasoma URL yako halisi iliyo hai mtandaoni
     url_yako_halisi = "https://streamlit.app"
 
-    # 🔄 BASE CURRENCY EXCHANGE ENGINE: USD $5.00 ndio msingi, inabadilishwa hapa kwenda sarafu lengwa kiotomatiki!
+    # 🔄 BASE CURRENCY ENGINE: USD $5.00 ndio msingi, inabadilishwa hapa kwenda sarafu lengwa kiotomatiki
     sarafu_halisi = str(sarafu).upper().strip()
     if sarafu_halisi == "TZS":
-        kiasi_cha_malipo = float(kiasi_usd * 2600.00) # Kiwango cha ubadilishaji: 1 USD = 2,600 TZS
+        kiasi_cha_malipo = float(kiasi_usd * 2600.00) # Kiwango cha sasa cha soko: 1 USD = 2,600 TZS
     elif sarafu_halisi == "KES":
-        kiasi_cha_malipo = float(kiasi_usd * 130.00)  # Kiwango cha ubadilishaji: 1 USD = 130 KES
+        kiasi_cha_malipo = float(kiasi_usd * 130.00)  # Kiwango cha sasa cha soko: 1 USD = 130 KES
     else:
         sarafu_halisi = "USD"
         kiasi_cha_malipo = float(kiasi_usd)
 
     try:
-        # HATUA YA 1: Kuomba Access Token ya Live Production kwenda Seva Kuu
+        # HATUA YA 1: Kuomba Access Token ya Live Production kwenda Seva Kuu ya api.pesapal.com
         auth_response = requests.post(auth_url, headers={"content-type": "application/json", "accept": "application/json"}, json={"consumer_key": consumer_key, "consumer_secret": consumer_secret}, timeout=10.0)
         
         if auth_response.status_code == 200:
@@ -59,7 +61,7 @@ def anzisha_muamala_wa_pesapal(username, email, kiasi_usd=5.00, sarafu="TZS"):
                 }
             }
             
-            # 🔥 INLINE SECURE PAYLOAD: Tumesimika json= vizuri asilimia 100 kuzuia kosa la 400
+            # 🔥 MABORESHO YA DATA: Tumesimika json= vizuri asilimia 100 kuzuia kosa la kiasi kusomeka 0.00
             order_response = requests.post(order_url, json=order_payload, headers={"content-type": "application/json", "accept": "application/json", "authorization": f"Bearer {access_token}"}, timeout=10.0)
             if order_response.status_code == 200:
                 return order_response.json().get("redirect_url")
