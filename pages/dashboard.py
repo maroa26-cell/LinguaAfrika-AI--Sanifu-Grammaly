@@ -1,4 +1,3 @@
-
 import streamlit as str_platform
 import sqlite3
 import os
@@ -22,11 +21,9 @@ except Exception:
 # 🎨 INTERFACE SKIN TRIGGER: Applies the glowing neon theme across the entire application workspace
 skin_appearance.inject_premium_glassmorphic_skin()
 
-# 🎯 MAREKEBISHO YA JINA: Jina jipya la biashara limesimikwa hapa rasmi kiofisi
 str_platform.markdown("<h1 style='text-align: center; color: #D97706; font-weight: 900;'>🔐 OURWORTHLINKS BUSINESS MANAGEMENT ENGINE</h1>", unsafe_allow_html=True)
 str_platform.write("---")
 
-# 🔄 UPGRADE WEBHOOK HANDSHAKE: Inatumia st.query_params ya sasa kwa sababu experimental_get_query_params imepitwa na wakati
 try:
     vigezo_vya_url = str_platform.query_params
     tracking_id_halisi = vigezo_vya_url.get("OrderTrackingId") or vigezo_vya_url.get("pesapal_tracking_id")
@@ -122,9 +119,8 @@ elif str_platform.session_state["active_gateway"] == "premium_member_suite":
     str_platform.markdown(f"<h3 style='color: #3B82F6;'>👋 Welcome to the Ourworthlinks Global Marketplace, {username_active.upper()}!</h3>", unsafe_allow_html=True)
     str_platform.write("---")
     
-    # 👑 BASE CURRENCY INTERFACE: Thamani ya msingi ni USD, ubadilishaji wa kiotomatiki kwa Streamlit vigezo
     kiasi_cha_msingi_usd = 5.00
-    sarafu_chaguo = str_platform.selectbox("💳 Chagua Sarafu Unayotaka Kulipia (Select Payment Currency):", ["USD (Dola ya Marekani - Base)", "TZS (Shilingi ya Tanzania - Converted)", "KES (Shilingi ya Kenya - Converted)"], key="currency_select_node")
+    sarafu_chaguo = str_platform.selectbox(" Chagua Sarafu Unayotaka Kulipia (Select Payment Currency):", ["USD (Dola ya Marekani - Base)", "TZS (Shilingi ya Tanzania - Converted)", "KES (Shilingi ya Kenya - Converted)"], key="currency_select_node")
     
     if "TZS" in sarafu_chaguo:
         sarafu_halisi = "TZS"
@@ -136,13 +132,11 @@ elif str_platform.session_state["active_gateway"] == "premium_member_suite":
         sarafu_halisi = "USD"
         onyesha_kiasi = kiasi_cha_msingi_usd
 
-    str_platform.info(f"💰 Thamani ya Kifurushi: **${kiasi_cha_msingi_usd:.2f} USD** ──► Kiasi Halisi cha Kulipa: **{onyesha_kiasi:,.2f} {sarafu_halisi}**")
+    str_platform.info(f" Thamani ya Kifurushi: **${kiasi_cha_msingi_usd:.2f} USD** ──► Kiasi Halisi cha Kulipa: **{onyesha_kiasi:,.2f} {sarafu_halisi}**")
     str_platform.write("---")
     
-    # 🔥 CORE SECURE UPDATE: Mfumo unatengeneza na kuhifadhi link ya Pesapal mapema sekunde hii ukurasa unapofunguka
     pesapal_redirect = pesapal_core.anzisha_muamala_wa_pesapal(username_active, f"{username_active}@ourworthlinks.com", kiasi_usd=kiasi_cha_msingi_usd, sarafu=sarafu_halisi)
     
-    # 🛡️ SULUHISHO LA ATTRIBUTEERROR: Inaangalia kama function ipo kwenye pesapal_core kwanza kuzuia app kufeli
     if hasattr(pesapal_core, "generate_stripe_global_checkout"):
         stripe_redirect = pesapal_core.generate_stripe_global_checkout(username_active, client_package="code_auditor_license", dynamic_cost=49.00)
     else:
@@ -160,9 +154,8 @@ elif str_platform.session_state["active_gateway"] == "premium_member_suite":
         </div>
         """, unsafe_allow_html=True)
         
-        # 🔥 STREAMLIT NATIVE VACCINE PRO: Link ipo tayari kiofisi mwilini mwa button, inaruka popup blocker kwa 100%!
         str_platform.link_button(
-            label=f"💳 Subscribe via Local Mobile Money ({sarafu_halisi} {onyesha_kiasi:,.2f})",
+            label=f" Subscribe via Local Mobile Money ({sarafu_halisi} {onyesha_kiasi:,.2f})",
             url=str(pesapal_redirect).strip(),
             type="primary",
             use_container_width=True,
@@ -170,9 +163,22 @@ elif str_platform.session_state["active_gateway"] == "premium_member_suite":
         )
 
     with col_package_2:
+        # 🔥 MAREKEBISHO YA UHAKIKA: Nukuu tatu za kufunga zimesimikwa hapa kumaliza SyntaxError
         str_platform.markdown("""
         <div class='monetize-card' style='border-color: #D97706 !important; padding: 20px; border-radius: 12px; margin-bottom: 15px;'>
             <h3 style='color: #D97706; margin: 0;'>🛡️ SOVEREIGN CODE AUDITOR LICENSE</h3>
             <p style='color: #64748B; font-size: 13px;'>Biomimetic AI Self-Healing Security Shield</p>
             <h1 style='margin: 15px 0;'>USD $49.00 <span style='font-size:14px; color:#64748B;'>/ mo</span></h1>
             <p style='font-size:14px; color:#E2E8F0;'>• Autonomous syntax phagocytosis and protection<br>• Fully sandboxed administrative threat presentation controls</p>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        str_platform.link_button(
+            label=" Purchase Commercial B2B License ($49.00 USD)",
+            url=str(stripe_redirect).strip(),
+            type="secondary",
+            use_container_width=True,
+            key="native_stripe_btn_v3"
+        )
+
+    str_platform.write("---")
