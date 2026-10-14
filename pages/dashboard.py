@@ -136,6 +136,11 @@ elif str_platform.session_state["active_gateway"] == "premium_member_suite":
 
     str_platform.info(f"💰 Thamani ya Kifurushi: **${kiasi_cha_msingi_usd:.2f} USD** ──► Kiasi Halisi cha Kulipa: **{onyesha_kiasi:,.2f} {sarafu_halisi}**")
     str_platform.write("---")
+    
+    # 🔥 CORE SECURE UPDATE: Mfumo unatengeneza na kuhifadhi link ya Pesapal mapema sekunde hii ukurasa unapofunguka
+    pesapal_redirect = pesapal_core.anzisha_muamala_wa_pesapal(username_active, f"{username_active}@ourworthlinks.com", kiasi_usd=kiasi_cha_msingi_usd, sarafu=sarafu_halisi)
+    stripe_redirect = pesapal_core.generate_stripe_global_checkout(username_active, client_package="code_auditor_license", dynamic_cost=49.00)
+
     col_package_1, col_package_2 = str_platform.columns(2)
     
     with col_package_1:
@@ -148,16 +153,13 @@ elif str_platform.session_state["active_gateway"] == "premium_member_suite":
         </div>
         """, unsafe_allow_html=True)
         
-        # 🚀 Tuma oda kwenda pesapal_core kupata link rasmi ya kibenki
-        pesapal_redirect = pesapal_core.anzisha_muamala_wa_pesapal(username_active, f"{username_active}@ourworthlinks.com", kiasi_usd=kiasi_cha_msingi_usd, sarafu=sarafu_halisi)
-        
-        # 🔥 STREAMLIT NATIVE VACCINE: Inatumia kitufe asili 100% cha mfumo kuruka pop-up blocks zote salama!
+        # 🔥 STREAMLIT NATIVE VACCINE PRO: Link ipo tayari kiofisi mwilini mwa button, inaruka popup blocker kwa 100%!
         str_platform.link_button(
             label=f"💳 Subscribe via Local Mobile Money ({sarafu_halisi} {onyesha_kiasi:,.2f})",
-            url=pesapal_redirect,
+            url=str(pesapal_redirect).strip(),
             type="primary",
             use_container_width=True,
-            key="native_pesapal_btn"
+            key="native_pesapal_btn_v3"
         )
 
     with col_package_2:
@@ -169,15 +171,13 @@ elif str_platform.session_state["active_gateway"] == "premium_member_suite":
             <p style='font-size:14px; color:#E2E8F0;'>• Autonomous syntax phagocytosis and protection<br>• Fully sandboxed administrative threat presentation controls</p>
         </div>
         """, unsafe_allow_html=True)
-        stripe_redirect = pesapal_core.generate_stripe_global_checkout(username_active, client_package="code_auditor_license", dynamic_cost=49.00)
         
-        # 🔥 STREAMLIT NATIVE VACCINE: Inatumia kitufe asili 100% cha mfumo kuruka pop-up blocks zote salama!
         str_platform.link_button(
             label="💳 Purchase Commercial B2B License ($49.00 USD)",
-            url=stripe_redirect,
+            url=str(stripe_redirect).strip(),
             type="secondary",
             use_container_width=True,
-            key="native_stripe_btn"
+            key="native_stripe_btn_v3"
         )
 
     str_platform.write("---")
