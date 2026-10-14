@@ -3,23 +3,20 @@ import os
 import time
 from openai import OpenAI
 import database
-import owths_sovereign_automaton  # 👑 CHUJO + OWTHS INFRASTRUCTURE: Combined Master Core
-import skin_appearance            # 🎨 THE EPITHELIAL MATRIX: Loaded inside central view
+import owths_sovereign_automaton
+import skin_appearance
 
 muda_mwanzo = time.time()
 self_healing_status = "🟢 autonomous shield: active & healthy"
 
-# 🎯 BRAND UPDATE: Jina rasmi la Ourworthlinks BUSINESS limewekwa hapa kwenye config ya ukurasa
 str_platform.set_page_config(page_title="Ourworthlinks BUSINESS Premium", page_icon="🧠", layout="wide", initial_sidebar_state="expanded")
 
-# 🧠 HYPOTHALAMUS EXECUTION: Purges memory waste, monitors latency, and fires up database
 try:
     cns_report = owths_sovereign_automaton.master_core.coordinate_hormonal_balance(muda_mwanzo)
     database.anzisha_hifadhidata_ya_chuma()
 except Exception:
     pass
 
-# 🎨 INTERFACE SKIN TRIGGER: Applies the glowing neon theme across the entire application workspace
 skin_appearance.inject_premium_glassmorphic_skin()
 
 if "OPENAI_API_KEY" in os.environ: 
@@ -34,7 +31,6 @@ if api_key_source:
 else: 
     str_platform.error("🔒 secrets error!"); str_platform.stop()
 
-# 💰 BRAND-SAFE AD REVENUE PLACEMENT: Top Placement
 skin_appearance.render_top_revenue_banner()
 
 str_platform.markdown("<h1 style='text-align: center; color: #D97706; font-size: 54px; margin-bottom: 0; text-shadow: 0 0 30px rgba(217,119,6,0.3);'>👑 Ourworthlinks BUSINESS</h1>", unsafe_allow_html=True)
@@ -43,7 +39,6 @@ str_platform.write("---")
 
 kasi_ya_radi = (time.time() - muda_mwanzo) * 1000
 
-# Glowing Telemetry Dashboard mapping real autonomic engine metrics
 str_platform.sidebar.markdown(f"""
 <div style='background: linear-gradient(135deg, #1E293B 0%, #0F172A 100%); border: 2px solid #D97706; padding: 18px; border-radius: 14px; margin-bottom: 20px; box-shadow: 0 10px 25px rgba(217,119,6,0.15);'>
     <p style='color: #D97706; font-size: 13px; margin: 0 0 10px 0; text-align: center; font-weight: 900; letter-spacing: 1px;'>📊 RADA YA UBONGO (CNS METRICS)</p>
@@ -61,7 +56,6 @@ chaguo_menyu = str_platform.sidebar.radio("", orodha_menyu, key="v14_clean_porta
 
 str_platform.sidebar.write("---")
 
-# 🔥 SULUHISHO LA UHAKIKA LA REDIRECT: Inafungua link kamili ya dashboard
 str_platform.sidebar.link_button(
     label="🔐 Fungua Lango la Utawala (Dashboard) ──►",
     url="https://streamlit.app",
@@ -112,6 +106,5 @@ elif chaguo_menyu == "📚 Maktaba ya Kamusi Kuu":
             str_platform.markdown("<div style='background: rgba(255,255,255,0.02); padding: 20px; border-radius: 10px; margin-top: 15px;'><b>✨ Uchambuzi wa Kitaalamu vya Kamusi Kuu:</b><br><br>" + jibu_v.choices.message.content + "</div>", unsafe_allow_html=True)
 
 str_platform.write("---")
-# 💰 BRAND-SAFE AD REVENUE PLACEMENT: Bottom Placement
 skin_appearance.render_bottom_revenue_banner()
 str_platform.markdown("<p style='text-align: center; font-size: 12px; color: #94A3B8;'>© 2026 Ourworthlinks • LinguaAfrika AI Sovereign Ecosystem • Autonomic Architecture</p>", unsafe_allow_html=True)
