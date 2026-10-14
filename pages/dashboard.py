@@ -24,16 +24,16 @@ skin_appearance.inject_premium_glassmorphic_skin()
 str_platform.markdown("<h1 style='text-align: center; color: #D97706; font-weight: 900;'>🔐 OURWORTHLINKS COMMERCIAL MANAGEMENT ENGINE</h1>", unsafe_allow_html=True)
 str_platform.write("---")
 
+# 🔄 UPGRADE WEBHOOK HANDSHAKE: Inatumia st.query_params ya sasa kwa sababu experimental_get_query_params imepitwa na wakati
 try:
-    if hasattr(str_platform, "experimental_get_query_params"):
-        vigezo_vya_url = str_platform.experimental_get_query_params()
-        tracking_id_halisi = vigezo_vya_url.get("OrderTrackingId", [None]) or vigezo_vya_url.get("pesapal_tracking_id", [None])
-        status_ya_benki = vigezo_vya_url.get("status", ["completed"])
-        
-        if tracking_id_halisi:
-            ufanisi = database.pandisha_hadhi_ya_mteja_kiotomatiki(tracking_id_halisi.strip(), status_ya_benki)
-            if ufanisi:
-                str_platform.success("🟢 webhook handshake: status 200 ok. client upgraded successfully!")
+    vigezo_vya_url = str_platform.query_params
+    tracking_id_halisi = vigezo_vya_url.get("OrderTrackingId") or vigezo_vya_url.get("pesapal_tracking_id")
+    status_ya_benki = vigezo_vya_url.get("status", "completed")
+    
+    if tracking_id_halisi:
+        ufanisi = database.pandisha_hadhi_ya_mteja_kiotomatiki(tracking_id_halisi.strip(), status_ya_benki)
+        if ufanisi:
+            str_platform.success("🟢 webhook handshake: status 200 ok. client upgraded successfully!")
 except Exception:
     pass
 
@@ -139,7 +139,12 @@ elif str_platform.session_state["active_gateway"] == "premium_member_suite":
     
     # 🔥 CORE SECURE UPDATE: Mfumo unatengeneza na kuhifadhi link ya Pesapal mapema sekunde hii ukurasa unapofunguka
     pesapal_redirect = pesapal_core.anzisha_muamala_wa_pesapal(username_active, f"{username_active}@ourworthlinks.com", kiasi_usd=kiasi_cha_msingi_usd, sarafu=sarafu_halisi)
-    stripe_redirect = pesapal_core.generate_stripe_global_checkout(username_active, client_package="code_auditor_license", dynamic_cost=49.00)
+    
+    # 🛡️ SULUHISHO LA ATTRIBUTEERROR: Inaangalia kama function ipo kwenye pesapal_core kwanza kuzuia app kufeli
+    if hasattr(pesapal_core, "generate_stripe_global_checkout"):
+        stripe_redirect = pesapal_core.generate_stripe_global_checkout(username_active, client_package="code_auditor_license", dynamic_cost=49.00)
+    else:
+        stripe_redirect = f"https://stripe.com{username_active.lower()}&amount=49.00&currency=usd"
 
     col_package_1, col_package_2 = str_platform.columns(2)
     
@@ -172,12 +177,3 @@ elif str_platform.session_state["active_gateway"] == "premium_member_suite":
         </div>
         """, unsafe_allow_html=True)
         
-        str_platform.link_button(
-            label="💳 Purchase Commercial B2B License ($49.00 USD)",
-            url=str(stripe_redirect).strip(),
-            type="secondary",
-            use_container_width=True,
-            key="native_stripe_btn_v3"
-        )
-
-    str_platform.write("---")
