@@ -1,67 +1,41 @@
-import streamlit as str_platform
-import requests
-import json
-import time
-
-def anzisha_muamala_wa_pesapal(username, email, kiasi=5.00):
-    """💳 LOCAL PAYMENT NODE: Programmatic V3 trigger mapping strictly locked to live production hubs"""
-    if hasattr(str_platform, "secrets"):
-        # 🛡️ Inasoma vigezo vyako vya siri kutoka Advanced Settings ya Streamlit Secrets
-        consumer_key = str_platform.secrets.get("PESAPAL_CONSUMER_KEY", "").strip()
-        consumer_secret = str_platform.secrets.get("PESAPAL_CONSUMER_SECRET", "").strip()
-    else:
-        return "https://pesapal.com"
-
-    if not consumer_key or not consumer_secret:
-        return "https://pesapal.com"
-
-    # 👑 SUBDOMAINS LOCK: Variable huru zilizolindwa na herufi kamili za kibenki za Live Production
-    pesapal_api_host = "://pesapal.com"
-    pesapal_pay_host = "://pesapal.com"
-
-    auth_url = f"https://{pesapal_api_host}/api/Auth/RegisterToken"
-    order_url = f"https://{pesapal_api_host}/api/Transactions/SubmitOrderRequest"
-    id_ya_muamala = f"owl-{int(time.time())}-{username.lower()}"
+elif str_platform.session_state["active_gateway"] == "premium_member_suite":
+    username_active = str_platform.session_state["member_username"]
+    str_platform.markdown(f"<h3 style='color: #3B82F6;'>👋 Welcome to the Ourworthlinks Global Marketplace, {username_active.upper()}!</h3>", unsafe_allow_html=True)
+    str_platform.write("---")
+    col_package_1, col_package_2 = str_platform.columns(2)
     
-    # 👑 HARDWIRED PATHWAY: URL mpya kabisa rasmi uliyotoa masekunde haya kulinda mnyororo!
-    url_yako_halisi = "https://streamlit.app"
-
-    try:
-        # HATUA YA 1: Kuomba Access Token ya Live Production kwenda Seva Kuu
-        auth_response = requests.post(auth_url, headers={"content-type": "application/json", "accept": "application/json"}, json={"consumer_key": consumer_key, "consumer_secret": consumer_secret}, timeout=10.0)
+    with col_package_1:
+        str_platform.markdown("""
+        <div class='monetize-card' style='border-color: #3B82F6 !important;'>
+            <h3 style='color: #3B82F6; margin: 0;'>💎 LINGUAAFRIKA PREMIUM SUITE</h3>
+            <p style='color: #64748B; font-size: 13px;'>Localized Contextual AI Processing Engine</p>
+            <h1 style='margin: 15px 0;'>$5.00 <span style='font-size:14px; color:#64748B;'>/ mo</span></h1>
+            <p style='font-size:14px; color:#E2E8F0;'>• Multi-contextual Swahili translation<br>• Zero rate limits and 150ms priority execution channels</p>
+        </div>
+        """, unsafe_allow_html=True)
+        pesapal_redirect = pesapal_core.anzisha_muamala_wa_pesapal(username_active, f"{username_active}@ourworthlinks.com", kiasi=5.00)
         
-        if auth_response.status_code == 200:
-            access_token = auth_response.json().get("token")
-            
-            # HATUA YA 2: Kutengeneza Ankara ya Kiofisi ya Kifurushi cha Premium
-            order_payload = {
-                "id": id_ya_muamala,
-                "amount": float(kiasi),  # Kulazimisha mfumo usome namba halisi ya decimal (Float)
-                "description": "linguaafrika premium utility tier license",
-                "callback_url": url_yako_halisi,
-                "cancellation_url": url_yako_halisi,
-                "notification_id": "329329ce-4caf-438d-b30b-d9ca91cf68a6",  # 🚀 LIVE IPN ID YAKO MPYA HALISI
-                "billing_address": {
-                    "email_address": email,
-                    "country_code": "tz",
-                    "first_name": username,
-                    "last_name": "client"
-                }
-            }
-            
-            # 🔥 INLINE SECURE PAYLOAD RECOVERY: Tumesimika json= vizuri ili kiasi kisosomeke 0.00
-            order_response = requests.post(order_url, json=order_payload, headers={"content-type": "application/json", "accept": "application/json", "authorization": f"Bearer {access_token}"}, timeout=10.0)
-            if order_response.status_code == 200:
-                return order_response.json().get("redirect_url")
+        # 🔥 ANTI-CLICKJACKING VACCINE: Inalazimisha kufungua tabo mpya salama ya nje ikiepuka kabisa iframe block ya Chrome!
+        str_platform.markdown(f'<a href="{pesapal_redirect}" target="_blank" style="background: linear-gradient(135deg, #1E3A8A 0%, #1D4ED8 100%); color: white; font-weight: bold; padding: 14px 28px; border-radius: 12px; text-decoration: none; display: block; text-align: center; box-shadow: 0 4px 12px rgba(29, 78, 216, 0.3); font-size: 16px;">💳 Subscribe via Local Mobile Money ($5.00)</a>', unsafe_allow_html=True)
 
-        # 🚀 IMMUTABLE FALLBACK: Link safi inayovunja blocker ya Chrome kwa asilimia 100
-        return f"https://{pesapal_pay_host}/iframe/PesapalIframe3/Index?OrderTrackingId={id_ya_muamala}&return_url={url_yako_halisi}"
-    except Exception:
-        return f"https://{pesapal_pay_host}/iframe/PesapalIframe3/Index?OrderTrackingId={id_ya_muamala}"
+    with col_package_2:
+        str_platform.markdown("""
+        <div class='monetize-card' style='border-color: #D97706 !important;'>
+            <h3 style='color: #D97706; margin: 0;'>🛡️ SOVEREIGN CODE AUDITOR LICENSE</h3>
+            <p style='color: #64748B; font-size: 13px;'>Biomimetic AI Self-Healing Security Shield</p>
+            <h1 style='margin: 15px 0;'>$49.00 <span style='font-size:14px; color:#64748B;'>/ mo</span></h1>
+            <p style='font-size:14px; color:#E2E8F0;'>• Autonomous syntax phagocytosis and protection<br>• Fully sandboxed administrative threat presentation controls</p>
+        </div>
+        """, unsafe_allow_html=True)
+        stripe_redirect = pesapal_core.generate_stripe_global_checkout(username_active, client_package="code_auditor_license", dynamic_cost=49.00)
+        
+        # 🔥 ANTI-CLICKJACKING VACCINE: Inalazimisha kufungua tabo mpya salama ya nje ikiepuka kabisa iframe block ya Chrome!
+        str_platform.markdown(f'<a href="{stripe_redirect}" target="_blank" style="background: linear-gradient(135deg, #D97706 0%, #B45309 100%); color: white; font-weight: bold; padding: 14px 28px; border-radius: 12px; text-decoration: none; display: block; text-align: center; box-shadow: 0 4px 12px rgba(217, 119, 6, 0.3); font-size: 16px;">💳 Purchase Commercial B2B License ($49.00)</a>', unsafe_allow_html=True)
 
-def generate_stripe_global_checkout(username, client_package="code_auditor_license", dynamic_cost=49.00):
-    """🌐 GLOBAL CREDIT CARD PIPELINE: Secure checkout link intents for international buyers"""
-    base_stripe_vault_link = "https://stripe.com"
-    query_parameters = f"?package={client_package}&user={username.lower()}&amount={dynamic_cost}&currency=usd"
-    return f"{base_stripe_vault_link}{query_parameters}"
+    str_platform.write("---")
+    if str_platform.button("← Toka Kwenye Akaunti Yako (Log Out)", key="b_logout"):
+        str_platform.session_state["active_gateway"] = "mlangoni"
+        str_platform.rerun()
 
+str_platform.write("---")
+str_platform.markdown("<p style='text-align: center; font-size: 12px; color: #64748B;'>© 2026 Ourworthlinks • Automated Monetization Nodes Connected</p>", unsafe_allow_html=True)
