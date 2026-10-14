@@ -1,16 +1,17 @@
+
 import streamlit as str_platform
 import sqlite3
 import os
 import sys
 
-# SYSTEM PATH INJECTION: Inalazimisha folda ya ndani itambue mafaili makuu ya mlangoni (Root)
+# 🧠 SYSTEM PATH INJECTION: Inalazimisha folda ya ndani itambue mafaili makuu ya mlangoni (Root)
 root_path = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 if root_path not in sys.path:
     sys.path.append(root_path)
 
 import database
 import pesapal_core
-import skin_appearance            # THE EPITHELIAL MATRIX: Decoupled design architecture
+import skin_appearance            # 🎨 THE EPITHELIAL MATRIX: Decoupled design architecture
 
 str_platform.set_page_config(page_title="Ourworthlinks Business", page_icon="🔐", layout="wide")
 try:
@@ -18,7 +19,7 @@ try:
 except Exception:
     pass
 
-# INTERFACE SKIN TRIGGER: Applies the glowing neon theme across the entire application workspace
+# 🎨 INTERFACE SKIN TRIGGER: Applies the glowing neon theme across the entire application workspace
 skin_appearance.inject_premium_glassmorphic_skin()
 
 # BRAND UPDATE: Jina rasmi la Ourworthlinks BUSINESS limesimikwa hapa kiofisi
@@ -45,11 +46,11 @@ if str_platform.session_state["active_gateway"] == "mlangoni":
     str_platform.info("👋 Karibu Kiongozi! Tafadhali chagua lango unalotaka kufungua hapa chini ili kuanza utambuzi wa mfumo:")
     col_g1, col_g2 = str_platform.columns(2)
     with col_g1:
-        if str_platform.button(" Lango la Admin (Utawala)", key="g_admin"):
+        if str_platform.button("🚪 Lango la Admin (Utawala)", key="g_admin"):
             str_platform.session_state["active_gateway"] = "admin_s"
             str_platform.rerun()
     with col_g2:
-        if str_platform.button(" Lango la Mteja (Sign In / Sign Up)", key="g_client"):
+        if str_platform.button("🔐 Lango la Mteja (Sign In / Sign Up)", key="g_client"):
             str_platform.session_state["active_gateway"] = "client_auth_s"
             str_platform.rerun()
 
@@ -70,7 +71,7 @@ elif str_platform.session_state["active_gateway"] == "admin_s":
 
     if str_platform.session_state.get("admin_logged_in"):
         str_platform.write("---")
-        str_platform.markdown("###  BULK DATASET INGESTION NODE")
+        str_platform.markdown("### 📚 BULK DATASET INGESTION NODE")
         uploaded_file = str_platform.file_uploader("Upload Swahili Vocabulary Matrix (CSV Format):", type=["csv"])
         if uploaded_file is not None:
             try:
@@ -87,7 +88,7 @@ elif str_platform.session_state["active_gateway"] == "admin_s":
                         except sqlite3.IntegrityError: pass
                     conn.commit()
                     conn.close()
-                    str_platform.success(f"Loaded {success_count} structural vocabulary terms directly into the system spinal cord!")
+                    str_platform.success(f"✅ Loaded {success_count} structural vocabulary terms directly into the system spinal cord!")
                 else: str_platform.error("CSV requires 'keyword' and 'semantic_meaning' column headers.")
             except Exception as e: str_platform.error(f"Ingestion anomaly caught: {str(e)}")
 
@@ -95,7 +96,7 @@ elif str_platform.session_state["active_gateway"] == "client_auth_s":
     if str_platform.button("← Rudi Mlangoni", key="b_cl"): 
         str_platform.session_state["active_gateway"] = "mlangoni"
         str_platform.rerun()
-    t_mpya, t_zamani = str_platform.tabs([" MTUMIAJI MPYA (Sign Up)", " KEY SIGN IN (Premium Sign In)"])
+    t_mpya, t_zamani = str_platform.tabs(["📝 MTUMIAJI MPYA (Sign Up)", "🔑 SIGN IN (Premium Sign In)"])
     
     with t_mpya:
         u_new = str_platform.text_input("Unda Username Mpya:", key="unew")
@@ -103,7 +104,7 @@ elif str_platform.session_state["active_gateway"] == "client_auth_s":
         if str_platform.button("Thibitisha Usajili wa Akaunti", key="b_up"):
             if u_new.strip() != "" and p_new.strip() != "":
                 if database.sajili_mtumiaji_mpya(u_new.strip(), p_new.strip(), "premium user"):
-                    str_platform.success(" Usajili umekubaliwa! Proceed to Sign In.")
+                    str_platform.success("✅ Usajili umekubaliwa! Proceed to Sign In.")
                 else: str_platform.error("Jina limechukuliwa tayari!")
 
     with t_zamani:
@@ -118,7 +119,7 @@ elif str_platform.session_state["active_gateway"] == "client_auth_s":
 
 elif str_platform.session_state["active_gateway"] == "premium_member_suite":
     username_active = str_platform.session_state["member_username"]
-    str_platform.markdown(f"<h3 style='color: #3B82F6;'> Welcome to the Ourworthlinks Global Marketplace, {username_active.upper()}!</h3>", unsafe_allow_html=True)
+    str_platform.markdown(f"<h3 style='color: #3B82F6;'>👋 Welcome to the Ourworthlinks Global Marketplace, {username_active.upper()}!</h3>", unsafe_allow_html=True)
     str_platform.write("---")
     
     kiasi_cha_msingi_usd = 5.00
@@ -134,7 +135,7 @@ elif str_platform.session_state["active_gateway"] == "premium_member_suite":
         sarafu_halisi = "USD"
         onyesha_kiasi = kiasi_cha_msingi_usd
 
-    str_platform.info(f" Kiwango cha Kulipa: **{onyesha_kiasi:,.2f} {sarafu_halisi}** (Thamani ya Kifurushi: ${kiasi_cha_msingi_usd:.2f} USD)")
+    str_platform.info(f"💰 Kiwango cha Kulipa: **{onyesha_kiasi:,.2f} {sarafu_halisi}** (Thamani ya Kifurushi: ${kiasi_cha_msingi_usd:.2f} USD)")
     str_platform.write("---")
     
     # Mfumo unatengeneza link ya Pesapal Live mapema sekunde hii
@@ -162,7 +163,7 @@ elif str_platform.session_state["active_gateway"] == "premium_member_suite":
             str_platform.info("👉 Tafadhali tumia kitufe cha upande wa kulia (Stripe) kulipia kwa Kadi ya Benki kwa usalama wa 100%.")
         else:
             str_platform.link_button(
-                label=f" Subscribe via Local Mobile Money ({sarafu_halisi} {onyesha_kiasi:,.2f})",
+                label=f"💳 Subscribe via Local Mobile Money ({sarafu_halisi} {onyesha_kiasi:,.2f})",
                 url=str(pesapal_redirect).strip(),
                 type="primary",
                 use_container_width=True,
@@ -180,5 +181,3 @@ elif str_platform.session_state["active_gateway"] == "premium_member_suite":
         """, unsafe_allow_html=True)
         
         str_platform.link_button(
-            label=" Purchase Commercial B2B License ($49.00 USD)",
-
