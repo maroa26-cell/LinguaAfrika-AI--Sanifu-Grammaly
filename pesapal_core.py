@@ -5,21 +5,19 @@ import time
 
 def anzisha_muamala_wa_pesapal(username, email, kiasi_usd=5.00, sarafu="TZS"):
     """👑 LIVE PRODUCTION GATEWAY: High-security pipeline for Ourworthlinks BUSINESS"""
+    
+    # SULUHISHO LA LOGI: Variable zote zimesimikwa hapa juu kabisa kuzuia UnboundLocalError
+    domain_kamili = "https://streamlit.app"
+    auth_url = "https://pesapal.com"
+    order_url = "https://pesapal.com"
+    id_ya_muamala = f"owl-{int(time.time())}-{username.lower()}"
+
     if hasattr(str_platform, "secrets"):
-        # 🛡️ Inasoma vigezo vyako vya siri kutoka Advanced Settings ya Streamlit Secrets
         consumer_key = str_platform.secrets.get("PESAPAL_CONSUMER_KEY", "").strip()
         consumer_secret = str_platform.secrets.get("PESAPAL_CONSUMER_SECRET", "").strip()
     else:
         consumer_key = ""
         consumer_secret = ""
-
-    # 👑 SUBDOMAINS LOCK: Variable huru zilizolindwa asilimia 100 dhidi ya ugonjwa wa pruning!
-    pesapal_api_host = "api.pesapal.com"
-    pesapal_pay_host = "pay.pesapal.com"
-
-    auth_url = f"https://{pesapal_api_host}/api/Auth/RegisterToken"
-    order_url = f"https://{pesapal_api_host}/api/Transactions/SubmitOrderRequest"
-    id_ya_muamala = f"owl-{int(time.time())}-{username.lower()}"
 
     sarafu_halisi = str(sarafu).upper().strip()
     if sarafu_halisi == "TZS":
@@ -37,7 +35,6 @@ def anzisha_muamala_wa_pesapal(username, email, kiasi_usd=5.00, sarafu="TZS"):
         return "#"
 
     try:
-        # 🔥 DAWA YA UTAMBULISHO: Headers safi zilizolindwa na chujio letu la OWTHS
         headers_auth = {
             "Content-Type": "application/json", 
             "Accept": "application/json",
@@ -51,13 +48,10 @@ def anzisha_muamala_wa_pesapal(username, email, kiasi_usd=5.00, sarafu="TZS"):
             try:
                 access_token = auth_response.json().get("token")
             except Exception:
-                str_platform.error(f"❌ Mfumo umeshindwa kusoma token. Seva imejibu: {auth_response.text[:200]}")
+                str_platform.error(f"❌ Pesapal Live imerudisha data zisizo sahihi (Auth JSON Fail). Status: {auth_response.status_code}")
                 return "#"
                 
             nchi = "TZ" if sarafu_halisi == "TZS" else ("KE" if sarafu_halisi == "KES" else "US")
-            
-            # 👑 DOMAIN PATH SYNC: URL yako mpya kabisa halisi niliyofunga kufuatia picha ya skrini!
-            domain_kamili = "https://streamlit.app"
             
             order_payload = {
                 "id": id_ya_muamala,
@@ -66,7 +60,7 @@ def anzisha_muamala_wa_pesapal(username, email, kiasi_usd=5.00, sarafu="TZS"):
                 "description": f"Ourworthlinks BUSINESS premium suite access authorization (base: ${kiasi_usd} usd)",
                 "callback_url": domain_kamili,
                 "cancellation_url": domain_kamili,
-                "notification_id": "329329ce-4caf-438d-b30b-d9ca91cf68a6",  # Live Active IPN ID
+                "notification_id": "329329ce-4caf-438d-b30b-d9ca91cf68a6",
                 "billing_address": {
                     "email_address": email,
                     "phone_number": "0712345678",
@@ -90,13 +84,12 @@ def anzisha_muamala_wa_pesapal(username, email, kiasi_usd=5.00, sarafu="TZS"):
                 str_platform.error(f"❌ Pesapal Live Imekataa Oda ({order_response.status_code}): {order_response.text}")
                 return "#"
         else:
-            # 🚀 FALLBACK LINK SECURE HANDSHAKE: Kama token ya kwanza ikifeli kwa dharura ya secrets, link ya akiba inabeba herufi kubwa safi kurusha fomu!
-            query_string_sync = f"?OrderTrackingId={id_ya_muamala}&Amount={kiasi_kilichozungushwa}&Currency={sarafu_halisi}&return_url={domain_kamili}"
-            return f"https://{pesapal_pay_host}/iframe/PesapalIframe3/Index{query_string_sync}"
+            str_platform.error(f"🔒 Pesapal Live Auth Failed ({auth_response.status_code}): Seva imekataa kuingiza mfumo. Ujumbe: {auth_response.text[:200]}")
+            return "#"
 
     except Exception as e:
-        query_string_sync = f"?OrderTrackingId={id_ya_muamala}&Amount={kiasi_kilichozungushwa}&Currency={sarafu_halisi}&return_url={domain_kamili}"
-        return f"https://{pesapal_pay_host}/iframe/PesapalIframe3/Index{query_string_sync}"
+        str_platform.error(f"💥 Hitilafu ya Mtandao wa Mfumo: {str(e)}")
+        return "#"
 
 def generate_stripe_global_checkout(username, client_package="code_auditor_license", dynamic_cost=49.00):
     base_stripe_vault_link = "https://stripe.com"
