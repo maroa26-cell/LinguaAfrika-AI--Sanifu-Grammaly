@@ -45,11 +45,11 @@ if str_platform.session_state["active_gateway"] == "mlangoni":
     str_platform.info("👋 Karibu Kiongozi! Tafadhali chagua lango unalotaka kufungua hapa chini ili kuanza utambuzi wa mfumo:")
     col_g1, col_g2 = str_platform.columns(2)
     with col_g1:
-        if str_platform.button(" Lango la Admin (Utawala)", key="g_admin"):
+        if str_platform.button("🚪 Lango la Admin (Utawala)", key="g_admin"):
             str_platform.session_state["active_gateway"] = "admin_s"
             str_platform.rerun()
     with col_g2:
-        if str_platform.button(" Lango la Mteja (Sign In / Sign Up)", key="g_client"):
+        if str_platform.button("🔐 Lango la Mteja (Sign In / Sign Up)", key="g_client"):
             str_platform.session_state["active_gateway"] = "client_auth_s"
             str_platform.rerun()
 
@@ -70,7 +70,7 @@ elif str_platform.session_state["active_gateway"] == "admin_s":
 
     if str_platform.session_state.get("admin_logged_in"):
         str_platform.write("---")
-        str_platform.markdown("###  BULK DATASET INGESTION NODE")
+        str_platform.markdown("### 📚 BULK DATASET INGESTION NODE")
         uploaded_file = str_platform.file_uploader("Upload Swahili Vocabulary Matrix (CSV Format):", type=["csv"])
         if uploaded_file is not None:
             try:
@@ -95,7 +95,7 @@ elif str_platform.session_state["active_gateway"] == "client_auth_s":
     if str_platform.button("← Rudi Mlangoni", key="b_cl"): 
         str_platform.session_state["active_gateway"] = "mlangoni"
         str_platform.rerun()
-    t_mpya, t_zamani = str_platform.tabs([" MTUMIAJI MPYA (Sign Up)", " KEY SIGN IN (Premium Sign In)"])
+    t_mpya, t_zamani = str_platform.tabs(["📝 MTUMIAJI MPYA (Sign Up)", "🔑 SIGN IN (Premium Sign In)"])
     
     with t_mpya:
         u_new = str_platform.text_input("Unda Username Mpya:", key="unew")
@@ -156,17 +156,13 @@ elif str_platform.session_state["active_gateway"] == "premium_member_suite":
         </div>
         """, unsafe_allow_html=True)
         
-        if str(pesapal_redirect).strip() == "#":
-            str_platform.warning("⚠️ Lango la Mtandao wa Simu (Pesapal) liko kwenye maboresho ya kiufundi kwa sasa.")
-            str_platform.info("👉 Tafadhali tumia kitufe cha upande wa kulia (Stripe) kulipia kwa Kadi ya Benki kwa usalama wa 100%.")
-        else:
-            str_platform.link_button(
-                label=f" Subscribe via Local Mobile Money ({sarafu_halisi} {onyesha_kiasi:,.2f})",
-                url=str(pesapal_redirect).strip(),
-                type="primary",
-                use_container_width=True,
-                key="native_pesapal_btn_v3"
-            )
+        str_platform.link_button(
+            label=f"💳 Subscribe via Local Mobile Money ({sarafu_halisi} {onyesha_kiasi:,.2f})",
+            url=str(pesapal_redirect).strip(),
+            type="primary",
+            use_container_width=True,
+            key="native_pesapal_btn_v3"
+        )
 
     with col_package_2:
         str_platform.markdown("""
@@ -178,6 +174,14 @@ elif str_platform.session_state["active_gateway"] == "premium_member_suite":
         </div>
         """, unsafe_allow_html=True)
         
+        # 🔥 FIX SECURE LOCK: Mabono yote sasa hivi yamefungwa kifalme mwisho wa mstari kuondoa SyntaxError!
         str_platform.link_button(
-            label=" Purchase Commercial B2B License ($49.00 USD)",
+            label="💳 Purchase Commercial B2B License ($49.00 USD)",
             url=str(stripe_redirect).strip(),
+            type="secondary",
+            use_container_width=True,
+            key="native_stripe_btn_v3"
+        )
+
+    str_platform.write("---")
+    if str_platform.button("← Toka Kwenye Akaunti Yako (Log Out)", key="b_logout"):
