@@ -3,10 +3,9 @@ import requests
 import json
 import time
 
-def anzisha_muamala_wa_pesapal(username, email, kiasi=5.00):
+def anzisha_muamala_wa_pesapal(username, email, kiasi_usd=5.00, sarafu="TZS"):
     """💳 LOCAL PAYMENT NODE: Programmatic V3 trigger mapping strictly locked to live production hubs"""
     if hasattr(str_platform, "secrets"):
-        # 🛡️ Inasoma vigezo vyako vya siri kutoka Advanced Settings ya Streamlit Secrets
         consumer_key = str_platform.secrets.get("PESAPAL_CONSUMER_KEY", "").strip()
         consumer_secret = str_platform.secrets.get("PESAPAL_CONSUMER_SECRET", "").strip()
     else:
@@ -16,16 +15,25 @@ def anzisha_muamala_wa_pesapal(username, email, kiasi=5.00):
         return "https://pesapal.com"
 
     # 👑 SUBDOMAINS LOCK: Variable huru zilizolindwa na herufi kamili za kibenki za Live Production
-    pesapal_api_host = "api.pesapal.com"
-    pesapal_pay_host = "pay.pesapal.com"
+    pesapal_api_host = "://pesapal.com"
+    pesapal_pay_host = "://pesapal.com"
 
-    # REKEDEBISHO LA MSITARI WA 22: Zana rasmi ya kibiashara ya API v3 ya RegisterToken
     auth_url = f"https://{pesapal_api_host}/api/Auth/RegisterToken"
     order_url = f"https://{pesapal_api_host}/api/Transactions/SubmitOrderRequest"
     id_ya_muamala = f"owl-{int(time.time())}-{username.lower()}"
     
-    # 👑 HARDWIRED PATHWAY: URL yako mpya kabisa halisi ya tya2uyfj2xz73eiqu8tear kulinda mnyororo!
+    # 👑 DOMAIN PATH SYNC: URL yako mpya kabisa halisi ya wjvajj7kcgiuhaaguqxwdp kutoka kwenye skrini!
     url_yako_halisi = "https://streamlit.app"
+
+    # 🔄 BASE CURRENCY EXCHANGE ENGINE: USD $5.00 ndio msingi, inabadilishwa hapa kwenda sarafu lengwa kiotomatiki!
+    sarafu_halisi = str(sarafu).upper().strip()
+    if sarafu_halisi == "TZS":
+        kiasi_cha_malipo = float(kiasi_usd * 2600.00) # Kiwango cha ubadilishaji: 1 USD = 2,600 TZS
+    elif sarafu_halisi == "KES":
+        kiasi_cha_malipo = float(kiasi_usd * 130.00)  # Kiwango cha ubadilishaji: 1 USD = 130 KES
+    else:
+        sarafu_halisi = "USD"
+        kiasi_cha_malipo = float(kiasi_usd)
 
     try:
         # HATUA YA 1: Kuomba Access Token ya Live Production kwenda Seva Kuu
@@ -34,24 +42,24 @@ def anzisha_muamala_wa_pesapal(username, email, kiasi=5.00):
         if auth_response.status_code == 200:
             access_token = auth_response.json().get("token")
             
-            # HATUA YA 2: Kutengeneza Ankara ya Kiofisi ya Kifurushi cha Premium ($5.00)
+            # HATUA YA 2: Kutengeneza Ankara ya Kiofisi ya Kifurushi cha Premium
             order_payload = {
                 "id": id_ya_muamala,
-                "currency": "TZS",  # Sarafu kamili ya kiofisi kuzuia migongano
-                "amount": float(kiasi),  # Kulazimisha mfumo usome namba halisi ya decimal (Float)
-                "description": "linguaafrika premium utility tier license",
+                "currency": sarafu_halisi,  
+                "amount": round(kiasi_cha_malipo, 2),  # Inazungusha namba kupata decimal mbili safi za kibenki
+                "description": f"linguaafrika premium utility tier license (base: ${kiasi_usd} usd)",
                 "callback_url": url_yako_halisi,
                 "cancellation_url": url_yako_halisi,
                 "notification_id": "329329ce-4caf-438d-b30b-d9ca91cf68a6",  # 🚀 LIVE IPN ID YAKO HALISI
                 "billing_address": {
                     "email_address": email,
-                    "country_code": "tz",
+                    "country_code": "tz" if sarafu_halisi == "TZS" else ("ke" if sarafu_halisi == "KES" else "us"),
                     "first_name": username,
                     "last_name": "client"
                 }
             }
             
-            # 🔥 INLINE SECURE PAYLOAD: Tumesimika json= vizuri asilimia 100 ili kiasi kisosomeke 0.00 kibenki
+            # 🔥 INLINE SECURE PAYLOAD: Tumesimika json= vizuri asilimia 100 kuzuia kosa la 400
             order_response = requests.post(order_url, json=order_payload, headers={"content-type": "application/json", "accept": "application/json", "authorization": f"Bearer {access_token}"}, timeout=10.0)
             if order_response.status_code == 200:
                 return order_response.json().get("redirect_url")
