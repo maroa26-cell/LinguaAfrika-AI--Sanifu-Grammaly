@@ -16,14 +16,15 @@ def anzisha_muamala_wa_pesapal(username, email, kiasi=5.00):
         return "https://pesapal.com"
 
     # 👑 SUBDOMAINS LOCK: Variable huru zilizolindwa na herufi kamili za kibenki za Live Production
-    pesapal_api_host = "://pesapal.com"
-    pesapal_pay_host = "://pesapal.com"
+    pesapal_api_host = "api.pesapal.com"
+    pesapal_pay_host = "pay.pesapal.com"
 
+    # REKEDEBISHO LA MSITARI WA 22: Zana rasmi ya kibiashara ya API v3 ya RegisterToken
     auth_url = f"https://{pesapal_api_host}/api/Auth/RegisterToken"
     order_url = f"https://{pesapal_api_host}/api/Transactions/SubmitOrderRequest"
     id_ya_muamala = f"owl-{int(time.time())}-{username.lower()}"
     
-    # 👑 DOMAIN PATH SYNC: URL yako mpya kabisa niliyofunga kufuatia amri yako ya kiutawala!
+    # 👑 HARDWIRED PATHWAY: URL yako mpya kabisa halisi ya tya2uyfj2xz73eiqu8tear kulinda mnyororo!
     url_yako_halisi = "https://streamlit.app"
 
     try:
@@ -33,10 +34,10 @@ def anzisha_muamala_wa_pesapal(username, email, kiasi=5.00):
         if auth_response.status_code == 200:
             access_token = auth_response.json().get("token")
             
-            # HATUA YA 2: Kutengeneza Ankara ya Kiofisi ya Kifurushi cha Premium
+            # HATUA YA 2: Kutengeneza Ankara ya Kiofisi ya Kifurushi cha Premium ($5.00)
             order_payload = {
                 "id": id_ya_muamala,
-                "currency": "TZS",
+                "currency": "TZS",  # Sarafu kamili ya kiofisi kuzuia migongano
                 "amount": float(kiasi),  # Kulazimisha mfumo usome namba halisi ya decimal (Float)
                 "description": "linguaafrika premium utility tier license",
                 "callback_url": url_yako_halisi,
@@ -50,7 +51,7 @@ def anzisha_muamala_wa_pesapal(username, email, kiasi=5.00):
                 }
             }
             
-            # 🔥 INLINE SECURE PAYLOAD: Inasafirisha data kwa usahihi kwa kutumia 'json=' kuzuia kosa la 400
+            # 🔥 INLINE SECURE PAYLOAD: Tumesimika json= vizuri asilimia 100 ili kiasi kisosomeke 0.00 kibenki
             order_response = requests.post(order_url, json=order_payload, headers={"content-type": "application/json", "accept": "application/json", "authorization": f"Bearer {access_token}"}, timeout=10.0)
             if order_response.status_code == 200:
                 return order_response.json().get("redirect_url")
