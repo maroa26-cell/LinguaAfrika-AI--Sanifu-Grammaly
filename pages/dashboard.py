@@ -1,25 +1,141 @@
+import streamlit as str_platform
+import sqlite3
+import os
+import sys
+
+# 🧠 SYSTEM PATH INJECTION: Inalazimisha folda ya ndani itambue mafaili makuu ya mlangoni (Root)
+root_path = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+if root_path not in sys.path:
+    sys.path.append(root_path)
+
+import database
+import pesapal_core
+import skin_appearance            # 🎨 THE EPITHELIAL MATRIX: Decoupled design architecture
+
+str_platform.set_page_config(page_title="Ourworthlinks Dashboard", page_icon="🔐", layout="wide")
+try:
+    database.anzisha_hifadhidata_ya_chuma()
+except Exception:
+    pass
+
+# 🎨 INTERFACE SKIN TRIGGER: Applies the glowing neon theme across the entire application workspace
+skin_appearance.inject_premium_glassmorphic_skin()
+
+str_platform.markdown("<h1 style='text-align: center; color: #D97706; font-weight: 900;'>🔐 OURWORTHLINKS COMMERCIAL MANAGEMENT ENGINE</h1>", unsafe_allow_html=True)
+str_platform.write("---")
+
+try:
+    if hasattr(str_platform, "experimental_get_query_params"):
+        vigezo_vya_url = str_platform.experimental_get_query_params()
+        tracking_id_halisi = vigezo_vya_url.get("OrderTrackingId", [None]) or vigezo_vya_url.get("pesapal_tracking_id", [None])
+        status_ya_benki = vigezo_vya_url.get("status", ["completed"])
+        
+        if tracking_id_halisi:
+            ufanisi = database.pandisha_hadhi_ya_mteja_kiotomatiki(tracking_id_halisi.strip(), status_ya_benki)
+            if ufanisi:
+                str_platform.success("🟢 webhook handshake: status 200 ok. client upgraded successfully!")
+except Exception:
+    pass
+
+if "active_gateway" not in str_platform.session_state:
+    str_platform.session_state["active_gateway"] = "mlangoni"
+
+if str_platform.session_state["active_gateway"] == "mlangoni":
+    str_platform.info("👋 Karibu Kiongozi! Tafadhali chagua lango unalotaka kufungua hapa chini ili kuanza utambuzi wa mfumo:")
+    col_g1, col_g2 = str_platform.columns(2)
+    with col_g1:
+        if str_platform.button("🚪 Lango la Admin (Utawala)", key="g_admin"):
+            str_platform.session_state["active_gateway"] = "admin_s"
+            str_platform.rerun()
+    with col_g2:
+        if str_platform.button("🔐 Lango la Mteja (Sign In / Sign Up)", key="g_client"):
+            str_platform.session_state["active_gateway"] = "client_auth_s"
+            str_platform.rerun()
+
+elif str_platform.session_state["active_gateway"] == "admin_s":
+    if str_platform.button("← Rudi Mlangoni", key="b_ad"): 
+        str_platform.session_state["active_gateway"] = "mlangoni"
+        str_platform.rerun()
+    
+    user = str_platform.text_input("Admin Username:")
+    pas = str_platform.text_input("Admin Password:", type="password")
+    
+    if str_platform.button("Ingia Utawala"):
+        if database.thibitisha_utambulisho_wa_siri(user, pas, "admin"):
+            str_platform.session_state["admin_logged_in"] = True
+            str_platform.success("🔓 Karibu Kiongozi!")
+        else:
+            str_platform.error("Hitilafu ya usalama!")
+
+    if str_platform.session_state.get("admin_logged_in"):
+        str_platform.write("---")
+        str_platform.markdown("### 📚 BULK DATASET INGESTION NODE")
+        uploaded_file = str_platform.file_uploader("Upload Swahili Vocabulary Matrix (CSV Format):", type=["csv"])
+        if uploaded_file is not None:
+            try:
+                import pandas as pd
+                df = pd.read_csv(uploaded_file)
+                if 'keyword' in df.columns and 'semantic_meaning' in df.columns:
+                    conn = database.pata_muunganisho_wa_chuma()
+                    cursor = conn.cursor()
+                    success_count = 0
+                    for index_row, row in df.iterrows():
+                        try:
+                            cursor.execute("INSERT INTO kamusi_dataset (keyword, semantic_meaning) VALUES (?, ?)", (str(row['keyword']).strip().lower(), str(row['semantic_meaning']).strip()))
+                            success_count += 1
+                        except sqlite3.IntegrityError: pass
+                    conn.commit()
+                    conn.close()
+                    str_platform.success(f"✅ Loaded {success_count} structural vocabulary terms directly into the system spinal cord!")
+                else: str_platform.error("CSV requires 'keyword' and 'semantic_meaning' column headers.")
+            except Exception as e: str_platform.error(f"Ingestion anomaly caught: {str(e)}")
+
+elif str_platform.session_state["active_gateway"] == "client_auth_s":
+    if str_platform.button("← Rudi Mlangoni", key="b_cl"): 
+        str_platform.session_state["active_gateway"] = "mlangoni"
+        str_platform.rerun()
+    t_mpya, t_zamani = str_platform.tabs(["📝 MTUMIAJI MPYA (Sign Up)", "🔑 SIGN IN (Premium Sign In)"])
+    
+    with t_mpya:
+        u_new = str_platform.text_input("Unda Username Mpya:", key="unew")
+        p_new = str_platform.text_input("Unda Password Mpya:", type="password", key="pnew")
+        if str_platform.button("Thibitisha Usajili wa Akaunti", key="b_up"):
+            if u_new.strip() != "" and p_new.strip() != "":
+                if database.sajili_mtumiaji_mpya(u_new.strip(), p_new.strip(), "premium user"):
+                    str_platform.success("✅ Usajili umekubaliwa! Proceed to Sign In.")
+                else: str_platform.error("Jina limechukuliwa tayari!")
+
+    with t_zamani:
+        u_old = str_platform.text_input("Ingiza Username Yako:", key="uold")
+        p_old = str_platform.text_input("Ingiza Password Yako:", type="password", key="pold")
+        if str_platform.button("Ingia Ndani ya Mfumo", key="b_in"):
+            if database.thibitisha_utambulisho_wa_siri(u_old.strip(), p_old.strip(), "premium user"):
+                str_platform.session_state["active_gateway"] = "premium_member_suite"
+                str_platform.session_state["member_username"] = u_old.strip()
+                str_platform.rerun()
+            else: str_platform.error("Hadhi au password si sahihi!")
+
 elif str_platform.session_state["active_gateway"] == "premium_member_suite":
     username_active = str_platform.session_state["member_username"]
     str_platform.markdown(f"<h3 style='color: #3B82F6;'>👋 Welcome to the Ourworthlinks Global Marketplace, {username_active.upper()}!</h3>", unsafe_allow_html=True)
     str_platform.write("---")
     
-    # 👑 BASE CURRENCY INTERFACE: Thamani ya msingi ni USD, mteja anachagua jinsi ya kuonyeshewa fedha yake!
+    # 👑 BASE CURRENCY EXCHANGE INTERFACE: Thamani ya msingi ni USD, mteja anachagua kiotomatiki
     kiasi_cha_msingi_usd = 5.00
     sarafu_chaguo = str_platform.selectbox("💳 Chagua Sarafu Unayotaka Kulipia (Select Payment Currency):", ["USD (Dola ya Marekani - Base)", "TZS (Shilingi ya Tanzania - Converted)", "KES (Shilingi ya Kenya - Converted)"], key="currency_select_node")
     
     if "TZS" in sarafu_chaguo:
         sarafu_halisi = "TZS"
-        onyesha_kiasi = kias_cha_msingi_usd * 2600.00 # 1 USD = 2,600 TZS
+        onyesha_kiasi = kiasi_cha_msingi_usd * 2600.00
     elif "KES" in sarafu_chaguo:
         sarafu_halisi = "KES"
-        onyesha_kiasi = kiasi_cha_msingi_usd * 130.00  # 1 USD = 130 KES
+        onyesha_kiasi = kiasi_cha_msingi_usd * 130.00
     else:
         sarafu_halisi = "USD"
         onyesha_kiasi = kiasi_cha_msingi_usd
 
     str_platform.info(f"💰 Thamani ya Kifurushi: **${kiasi_cha_msingi_usd:.2f} USD** ──► Kiasi Halisi cha Kulipa: **{onyesha_kiasi:,.2f} {sarafu_halisi}**")
     str_platform.write("---")
-    
     col_package_1, col_package_2 = str_platform.columns(2)
     
     with col_package_1:
@@ -31,12 +147,10 @@ elif str_platform.session_state["active_gateway"] == "premium_member_suite":
             <p style='font-size:14px; color:#E2E8F0;'>• Multi-contextual Swahili translation<br>• Zero rate limits and 150ms priority execution channels</p>
         </div>
         """, unsafe_allow_html=True)
-        
-        # 🚀 AUTOMATIC COUPLING TRIGGER: Tunasukuma kiasi cha dola pamoja na aina ya sarafu aliyochagua
-        pespal_redirect = pesapal_core.anzisha_muamala_wa_pesapal(username_active, f"{username_active}@ourworthlinks.com", kiasi_usd=kiasi_cha_msingi_usd, sarafu=sarafu_halisi)
+        pesapal_redirect = pesapal_core.anzisha_muamala_wa_pesapal(username_active, f"{username_active}@ourworthlinks.com", kiasi_usd=kiasi_cha_msingi_usd, sarafu=sarafu_halisi)
         
         # 🔥 ANTI-IFRAME SECURITY FORM LINK: Inafungua tabo mpya ya nje kuzuia about:blank#blocked
-        str_platform.markdown(f'<a href="{pespal_redirect}" target="_blank" style="background: linear-gradient(135deg, #1E3A8A 0%, #1D4ED8 100%); color: white; font-weight: bold; padding: 14px 28px; border-radius: 12px; text-decoration: none; display: block; text-align: center; box-shadow: 0 4px 12px rgba(29, 78, 216, 0.3); font-size: 16px;">💳 Subscribe via Local Mobile Money ({sarafu_halisi} {onyesha_kiasi:,.2f})</a>', unsafe_allow_html=True)
+        str_platform.markdown(f'<a href="{pesapal_redirect}" target="_blank" style="background: linear-gradient(135deg, #1E3A8A 0%, #1D4ED8 100%); color: white; font-weight: bold; padding: 14px 28px; border-radius: 12px; text-decoration: none; display: block; text-align: center; box-shadow: 0 4px 12px rgba(29, 78, 216, 0.3); font-size: 16px;">💳 Subscribe via Local Mobile Money ({sarafu_halisi} {onyesha_kiasi:,.2f})</a>', unsafe_allow_html=True)
 
     with col_package_2:
         str_platform.markdown("""
@@ -51,9 +165,3 @@ elif str_platform.session_state["active_gateway"] == "premium_member_suite":
         str_platform.markdown(f'<a href="{stripe_redirect}" target="_blank" style="background: linear-gradient(135deg, #D97706 0%, #B45309 100%); color: white; font-weight: bold; padding: 14px 28px; border-radius: 12px; text-decoration: none; display: block; text-align: center; box-shadow: 0 4px 12px rgba(217, 119, 6, 0.3); font-size: 16px;">💳 Purchase Commercial B2B License ($49.00 USD)</a>', unsafe_allow_html=True)
 
     str_platform.write("---")
-    if str_platform.button("← Toka Kwenye Akaunti Yako (Log Out)", key="b_logout"):
-        str_platform.session_state["active_gateway"] = "mlangoni"
-        str_platform.rerun()
-
-str_platform.write("---")
-str_platform.markdown("<p style='text-align: center; font-size: 12px; color: #64748B;'>© 2026 Ourworthlinks • Automated Monetization Nodes Connected</p>", unsafe_allow_html=True)
