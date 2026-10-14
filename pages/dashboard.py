@@ -1,3 +1,4 @@
+
 import streamlit as str_platform
 import sqlite3
 import os
@@ -12,7 +13,7 @@ import database
 import pesapal_core
 import skin_appearance            # 🎨 THE EPITHELIAL MATRIX: Decoupled design architecture
 
-str_platform.set_page_config(page_title="Ourworthlinks Dashboard", page_icon="🔐", layout="wide")
+str_platform.set_page_config(page_title="Ourworthlinks Business", page_icon="🔐", layout="wide")
 try:
     database.anzisha_hifadhidata_ya_chuma()
 except Exception:
@@ -21,7 +22,8 @@ except Exception:
 # 🎨 INTERFACE SKIN TRIGGER: Applies the glowing neon theme across the entire application workspace
 skin_appearance.inject_premium_glassmorphic_skin()
 
-str_platform.markdown("<h1 style='text-align: center; color: #D97706; font-weight: 900;'>🔐 OURWORTHLINKS COMMERCIAL MANAGEMENT ENGINE</h1>", unsafe_allow_html=True)
+# 🎯 MAREKEBISHO YA JINA: Jina jipya la biashara limesimikwa hapa rasmi kiofisi
+str_platform.markdown("<h1 style='text-align: center; color: #D97706; font-weight: 900;'>🔐 OURWORTHLINKS BUSINESS MANAGEMENT ENGINE</h1>", unsafe_allow_html=True)
 str_platform.write("---")
 
 # 🔄 UPGRADE WEBHOOK HANDSHAKE: Inatumia st.query_params ya sasa kwa sababu experimental_get_query_params imepitwa na wakati
@@ -174,6 +176,3 @@ elif str_platform.session_state["active_gateway"] == "premium_member_suite":
             <p style='color: #64748B; font-size: 13px;'>Biomimetic AI Self-Healing Security Shield</p>
             <h1 style='margin: 15px 0;'>USD $49.00 <span style='font-size:14px; color:#64748B;'>/ mo</span></h1>
             <p style='font-size:14px; color:#E2E8F0;'>• Autonomous syntax phagocytosis and protection<br>• Fully sandboxed administrative threat presentation controls</p>
-        </div>
-        """, unsafe_allow_html=True)
-        
