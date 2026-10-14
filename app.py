@@ -8,7 +8,9 @@ import skin_appearance            # 🎨 THE EPITHELIAL MATRIX: Loaded inside ce
 
 muda_mwanzo = time.time()
 self_healing_status = "🟢 autonomous shield: active & healthy"
-str_platform.set_page_config(page_title="LinguaAfrika AI Premium", page_icon="🧠", layout="wide", initial_sidebar_state="expanded")
+
+# 🎯 BRAND UPDATE: Jina rasmi la Ourworthlinks BUSINESS limewekwa hapa kwenye config ya ukurasa
+str_platform.set_page_config(page_title="Ourworthlinks BUSINESS Premium", page_icon="🧠", layout="wide", initial_sidebar_state="expanded")
 
 # 🧠 HYPOTHALAMUS EXECUTION: Purges memory waste, monitors latency, and fires up database
 try:
@@ -35,7 +37,7 @@ else:
 # 💰 BRAND-SAFE AD REVENUE PLACEMENT: Top Placement
 skin_appearance.render_top_revenue_banner()
 
-str_platform.markdown("<h1 style='text-align: center; color: #D97706; font-size: 54px; margin-bottom: 0; text-shadow: 0 0 30px rgba(217,119,6,0.3);'>👑 LinguaAfrika AI</h1>", unsafe_allow_html=True)
+str_platform.markdown("<h1 style='text-align: center; color: #D97706; font-size: 54px; margin-bottom: 0; text-shadow: 0 0 30px rgba(217,119,6,0.3);'>👑 Ourworthlinks BUSINESS</h1>", unsafe_allow_html=True)
 str_platform.markdown("<p style='text-align: center; color: #94A3B8; font-size: 14px; font-weight: 600; margin-top: 5px; letter-spacing: 2px;'>THE AUTONOMOUS BIOMIMETIC ENTERPRISE SUITE</p>", unsafe_allow_html=True)
 str_platform.write("---")
 
@@ -59,7 +61,7 @@ chaguo_menyu = str_platform.sidebar.radio("", orodha_menyu, key="v14_clean_porta
 
 str_platform.sidebar.write("---")
 
-# 🔥 SULUHISHO LA UHAKIKA: Inalazimisha kivinjari kufungua URL kamili ya dashboard ili kuondoa "Page not found"
+# 🔥 SULUHISHO LA UHAKIKA LA REDIRECT: Inafungua link kamili ya dashboard
 str_platform.sidebar.link_button(
     label="🔐 Fungua Lango la Utawala (Dashboard) ──►",
     url="https://streamlit.app",
