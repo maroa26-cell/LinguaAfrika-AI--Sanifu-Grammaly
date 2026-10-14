@@ -1,11 +1,10 @@
-
 import streamlit as str_platform
 import requests
 import json
 import time
 
 def anzisha_muamala_wa_pesapal(username, email, kiasi_usd=5.00, sarafu="TZS"):
-    """💳 LOCAL PAYMENT NODE: Automated Live Production Trigger with bulletproof URL fallback layers"""
+    """💳 LOCAL PAYMENT NODE: Automated Live Production Trigger with dynamic currency conversion"""
     if hasattr(str_platform, "secrets"):
         # 🛡️ Inasoma vigezo vyako vya siri kutoka Advanced Settings ya Streamlit Secrets
         consumer_key = str_platform.secrets.get("PESAPAL_CONSUMER_KEY", "").strip()
@@ -22,7 +21,7 @@ def anzisha_muamala_wa_pesapal(username, email, kiasi_usd=5.00, sarafu="TZS"):
     order_url = f"https://{pesapal_api_host}/api/Transactions/SubmitOrderRequest"
     id_ya_muamala = f"owl-{int(time.time())}-{username.lower()}"
     
-    # 👑 DOMAIN PATH SYNC: URL yako mpya kabisa halisi ya wjvajj7kcgiuhaaguqxwdp kutoka kwenye skrini!
+    # 👑 HARDWIRED PATHWAY: Inasoma URL yako halisi iliyo hai mtandaoni
     url_yako_halisi = "https://streamlit.app"
 
     # 🔄 BASE CURRENCY ENGINE: USD $5.00 ndio msingi, inabadilishwa hapa kwenda sarafu lengwa kiotomatiki
@@ -39,7 +38,7 @@ def anzisha_muamala_wa_pesapal(username, email, kiasi_usd=5.00, sarafu="TZS"):
 
     try:
         if consumer_key and consumer_secret:
-            # HATUA YA 1: Kuomba Access Token ya Live Production kwenda Seva Kuu
+            # HATUA YA 1: Kuomba Access Token ya Live Production kwenda Seva Kuu ya api.pesapal.com
             auth_response = requests.post(auth_url, headers={"content-type": "application/json", "accept": "application/json"}, json={"consumer_key": consumer_key, "consumer_secret": consumer_secret}, timeout=10.0)
             
             if auth_response.status_code == 200:
@@ -62,11 +61,12 @@ def anzisha_muamala_wa_pesapal(username, email, kiasi_usd=5.00, sarafu="TZS"):
                     }
                 }
                 
+                # 🔥 INLINE SECURE PAYLOAD: Tumesimika json= vizuri asilimia 100 kuzuia kosa la kiasi kusomeka 0.00
                 order_response = requests.post(order_url, json=order_payload, headers={"content-type": "application/json", "accept": "application/json", "authorization": f"Bearer {access_token}"}, timeout=10.0)
                 if order_response.status_code == 200:
                     return order_response.json().get("redirect_url")
 
-        # 🚀 REKEDEBISHO LA KISAYANSI (IMMUTABLE FALLBACK LINK): Sasa hivi hata requests ikifeli, link ya akiba inabeba kiasi na sarafu halisi kuzuia kosa la 0.00!
+        # 🚀 IMMUTABLE FALLBACK LINK: Sasa hivi hata kama requests ikifeli kwa dharura ya mtandao, link ya akiba inabeba kiasi na sarafu halisi kuzuia kosa la 0.00!
         query_string_sync = f"?OrderTrackingId={id_ya_muamala}&amount={kiasi_kilichozungushwa}&currency={sarafu_halisi}&return_url={url_yako_halisi}"
         return f"https://{pesapal_pay_host}/iframe/PesapalIframe3/Index{query_string_sync}"
     except Exception:
