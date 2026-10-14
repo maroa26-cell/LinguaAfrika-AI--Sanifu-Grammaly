@@ -4,9 +4,8 @@ import json
 import time
 
 def anzisha_muamala_wa_pesapal(username, email, kiasi_usd=5.00, sarafu="TZS"):
-    """👑 LIVE PRODUCTION GATEWAY: High-security pipeline for Ourworthlinks BUSINESS"""
+    """👑 LIVE PRODUCTION GATEWAY: High-security pipeline with deep text diagnostics"""
     
-    # SULUHISHO LA LOGI: Variable zote zimesimikwa hapa juu kabisa kuzuia UnboundLocalError
     domain_kamili = "https://streamlit.app"
     auth_url = "https://pesapal.com"
     order_url = "https://pesapal.com"
@@ -38,7 +37,7 @@ def anzisha_muamala_wa_pesapal(username, email, kiasi_usd=5.00, sarafu="TZS"):
         headers_auth = {
             "Content-Type": "application/json", 
             "Accept": "application/json",
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
         }
         payload_auth = {"consumer_key": consumer_key, "consumer_secret": consumer_secret}
         
@@ -46,9 +45,12 @@ def anzisha_muamala_wa_pesapal(username, email, kiasi_usd=5.00, sarafu="TZS"):
         
         if auth_response.status_code == 200:
             try:
+                # Mfumo ukisoma vizuri JSON unampeleka mteja kwenye malipo
                 access_token = auth_response.json().get("token")
             except Exception:
-                str_platform.error(f"❌ Pesapal Live imerudisha data zisizo sahihi (Auth JSON Fail). Status: {auth_response.status_code}")
+                # 🔥 SULUHISHO LA UTAMBUZI: Hapa itakuchapishia herufi 500 za mwanzo za ujumbe wa Pesapal ujue shida ni nini kiofisi
+                str_platform.warning("⚠️ JIBU LA SEVA YA PESAPAL:")
+                str_platform.code(auth_response.text[:500])
                 return "#"
                 
             nchi = "TZ" if sarafu_halisi == "TZS" else ("KE" if sarafu_halisi == "KES" else "US")
@@ -74,7 +76,7 @@ def anzisha_muamala_wa_pesapal(username, email, kiasi_usd=5.00, sarafu="TZS"):
                 "Content-Type": "application/json", 
                 "Accept": "application/json", 
                 "Authorization": f"Bearer {access_token}",
-                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
             }
             order_response = requests.post(order_url, json=order_payload, headers=headers_order, timeout=15.0)
             
@@ -84,7 +86,7 @@ def anzisha_muamala_wa_pesapal(username, email, kiasi_usd=5.00, sarafu="TZS"):
                 str_platform.error(f"❌ Pesapal Live Imekataa Oda ({order_response.status_code}): {order_response.text}")
                 return "#"
         else:
-            str_platform.error(f"🔒 Pesapal Live Auth Failed ({auth_response.status_code}): Seva imekataa kuingiza mfumo. Ujumbe: {auth_response.text[:200]}")
+            str_platform.error(f"🔒 Pesapal Live Auth Failed ({auth_response.status_code}): Ujumbe: {auth_response.text[:200]}")
             return "#"
 
     except Exception as e:
