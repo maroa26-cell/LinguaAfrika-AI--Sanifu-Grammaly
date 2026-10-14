@@ -58,8 +58,14 @@ orodha_menyu = ["🎯 Malengo na Dira ya Taasisi", "📝 Mhariri wa Kiswahili Sa
 chaguo_menyu = str_platform.sidebar.radio("", orodha_menyu, key="v14_clean_portal_radio_gate")
 
 str_platform.sidebar.write("---")
-try: str_platform.sidebar.page_link("pages/dashboard.py", label="Fungua Lango la Utawala (Dashboard) ──►", icon="🔐")
-except Exception: pass
+
+# 🔥 MAREKEBISHO YA UHAKIKA: Inatumia jina la ukurasa ("pages/dashboard.py") kwa muundo sahihi wa asili wa Streamlit
+try: 
+    str_platform.sidebar.page_link("pages/dashboard.py", label="Fungua Lango la Utawala (Dashboard) ──►", icon="🔐")
+except Exception: 
+    # Fallback ya kiusalama endapo iFrame itapata kigugumizi cha njia ya ndani
+    if str_platform.sidebar.button("🔐 Fungua Lango la Utawala (Dharura)", use_container_width=True):
+        str_platform.switch_page("pages/dashboard.py")
 
 if chaguo_menyu == "🎯 Malengo na Dira ya Taasisi":
     str_platform.markdown("<h3 style='color: #D97706;'>🎯 Malengo na Dira ya Taasisi</h3>", unsafe_allow_html=True)
@@ -81,9 +87,7 @@ elif chaguo_menyu == "🔀 Mtafsiri wa Lugha Suite":
     with col1: lugha_chanzo = str_platform.selectbox("Kutoka Lugha:", orodha_lugha, index=1, key="src_v14_clean")
     with col2: lugha_lengwa = str_platform.selectbox("Kwenda Lugha:", orodha_lugha, index=0, key="trg_v14_clean")
     
-    # 👑 CONTEXT RESTORED: Kurudisha sanduku rasmi la muktadha wa kiwanda kulingana na picha ya skrini!
     muktadha_chaguo = str_platform.selectbox("🎯 Chagua Muktadha wa Kiwanda:", ["Kawaida", "Kibiashara", "Kisheria", "Kitiba", "Kielimu"], key="context_v14_clean")
-    
     maandishi_t = str_platform.text_area("Ingiza maandishi ya kutafsiri hapa:", key="trans_v14_clean_box")
     
     if str_platform.button("Zindua Tafsiri Pro", key="v14_btn_tr_clean"):
