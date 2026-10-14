@@ -1,4 +1,3 @@
-
 import streamlit as str_platform
 import sqlite3
 import os
@@ -158,17 +157,13 @@ elif str_platform.session_state["active_gateway"] == "premium_member_suite":
         </div>
         """, unsafe_allow_html=True)
         
-        if str(pesapal_redirect).strip() == "#":
-            str_platform.warning("⚠️ Lango la Mtandao wa Simu (Pesapal) liko kwenye maboresho ya kiufundi kwa sasa.")
-            str_platform.info("👉 Tafadhali tumia kitufe cha upande wa kulia (Stripe) kulipia kwa Kadi ya Benki kwa usalama wa 100%.")
-        else:
-            str_platform.link_button(
-                label=f"💳 Subscribe via Local Mobile Money ({sarafu_halisi} {onyesha_kiasi:,.2f})",
-                url=str(pesapal_redirect).strip(),
-                type="primary",
-                use_container_width=True,
-                key="native_pesapal_btn_v3"
-            )
+        str_platform.link_button(
+            label=f"💳 Subscribe via Local Mobile Money ({sarafu_halisi} {onyesha_kiasi:,.2f})",
+            url=str(pesapal_redirect).strip(),
+            type="primary",
+            use_container_width=True,
+            key="native_pesapal_btn_v3"
+        )
 
     with col_package_2:
         str_platform.markdown("""
@@ -181,3 +176,12 @@ elif str_platform.session_state["active_gateway"] == "premium_member_suite":
         """, unsafe_allow_html=True)
         
         str_platform.link_button(
+            label="💳 Purchase Commercial B2B License ($49.00 USD)",
+            url=str(stripe_redirect).strip(),
+            type="secondary",
+            use_container_width=True,
+            key="native_stripe_btn_v3"
+        )
+
+    str_platform.write("---")
+    if str_platform.button("← Toka Kwenye Akaunti Yako (Log Out)", key="b_logout"):
