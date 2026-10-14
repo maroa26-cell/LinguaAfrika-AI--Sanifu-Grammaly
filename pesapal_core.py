@@ -1,4 +1,3 @@
-
 import streamlit as str_platform
 import requests
 import json
@@ -11,10 +10,9 @@ def anzisha_muamala_wa_pesapal(username, email, kiasi_usd=5.00, sarafu="TZS"):
     pesapal_api_host = "://pesapal.com"
     pesapal_pay_host = "://pesapal.com"
 
-    # 👑 DOMAIN PATH SYNC: URL yako mpya kabisa halisi niliyofunga kufuatia picha ya skrini!
+    # 👑 DOMAIN PATH SYNC: URL mpya kabisa niliyofunga kufuatia amri yako ya kiutawala!
     domain_kamili = "https://streamlit.app"
     
-    # 👑 REKEDEBISHO LA ENDPOINTS: Zana rasmi za kibiashara za API v3 (Zilizosafishwa na OWTHS)
     auth_url = f"https://{pesapal_api_host}/api/Auth/RegisterToken"
     order_url = f"https://{pesapal_api_host}/api/Transactions/SubmitOrderRequest"
     id_ya_muamala = f"owl-{int(time.time())}-{username.lower()}"
@@ -38,7 +36,6 @@ def anzisha_muamala_wa_pesapal(username, email, kiasi_usd=5.00, sarafu="TZS"):
     kiasi_kilichozungushwa = round(kiasi_cha_malipo, 2)
 
     if not consumer_key or not consumer_secret:
-        # 🚀 IMMUTABLE PASCALCASE FALLBACK Handshake Link kuzuia kosa la 401/400
         query_string_sync = f"?OrderTrackingId={id_ya_muamala}&Amount={kiasi_kilichozungushwa}&Currency={sarafu_halisi}&return_url={domain_kamili}"
         return f"https://{pesapal_pay_host}/iframe/PesapalIframe3/Index{query_string_sync}"
 
