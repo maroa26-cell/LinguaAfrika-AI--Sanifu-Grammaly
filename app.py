@@ -59,13 +59,14 @@ chaguo_menyu = str_platform.sidebar.radio("", orodha_menyu, key="v14_clean_porta
 
 str_platform.sidebar.write("---")
 
-# 🔥 MAREKEBISHO YA UHAKIKA: Inatumia jina la ukurasa ("pages/dashboard.py") kwa muundo sahihi wa asili wa Streamlit
-try: 
-    str_platform.sidebar.page_link("pages/dashboard.py", label="Fungua Lango la Utawala (Dashboard) ──►", icon="🔐")
-except Exception: 
-    # Fallback ya kiusalama endapo iFrame itapata kigugumizi cha njia ya ndani
-    if str_platform.sidebar.button("🔐 Fungua Lango la Utawala (Dharura)", use_container_width=True):
-        str_platform.switch_page("pages/dashboard.py")
+# 🔥 SULUHISHO LA UHAKIKA: Inalazimisha kivinjari kufungua URL kamili ya dashboard ili kuondoa "Page not found"
+str_platform.sidebar.link_button(
+    label="🔐 Fungua Lango la Utawala (Dashboard) ──►",
+    url="https://streamlit.app",
+    type="secondary",
+    use_container_width=True,
+    key="native_dashboard_redirect_btn"
+)
 
 if chaguo_menyu == "🎯 Malengo na Dira ya Taasisi":
     str_platform.markdown("<h3 style='color: #D97706;'>🎯 Malengo na Dira ya Taasisi</h3>", unsafe_allow_html=True)
