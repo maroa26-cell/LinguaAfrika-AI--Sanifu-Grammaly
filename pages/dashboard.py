@@ -157,7 +157,6 @@ elif str_platform.session_state["active_gateway"] == "premium_member_suite":
         </div>
         """, unsafe_allow_html=True)
         
-        # ULTRA SECURE BYPASS: Kama Pesapal ikiwa kwenye matengenezo au ikigoma (#), inamlinda mteja asipotee
         if str(pesapal_redirect).strip() == "#":
             str_platform.warning("⚠️ Lango la Mtandao wa Simu (Pesapal) liko kwenye maboresho ya kiufundi kwa sasa.")
             str_platform.info("👉 Tafadhali tumia kitufe cha upande wa kulia (Stripe) kulipia kwa Kadi ya Benki kwa usalama wa 100%.")
@@ -178,4 +177,8 @@ elif str_platform.session_state["active_gateway"] == "premium_member_suite":
             <h1 style='margin: 15px 0;'>USD $49.00 <span style='font-size:14px; color:#64748B;'>/ mo</span></h1>
             <p style='font-size:14px; color:#E2E8F0;'>• Autonomous syntax phagocytosis and protection<br>• Fully sandboxed administrative threat presentation controls</p>
         </div>
+        """, unsafe_allow_html=True)
+        
+        str_platform.link_button(
+            label=" Purchase Commercial B2B License ($49.00 USD)",
 
