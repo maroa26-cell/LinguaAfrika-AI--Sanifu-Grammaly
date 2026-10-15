@@ -4,192 +4,97 @@ import os
 import sys
 
 root_path = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-if root_path not in sys.path:
+if root_path not in sys.path: 
     sys.path.append(root_path)
 
 import database
 import pesapal_core
 import skin_appearance
 
-str_platform.set_page_config(page_title="Ourworthlinks Business", page_icon="🔐", layout="wide")
-try:
-    database.anzisha_hifadhidata_ya_chuma()
-except Exception:
-    pass
-
+str_platform.set_page_config(page_title="Ourworthlinks Business Dashboard", layout="wide")
 skin_appearance.inject_premium_glassmorphic_skin()
 
 str_platform.markdown("<h1 style='text-align: center; color: #D97706; font-weight: 900;'>🔐 OURWORTHLINKS BUSINESS MANAGEMENT ENGINE</h1>", unsafe_allow_html=True)
 str_platform.write("---")
 
 try:
-    vigezo_vya_url = str_platform.query_params
-    tracking_id_halisi = vigezo_vya_url.get("OrderTrackingId") or vigezo_vya_url.get("pesapal_tracking_id")
-    status_ya_benki = vigezo_vya_url.get("status", "completed")
-    
-    if tracking_id_halisi:
-        ufanisi = database.pandisha_hadhi_ya_mteja_kiotomatiki(tracking_id_halisi.strip(), status_ya_benki)
-        if ufanisi:
-            str_platform.success("Handshake imekamilika! Akaunti imesasishwa.")
-except Exception:
+    v = str_platform.query_params
+    tid = v.get("OrderTrackingId") or v.get("pesapal_tracking_id")
+    if tid:
+        if database.pandisha_hadhi_ya_mteja_kiotomatiki(tid.strip(), v.get("status", "completed")):
+            str_platform.success(" Handshake ya Webhook imekamilika kikamilifu!")
+except Exception: 
     pass
 
-if "active_gateway" not in str_platform.session_state:
+if "active_gateway" not in str_platform.session_state: 
     str_platform.session_state["active_gateway"] = "mlangoni"
+gate = str_platform.session_state["active_gateway"]
 
-if str_platform.session_state["active_gateway"] == "mlangoni":
-    str_platform.info("👋 Karibu Kiongozi! Tafadhali chagua lango unalotaka kufungua hapa chini ili kuanza utambuzi wa mfumo:")
-    col_g1, col_g2 = str_platform.columns(2)
-    with col_g1:
-        if str_platform.button("Lango la Admin (Utawala)", key="g_admin"):
+if gate == "mlangoni":
+    str_platform.info("👋 Karibu Kiongozi! Tafadhali chagua lango unalotaka kufungua:")
+    c1, c2 = str_platform.columns(2)
+    with c1: 
+        if str_platform.button(" Lango la Admin (Utawala)"): 
             str_platform.session_state["active_gateway"] = "admin_s"
             str_platform.rerun()
-    with col_g2:
-        if str_platform.button("Lango la Mteja (Sign In / Sign Up)", key="g_client"):
+    with c2: 
+        if str_platform.button(" Lango la Mteja (Sign In / Sign Up)"): 
             str_platform.session_state["active_gateway"] = "client_auth_s"
             str_platform.rerun()
 
-elif str_platform.session_state["active_gateway"] == "admin_s":
-    if str_platform.button("← Rudi Mlangoni", key="b_ad"): 
+elif gate == "admin_s":
+    if str_platform.button("← Rudi Mlangoni"): 
         str_platform.session_state["active_gateway"] = "mlangoni"
         str_platform.rerun()
-    
-    user = str_platform.text_input("Admin Username:")
-    pas = str_platform.text_input("Admin Password:", type="password")
-    
-    if str_platform.button("Ingia Utawala"):
-        if database.thibitisha_utambulisho_wa_siri(user, pas, "admin"):
-            str_platform.session_state["admin_logged_in"] = True
-            str_platform.success("🔓 Karibu Kiongozi!")
-        else:
-            str_platform.error("Hitilafu ya usalama!")
+    u = str_platform.text_input("Admin Username:")
+    p = str_platform.text_input("Admin Password:", type="password")
+    if str_platform.button("Ingia Utawala") and database.thibitisha_utambulisho_wa_siri(u, p, "admin"):
+        str_platform.success("🔓 Karibu Kiongozi!")
 
-    if str_platform.session_state.get("admin_logged_in"):
-        str_platform.write("---")
-        str_platform.markdown("### BULK DATASET INGESTION NODE")
-        uploaded_file = str_platform.file_uploader("Upload Swahili Vocabulary Matrix (CSV Format):", type=["csv"])
-        if uploaded_file is not None:
-            try:
-                import pandas as pd
-                df = pd.read_csv(uploaded_file)
-                if 'keyword' in df.columns and 'semantic_meaning' in df.columns:
-                    conn = database.pata_muunganisho_wa_chuma()
-                    cursor = conn.cursor()
-                    success_count = 0
-                    for index_row, row in df.iterrows():
-                        try:
-                            cursor.execute("INSERT INTO kamusi_dataset (keyword, semantic_meaning) VALUES (?, ?)", (str(row['keyword']).strip().lower(), str(row['semantic_meaning']).strip()))
-                            success_count += 1
-                        except sqlite3.IntegrityError: pass
-                    conn.commit()
-                    conn.close()
-                    str_platform.success(f"Loaded {success_count} structural vocabulary terms directly into the system spinal cord!")
-                else: str_platform.error("CSV requires 'keyword' and 'semantic_meaning' column headers.")
-            except Exception as e: str_platform.error(f"Ingestion anomaly caught: {str(e)}")
-
-elif str_platform.session_state["active_gateway"] == "client_auth_s":
-    if str_platform.button("← Rudi Mlangoni", key="b_cl"): 
+elif gate == "client_auth_s":
+    if str_platform.button("← Rudi Mlangoni"): 
         str_platform.session_state["active_gateway"] = "mlangoni"
         str_platform.rerun()
-    t_mpya, t_zamani = str_platform.tabs(["MTUMIAJI MPYA (Sign Up)", "SIGN IN (Premium Sign In)"])
-    
-    with t_mpya:
-        u_new = str_platform.text_input("Unda Username Mpya:", key="unew")
-        p_new = str_platform.text_input("Unda Password Mpya:", type="password", key="pnew")
-        if str_platform.button("Thibitisha Usajili wa Akaunti", key="b_up"):
-            if u_new.strip() != "" and p_new.strip() != "":
-                if database.sajili_mtumiaji_mpya(u_new.strip(), p_new.strip(), "premium user"):
-                    str_platform.success("Usajili umekubaliwa! Proceed to Sign In.")
-                else: str_platform.error("Jina limechukuliwa tayari!")
+    t1, t2 = str_platform.tabs(["📝 SIGN UP", "🔑 SIGN IN"])
+    with t1:
+        un = str_platform.text_input("Username Mpya:")
+        pw = str_platform.text_input("Password Mpya:", type="password")
+        if str_platform.button("Thibitisha Usajili") and un.strip() and pw.strip():
+            if database.sajili_mtumiaji_mpya(un.strip(), pw.strip(), "premium user"): 
+                str_platform.success("Usajili umekubaliwa!")
+    with t2:
+        un_o = str_platform.text_input("Ingiza Username:")
+        pw_o = str_platform.text_input("Ingiza Password:", type="password")
+        if str_platform.button("Ingia Mfumo") and database.thibitisha_utambulisho_wa_siri(un_o.strip(), pw_o.strip(), "premium user"):
+            str_platform.session_state["active_gateway"] = "premium_member_suite"
+            str_platform.session_state["member_username"] = un_o.strip()
+            str_platform.rerun()
 
-    with t_zamani:
-        u_old = str_platform.text_input("Ingiza Username Yako:", key="uold")
-        p_old = str_platform.text_input("Ingiza Password Yako:", type="password", key="pold")
-        if str_platform.button("Ingia Ndani ya Mfumo", key="b_in"):
-            if database.thibitisha_utambulisho_wa_siri(u_old.strip(), p_old.strip(), "premium user"):
-                str_platform.session_state["active_gateway"] = "premium_member_suite"
-                str_platform.session_state["member_username"] = u_old.strip()
-                str_platform.rerun()
-            else: str_platform.error("Hadhi au password si sahihi!")
-
-elif str_platform.session_state["active_gateway"] == "premium_member_suite":
-    username_active = str_platform.session_state["member_username"]
-    str_platform.markdown(f"<h3 style='color: #3B82F6;'>Welcome to the Ourworthlinks Global Marketplace, {username_active.upper()}!</h3>", unsafe_allow_html=True)
-    str_platform.write("---")
+elif gate == "premium_member_suite":
+    u_active = str_platform.session_state["member_username"]
+    str_platform.markdown(f"### Welcome to the Ourworthlinks Global Marketplace, {u_active.upper()}!")
     
-    kiasi_cha_msingi_usd = 5.00
-    sarafu_chaguo = str_platform.selectbox("Select Payment Currency:", ["USD (Dola ya Marekani - Base)", "TZS (Shilingi ya Tanzania - Converted)", "KES (Shilingi ya Kenya - Converted)"], key="currency_select_node")
-    
-    if "TZS" in sarafu_chaguo:
-        sarafu_halisi = "TZS"
-        onyesha_kiasi = kiasi_cha_msingi_usd * 2600.00
-    elif "KES" in sarafu_chaguo:
-        sarafu_halisi = "KES"
-        onyesha_kiasi = kiasi_cha_msingi_usd * 130.00
-    else:
-        sarafu_halisi = "USD"
-        onyesha_kiasi = kiasi_cha_msingi_usd
-
-    str_platform.info(f"Kiwango cha Kulipa: **{onyesha_kiasi:,.2f} {sarafu_halisi}** (Thamani ya Kifurushi: ${kiasi_cha_msingi_usd:.2f} USD)")
-    str_platform.write("---")
-    
-    pesapal_redirect = pesapal_core.anzisha_muamala_wa_pesapal(username_active, f"{username_active}@ourworthlinks.com", kiasi_usd=kiasi_cha_msingi_usd, sarafu=sarafu_halisi)
-    
-    if hasattr(pesapal_core, "generate_stripe_global_checkout"):
-        stripe_redirect = pesapal_core.generate_stripe_global_checkout(username_active, client_package="code_auditor_license", dynamic_cost=49.00)
-    else:
-        stripe_redirect = f"https://stripe.com{username_active.lower()}&amount=49.00&currency=usd"
-
-    col_package_1, col_package_2 = str_platform.columns(2)
-    
-    with col_package_1:
-        str_platform.markdown(f"""
-        <div class='monetize-card' style='border-color: #3B82F6 !important; padding: 20px; border-radius: 12px; margin-bottom: 15px;'>
-            <h3 style='color: #3B82F6; margin: 0;'>💎 LINGUAAFRIKA PREMIUM SUITE</h3>
-            <p style='color: #64748B; font-size: 13px;'>Localized Contextual AI Processing Engine</p>
-            <h1 style='margin: 15px 0;'>{sarafu_halisi} {onyesha_kiasi:,.2f} <span style='font-size:14px; color:#64748B;'>/ mo</span></h1>
-            <p style='font-size:14px; color:#E2E8F0;'>• Multi-contextual Swahili translation<br>• Zero rate limits and 150ms priority execution channels</p>
-        </div>
-        """, unsafe_allow_html=True)
+    curr = str_platform.selectbox("Chagua Sarafu:", ["USD (Base)", "TZS (Converted)", "KES (Converted)"])
+    amt = kiasi_cha_msingi_usd = 5.00
+    if "TZS" in curr:
+        amt = kiasi_cha_msingi_usd * 2600.00
+    elif "KES" in curr:
+        amt = kiasi_cha_msingi_usd * 130.00
         
-        if str(pesapal_redirect).strip() == "#" or "error" in str(pesapal_redirect):
-            str_platform.warning("⚠️ Lango la Mtandao wa Simu (Pesapal) liko kwenye maboresho ya kiufundi kwa sasa.")
+    s_symbol = "TZS" if "TZS" in curr else ("KES" if "KES" in curr else "USD")
+    str_platform.info(f"Kiwango cha Kulipa: **{amt:,.2f} {s_symbol}**")
+    
+    pesapal_redirect = pesapal_core.anzisha_muamala_wa_pesapal(u_active, f"{u_active}@ourworthlinks.com", kiasi_usd=5.00, sarafu=s_symbol)
+    stripe_redirect = f"https://stripe.com{u_active.lower()}&amount=49.00&currency=usd"
+
+    cp1, cp2 = str_platform.columns(2)
+    with cp1:
+        str_platform.markdown(f"<div style='border:1px solid #3B82F6; padding:20px; border-radius:12px;'><h3>💎 LINGUAAFRIKA PREMIUM SUITE</h3><h1>{s_symbol} {amt:,.2f}</h1></div>", unsafe_allow_html=True)
+        if "error" in str(pesapal_redirect) or str(pesapal_redirect).strip() == "#":
+            str_platform.warning("⚠️ Lango la Pesapal Live liko kwenye maboresho. Tafadhali tumia Stripe kulipa.")
+            str_platform.code(str(pesapal_redirect))
         else:
-            html_button = f"""
-            <a href="{str(pesapal_redirect).strip()}" target="_blank" style="text-decoration: none;">
-                <button style="
-                    width: 100%; 
-                    background-color: #3B82F6; 
-                    color: white; 
-                    padding: 12px; 
-                    border: none; 
-                    border-radius: 8px; 
-                    font-weight: bold; 
-                    cursor: pointer; 
-                    text-align: center;
-                    font-size: 16px;">
-                    💳 Subscribe via Local Mobile Money ({sarafu_halisi} {onyesha_kiasi:,.2f})
-                </button>
-            </a>
-            """
-            str_platform.markdown(html_button, unsafe_allow_html=True)
-
-    with col_package_2:
-        str_platform.markdown("""
-        <div class='monetize-card' style='border-color: #D97706 !important; padding: 20px; border-radius: 12px; margin-bottom: 15px;'>
-            <h3 style='color: #D97706; margin: 0;'>🛡️ SOVEREIGN CODE AUDITOR LICENSE</h3>
-            <p style='color: #64748B; font-size: 13px;'>Biomimetic AI Self-Healing Security Shield</p>
-            <h1 style='margin: 15px 0;'>USD $49.00 <span style='font-size:14px; color:#64748B;'>/ mo</span></h1>
-            <p style='font-size:14px; color:#E2E8F0;'>• Autonomous syntax phagocytosis and protection<br>• Fully sandboxed administrative threat presentation controls</p>
-        </div>
-        """, unsafe_allow_html=True)
-        
-        str_platform.link_button(
-            label="Purchase Commercial B2B License ($49.00 USD)",
-            url=str(stripe_redirect).strip(),
-            type="secondary",
-            use_container_width=True,
-            key="native_stripe_btn_v3"
-        )
-
-
+            str_platform.markdown(f'<a href="{str(pesapal_redirect).strip()}" target="_blank" style="text-decoration:none;"><button style="width:100%; background-color:#3B82F6; color:white; padding:12px; border:none; border-radius:8px; font-weight:bold; cursor:pointer; margin-top:10px;">💳 Subscribe via Local Mobile Money</button></a>', unsafe_allow_html=True)
+    with cp2:
+        str_platform.markdown("<div style='border:1px solid #D97706; padding:20px; border-radius:12px;'><h3>🛡️ SOVEREIGN CODE AUDITOR</h3><h1>USD $49.00</h1></div>", unsafe_allow_html=True)
+        str_platform.link_button("Purchase Commercial B2B License", stripe_redirect, type="secondary", use_container_width=True)
