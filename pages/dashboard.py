@@ -52,16 +52,19 @@ elif gate == "premium_member_suite":
     str_platform.markdown(f"### Welcome to the Ourworthlinks Global Marketplace, {u_active.upper()}!")
     
     curr = str_platform.selectbox("Chagua Sarafu:", ["USD (Base)", "TZS (Converted)", "KES (Converted)"])
-    amt = kiasi_cha_msingi_usd = 5.00
+    
+    kiasi_cha_msingi_usd = 5.00
     if "TZS" in curr:
         amt = kiasi_cha_msingi_usd * 2600.00
     elif "KES" in curr:
         amt = kiasi_cha_msingi_usd * 130.00
+    else:
+        amt = kiasi_cha_msingi_usd
         
     s_symbol = "TZS" if "TZS" in curr else ("KES" if "KES" in curr else "USD")
     str_platform.info(f"Kiwango cha Kulipa: **{amt:,.2f} {s_symbol}**")
     
-    pesapal_redirect = pesapal_core.anzisha_muamala_wa_pesapal(u_active, f"{u_active}@ourworthlinks.com", kiasi_usd=5.00, sarafu=s_symbol)
+    pesapal_redirect = pesapal_core.anzisha_muamala_wa_pesapal(u_active, f"{u_active}@ourworthlinks.com", kiasi_usd=kiasi_cha_msingi_usd, sarafu=s_symbol)
     stripe_redirect = f"https://stripe.com{u_active.lower()}&amount=49.00&currency=usd"
 
     cp1, cp2 = str_platform.columns(2)
