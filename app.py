@@ -1,3 +1,4 @@
+
 import streamlit as str_platform
 import os
 import time
@@ -102,40 +103,59 @@ if chaguo_menyu == "📝 Mhariri wa Kiswahili Sanifu Pro & Real-Time Prompt":
                 jibu = client.chat.completions.create(model="gpt-4o", messages=[{"role": "user", "content": prompt}])
                 str_platform.markdown("<div style='background: rgba(16,185,129,0.1); border: 1px solid #10B981; padding: 20px; border-radius: 10px; margin-top: 15px;'><b>✨ Marekebisho Yamekamilika Salama:</b><br><br>" + jibu.choices.message.content + "</div>", unsafe_allow_html=True)
 
+# =====================================================================
+# 🔀 DUAL-STAGE HIGH-EFFICIENCY TRANSLATION SUITE
+# =====================================================================
 elif chaguo_menyu == "🔀 Mtafsiri wa Lugha & Muktadha Suite":
-    str_platform.markdown("<h3 style='color: #D97706;'>🔀 Mtafsiri wa Lugha & Muktadha Suite (Lugha 14)</h3>", unsafe_allow_html=True)
+    str_platform.markdown("<h3 style='color: #D97706;'>🔀 Mtafsiri wa Lugha & Muktadha Suite Pro (Dual-Stage Review Engine)</h3>", unsafe_allow_html=True)
     orodha_lugha = ["Kiswahili", "Kiingereza (English)", "Kinyarwanda", "Kiganda (Luganda)", "Lingala", "Kichewa (Chewa)", "Kinyanja", "Kiafrikana (Afrikana)", "Kifaransa (French)", "Kiarabu (Arabic)"]
     col1, col2 = str_platform.columns(2)
     with col1: lugha_chanzo = str_platform.selectbox("Kutoka Lugha:", orodha_lugha, index=1, key="src_v14_clean")
     with col2: lugha_lengwa = str_platform.selectbox("Kwenda Lugha:", orodha_lugha, index=0, key="trg_v14_clean")
     
-    muktadha_chaguo = str_platform.selectbox("🎯 Chagua Muktadha wa Kiwanda:", ["Kawaida", "Kibiashara", "Kisheria", "Kitiba", "Kielimu"], key="context_v14_clean")
+    muktadha_chaguo = str_platform.selectbox("🎯 Chagua Muktadha wa Kiwanda:", ["Kawaida", "Kibiashara (Business/SaaS)", "Kisheria (Legal/Contracts)", "Kitiba (Medical/Clinical)", "Kielimu (Academic)"], key="context_v14_clean")
     maandishi_t = str_platform.text_area("Ingiza maandishi ya kutafsiri hapa:", key="trans_v14_clean_box", height=150)
     
     if str_platform.button("Zindua Tafsiri Pro", key="v14_btn_tr_clean"):
         if maandishi_t.strip() != "":
-            with str_platform.spinner("Mshipa wa fahamu unatafsiri..."):
-                prompt_t = f"Translate from {lugha_chanzo} to {lugha_lengwa} strictly within a '{muktadha_chaguo}' context frame:\n\n{maandishi_t.strip()}"
-                jibu_t = client.chat.completions.create(model="gpt-4o", messages=[{"role": "user", "content": prompt_t}])
-                str_platform.markdown("<div style='background: rgba(255,255,255,0.02); padding: 20px; border-radius: 10px; margin-top: 15px;'><b>🔮 Matokeo ya Tafsiri Pro ya Muktadha:</b><br><br>" + jibu_t.choices.message.content + "</div>", unsafe_allow_html=True)
+            with str_platform.spinner("Mshipa wa fahamu unachakata chujio la kwanza..."):
+                
+                # HATUA YA 1: CHUJIO LA KWANZA - Localization & Terminology Setup
+                chujio_la_kwanza_prompt = [
+                    {
+                        "role": "system",
+                        "content": (
+                            "You are the Core Translation Node of Ourworthlinks BUSINESS. "
+                            f"Translate the text accurately from {lugha_chanzo} to {lugha_lengwa} "
+                            f"strictly adhering to a '{muktadha_chaguo}' context frame. "
+                            "Do NOT use word-for-word translation. Maintain contextual fluency, "
+                            "local idioms, and specific industry nomenclature perfectly."
+                        )
+                    },
+                    {"role": "user", "content": f"Text to translate:\n\n{maandishi_t.strip()}"}
+                ]
+                
+                jibu_chujio_1 = client.chat.completions.create(
+                    model="gpt-4o", 
+                    messages=chujio_la_kwanza_prompt,
+                    temperature=0.3
+                )
+                tafsiri_ya_kwanza = jibu_chujio_1.choices.message.content
 
-elif chaguo_menyu == "📚 Maktaba ya Kamusi Kuu":
-    str_platform.markdown("<h3 style='color: #D97706;'>📚 Maktaba ya Msamiati na Kamusi Kuu</h3>", unsafe_allow_html=True)
-    msamiati = str_platform.text_input("Andika neno la Kiswahili hapa kwa ajili ya uchambuzi wa kasi ya radi:", key="kamusi_input_v14_clean")
-    if str_platform.button("Tafuta Kwenye Kamusi Kuu", key="v14_btn_kam_clean"):
-        if msamiati.strip() != "":
-            with str_platform.spinner("Uti wa mgongo unatafuta msamiati..."):
-                hit_matokeo = database.query_neuroplasticity_lookup(msamiati)
-                if hit_matokeo:
-                    str_platform.markdown("<div style='background: rgba(217,119,6,0.1); border: 1px solid #D97706; padding: 20px; border-radius: 10px; margin-top: 15px;'><b>✨ Uchambuzi wa Kitaalamu:</b><br><br>" + str(hit_matokeo) + "</div>", unsafe_allow_html=True)
-                else:
-                    prompt_v = f"Ufafanuzi wa kina na wa kitaalamu wa neno la Kiswahili: {msamiati.strip()}"
-                    jibu_v = client.chat.completions.create(model="gpt-4o", messages=[{"role": "user", "content": prompt_v}])
-                    str_platform.markdown("<div style='background: rgba(255,255,255,0.02); padding: 20px; border-radius: 10px; margin-top: 15px;'><b>✨ Uchambuzi wa Kitaalamu wa Kamusi Kuu:</b><br><br>" + jibu_v.choices.message.content + "</div>", unsafe_allow_html=True)
-
-elif chaguo_menyu == "🎙️ Roboti wa Sauti, Imla (Transcription) & TTS":
-    str_platform.markdown("<h3 style='color: #D97706;'>🎙️ Roboti wa Sauti, Imla (Transcription) & TTS</h3>", unsafe_allow_html=True)
-    str_platform.info("Kipengele hiki kinahitaji akaunti ya Premium ya Ourworthlinks Business ili kutumia maikrofoni na mifumo ya sauti ya kiwanda.")
-
-str_platform.write("---")
-skin_appearance.render_bottom_revenue_banner()
+            with str_platform.spinner("Zinduzi wa chujio la pili: Autonomous Quality Review..."):
+                # HATUA YA 2: CHUJIO LA PILI - Quality Control, Fluency & Self-Correction
+                chujio_la_pili_prompt = [
+                    {
+                        "role": "system",
+                        "content": (
+                            "You are the Autonomous Quality Reviewer for Ourworthlinks BUSINESS. "
+                            f"Review this initial translation from {lugha_chanzo} to {lugha_lengwa} "
+                            f"for a '{muktadha_chaguo}' audience. "
+                            "Fix any remaining grammatical errors, refine phrasing for executive fluency, "
+                            "and ensure the translation sounds natural and professional. "
+                            "Output ONLY the finalized, polished translation text."
+                        )
+                    },
+                    {"role": "user", "content": f"Initial translation to review and optimize:\n\n{tafsiri_ya_kwanza}"}
+                ]
+                
