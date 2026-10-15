@@ -120,7 +120,8 @@ if str_platform.session_state["admin_authenticated"]:
         except Exception as e: str_platform.error(f"Ingestion anomaly caught: {str(e)}")
     str_platform.write("---")
 
-if chaguo_menyu == ["mhariri"]:
+# 🔥 MAREKEBISHO: Upokeaji wa masharti umebadilishwa kutoka == ["key"] kuwa 'in' kuzuia UI kuzuia paneli
+if "mhariri" in chaguo_menyu:
     str_platform.markdown("<h3 style='color: #D97706;'>📝 Mhariri wa Kiswahili Sanifu Pro (Grammarly Mode)</h3>", unsafe_allow_html=True)
     maandishi = str_platform.text_area("Andika au bandika maandishi ya Kiswahili hapa:", key="editor_v14_clean_box", height=150)
     heabu_maneno = len(maandishi.strip().split()) if maandishi.strip() else 0
@@ -134,7 +135,7 @@ if chaguo_menyu == ["mhariri"]:
                     res = ubongo.chakata_sarufi_pro(maandishi)
                     str_platform.markdown("<div style='background: rgba(16,185,129,0.1); border: 1px solid #10B981; padding: 20px; border-radius: 10px; margin-top: 15px;'><b>✨ Marekebisho Yamekamilika:</b><br><br>" + res + "</div>", unsafe_allow_html=True)
 
-elif chaguo_menyu == ["mtafsiri"]:
+elif "mtafsiri" in chaguo_menyu:
     str_platform.markdown("<h3 style='color: #D97706;'>🔀 Mtafsiri wa Lugha & Muktadha Suite Pro</h3>", unsafe_allow_html=True)
     orodha_lugha = ["Kiswahili", "Kiingereza (English)", "Kinyarwanda", "Kiganda (Luganda)", "Lingala", "Kichewa", "Kifaransa", "Kiarabu"]
     col1, col2 = str_platform.columns(2)
@@ -153,7 +154,7 @@ elif chaguo_menyu == ["mtafsiri"]:
                     res = ubongo.chakata_tafsiri_pacha(maandishi_t, lugha_chanzo, lugha_lengwa, muktadha_chaguo)
                     str_platform.markdown("<div style='background: rgba(255,255,255,0.02); padding: 20px; border-radius: 10px; margin-top: 15px;'><b>🔮 Matokeo:</b><br><br>" + res + "</div>", unsafe_allow_html=True)
 
-elif chaguo_menyu == ["kamusi"]:
+elif "kamusi" in chaguo_menyu:
     str_platform.markdown("<h3 style='color: #D97706;'>📚 Maktaba ya Msamiati na Kamusi Kuu</h3>", unsafe_allow_html=True)
     msamiati = str_platform.text_input("Andika neno la Kiswahili hapa kuanza uchambuzi wetu:", key="kamusi_input_v14_clean")
     if str_platform.button("Tafuta Kwenye Kamusi Kuu", key="v14_btn_kam_clean"):
