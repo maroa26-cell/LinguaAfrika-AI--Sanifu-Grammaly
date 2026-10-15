@@ -64,25 +64,28 @@ class CerebralCortex:
         return f"<b>✨ Super-Human Kamusi Core Expansion:</b><br><br>{jibu.choices.message.content}"
 
     def chakata_sauti_na_imla(self, audio_file):
-        """🎙️ AUDITORY CORTEX: OpenAI Whisper-v3 Hyper-Accurate Audio Pipeline"""
+        """🎙️ AUDITORY CORTEX: OpenAI Whisper-v3 Hyper-Accurate Audio Pipeline with guidance prompt"""
         with tempfile.NamedTemporaryFile(delete=False, suffix=os.path.splitext(audio_file.name)[1]) as tmp_file:
             tmp_file.write(audio_file.read())
             tmp_file_path = tmp_file.name
 
         with open(tmp_file_path, "rb") as open_audio:
+            # SULUHISHO: Inapunguza kelele na makosa kwa kuweka mfumo maalum wa prompt wa kiofisi
             transcription = self.client.audio.transcriptions.create(
                 model="whisper-1", 
-                file=open_audio
+                file=open_audio,
+                prompt="Huu ni uchambuzi wa kitaalamu na wa kiofisi wa lugha ya Kiswahili na huduma za Ourworthlinks Business."
             )
         os.unlink(tmp_file_path)
         return transcription.text
 
     def zindua_jifunze_lugha_audio(self, maandishi, lugha_lengwa):
-        """🔊 AUDIO LINGUISTIC TUTOR: Text-to-Speech (TTS) voice generation for premium language learning"""
-        # Inazalisha sauti asilia (High-Fidelity) kutoka kwenye maandishi ili mteja ajifunze matamshi sahihi
+        """🔊 AUDIO LINGUISTIC TUTOR: Enhanced High-Fidelity Voice generation for premium language learning"""
+        # SULUHISHO: Sauti imebadilishwa kuwa 'nova' kwa ajili ya usahihi mkuu wa matamshi ya kimataifa
         response = self.client.audio.speech.create(
             model="tts-1",
-            voice="alloy", # Sauti ya kiofisi na yenye hisia za kibinadamu
+            voice="nova", 
             input=f"Hapa kuna jinsi ya kutamka kwa usahihi katika lugha ya {lugha_lengwa}: {maandishi}"
         )
         return response.content
+
