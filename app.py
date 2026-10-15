@@ -63,11 +63,10 @@ menyu_kamili = {
 }
 
 chaguo_display = str_platform.sidebar.radio(label="", options=list(menyu_kamili.values()), key="portal_radio_gate")
-chaguo_menyu = [k for k, v in menyu_kamili.items() if v == chaguo_display]
+chaguo_menyu = [k for k, v in menyu_kamili.items() if v == chaguo_display][0]
 
 str_platform.sidebar.write("---")
 
-# 🎁 DASHBOARD YA JUU: Hii inampeleka tu mteja kwenye malipo/usajili wa Pesapal na Stripe
 str_platform.sidebar.link_button(
     label="🔐 Lango la Malipo na Usajili Mteja ──►",
     url="https://streamlit.app",
@@ -78,7 +77,6 @@ str_platform.sidebar.link_button(
 
 str_platform.sidebar.write("---")
 
-# 🔒 DASHBOARD YA CHINI: Imekuwa lango maalum la kuingia Admin hapa hapo ndani ya menu
 str_platform.sidebar.markdown("<p style='color: #94A3B8; font-size: 11px; font-weight: 800; text-align: center;'>🎛️ AREA YA UTAWALA (ADMIN NODE)</p>", unsafe_allow_html=True)
 if "admin_authenticated" not in str_platform.session_state:
     str_platform.session_state["admin_authenticated"] = False
@@ -99,10 +97,6 @@ else:
         str_platform.session_state["admin_authenticated"] = False
         str_platform.rerun()
 
-if "last_processed_text" not in str_platform.session_state:
-    str_platform.session_state["last_processed_text"] = ""
-
-# HAPA NDIO PANELI YA ADMIN INAPOFUNGUKA NDANI YA MAIN VIEW KAMA AMESAINI CHINI
 if str_platform.session_state["admin_authenticated"]:
     str_platform.markdown("<h2 style='color: #D97706;'>📚 BULK DATASET INGESTION Mainframe</h2>", unsafe_allow_html=True)
     uploaded_file = str_platform.file_uploader("Upload Swahili Vocabulary Matrix (CSV Format):", type=["csv"])
@@ -121,13 +115,15 @@ if str_platform.session_state["admin_authenticated"]:
                     except sqlite3.IntegrityError: pass
                 conn.commit()
                 conn.close()
-                str_platform.success(f"Loaded {success_count} structural vocabulary terms directly into the system spinal cord!")
-            else: str_platform.error("CSV requires 'keyword' and 'semantic_meaning' column headers.")
+                str_platform.success(f"Loaded {success_count} terms into the system spinal cord!")
+            else: str_platform.error("CSV requires 'keyword' and 'semantic_meaning' columns.")
         except Exception as e: str_platform.error(f"Ingestion anomaly caught: {str(e)}")
     str_platform.write("---")
 
-# EXECUTION OF LINGUISTIC PIPELINES
-if chaguo_menyu == ["mhariri"]:
+# ---------------------------------------------------------------------
+# PANEL PANELS MANAGEMENT (UI HANDSHAKE COUPLING)
+# ---------------------------------------------------------------------
+if chaguo_menyu == "mhariri":
     str_platform.markdown("<h3 style='color: #D97706;'>📝 Mhariri wa Kiswahili Sanifu Pro (Grammarly Mode)</h3>", unsafe_allow_html=True)
     maandishi = str_platform.text_area("Andika au bandika maandishi ya Kiswahili hapa:", key="editor_v14_clean_box", height=150)
     heabu_maneno = len(maandishi.strip().split()) if maandishi.strip() else 0
@@ -140,9 +136,8 @@ if chaguo_menyu == ["mhariri"]:
                 with str_platform.spinner("Cerebral Cortex inachakata sarufi..."):
                     res = ubongo.chakata_sarufi_pro(maandishi)
                     str_platform.markdown("<div style='background: rgba(16,185,129,0.1); border: 1px solid #10B981; padding: 20px; border-radius: 10px; margin-top: 15px;'><b>✨ Marekebisho Yamekamilika:</b><br><br>" + res + "</div>", unsafe_allow_html=True)
-                    str_platform.rerun()
 
-elif chaguo_menyu == ["mtafsiri"]:
+elif chaguo_menyu == "mtafsiri":
     str_platform.markdown("<h3 style='color: #D97706;'>🔀 Mtafsiri wa Lugha & Muktadha Suite Pro</h3>", unsafe_allow_html=True)
     orodha_lugha = ["Kiswahili", "Kiingereza (English)", "Kinyarwanda", "Kiganda (Luganda)", "Lingala", "Kichewa", "Kifaransa", "Kiarabu"]
     col1, col2 = str_platform.columns(2)
@@ -160,8 +155,10 @@ elif chaguo_menyu == ["mtafsiri"]:
                 with str_platform.spinner("Processing Dual-Stage Review..."):
                     res = ubongo.chakata_tafsiri_pacha(maandishi_t, lugha_chanzo, lugha_lengwa, muktadha_chaguo)
                     str_platform.markdown("<div style='background: rgba(255,255,255,0.02); padding: 20px; border-radius: 10px; margin-top: 15px;'><b>🔮 Matokeo:</b><br><br>" + res + "</div>", unsafe_allow_html=True)
-                    str_platform.rerun()
 
-elif chaguo_menyu == ["kamusi"]:
+# SULUHISHO LA 1: Kamusi Kuu sasa hivi inafanya kazi kikamilifu na ina UI thabiti
+elif chaguo_menyu == "kamusi":
     str_platform.markdown("<h3 style='color: #D97706;'>📚 Maktaba ya Msamiati na Kamusi Kuu</h3>", unsafe_allow_html=True)
-
+    msamiati = str_platform.text_input("Andika neno la Kiswahili hapa kuanza uchambuzi wetu:", key="kamusi_input_v14_clean")
+    if str_platform.button("Tafuta Kwenye Kamusi Kuu", key="v14_btn_kam_clean"):
+        if msamiati.strip() != "":
