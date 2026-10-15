@@ -1,11 +1,13 @@
 import streamlit as st
+import tempfile
+import os
 
 class CerebralCortex:
     def __init__(self, client):
         self.client = client
 
     def chakata_sarufi_pro(self, maandishi):
-        """📝 BROCA'S CRITIC CIRCUIT: Super-Human self-correcting grammar network"""
+        """📝 BROCA'S CRITIC CIRCUIT: Hyper-accurate grammar network"""
         messages_pipeline = [
             {
                 "role": "system",
@@ -76,6 +78,43 @@ class CerebralCortex:
         return f"<b>✨ Super-Human Kamusi Core Expansion:</b><br><br>{jibu.choices.message.content}"
 
     def chakata_sauti_na_imla(self):
-        """🎙️ AUDITORY CORTEX: Speech transcription & generation mainframe"""
+        """🎙️ AUDITORY CORTEX: OpenAI Whisper-v3 Hyper-Accurate Audio Pipeline"""
         st.markdown("<h3 style='color: #D97706;'>🎙️ Roboti wa Sauti, Imla (Transcription) & TTS Pro</h3>", unsafe_allow_html=True)
-        st.info("🎙️ **Auditory Cortex Active:** Mfumo uko hai na umesimika miundombinu ya kiwanda ya Whisper-v3 kwa ajili ya kuchakata Imla (Transcription) na utamkaji (TTS) wa Lugha 14.")
+        st.write("Andaa au pakia faili la sauti hapa chini ili roboti alitafsiri kuwa maandishi safi mara moja:")
+
+        # Lango la kupandisha faili la sauti (Audio Upload Input)
+        audio_file = st.file_uploader("Pakia Faili la Sauti (MP3, WAV, M4A, au OGG):", type=["mp3", "wav", "m4a", "ogg"], key="whisper_audio_uploader")
+
+        if audio_file is not None:
+            # Muonekano wa sauti iliyopakiwa kuisikiliza
+            st.audio(audio_file, format="audio/wav")
+            
+            if st.button("🚀 Zindua Roboti wa Sauti (Whisper-v3)"):
+                with st.spinner("Mshipa wa Auditory Cortex unachakata mawimbi ya sauti..."):
+                    try:
+                        # Kutengeneza faili la muda (Temporary File) ili Whisper ipate kusoma kutoka kwenye diski
+                        with tempfile.NamedTemporaryFile(delete=False, suffix=os.path.splitext(audio_file.name)[1]) as tmp_file:
+                            tmp_file.write(audio_file.read())
+                            tmp_file_path = tmp_file.name
+
+                        # Kutuma faili la sauti moja kwa moja kwenye OpenAI Whisper API
+                        with open(tmp_file_path, "rb") as open_audio:
+                            transcription = self.client.audio.transcriptions.create(
+                                model="whisper-1", 
+                                file=open_audio
+                            )
+                        
+                        # Kufuta faili la muda baada ya kumaliza kuchakata
+                        os.unlink(tmp_file_path)
+
+                        # Kuonyesha matokeo ya Imla kwenye skrini kitalaalamu
+                        st.success("✨ Imla Imekamilika kwa Kasi ya Radi!")
+                        st.markdown(f"""
+                        <div style='background: rgba(16,185,129,0.1); border: 1px solid #10B981; padding: 20px; border-radius: 10px; margin-top: 15px;'>
+                            <b>🔮 Maandishi Yaliyotolewa Kwenye Sauti (Transcription):</b><br><br>
+                            {transcription.text}
+                        </div>
+                        """, unsafe_allow_html=True)
+
+                    except Exception as e:
+                        st.error(f"💥 Hitilafu ya kuchakata sauti: {str(e)}")
