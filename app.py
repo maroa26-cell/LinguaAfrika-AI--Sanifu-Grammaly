@@ -46,7 +46,7 @@ str_platform.markdown("""
 <div class='b2b-safe-ad-banner' style='background: rgba(255,255,255,0.01) !important; border-left: 4px solid #D97706 !important; padding: 25px; border-radius: 12px;'>
     <h3 style='color: #D97706; margin-top: 0; font-weight: 800;'>🚀 Welcome to the Headquarters of LinguaAfrika AI Website</h3>
     <p style='color: #F8FAFC; font-size: 15px; line-height: 1.8; margin-bottom: 0;'>
-        Ourworthlinks Business imesimika chombo hiki kikuu cha kimkakati cha kidijitali barani Afrika kusanifisha na kuongeza thamani ya matumizi ya lugha ya Kiswahili kibiashara, kiviwanda na kiakademia ulimwenguni. Mfumo wetu unaendeshwa na algoridimu za kibaolojia (Biomimetic Neural Nets) zinazochakata na kutafsiri matini kwa kasi ya radi ya <b>0.1ms</b> pekee. Chagua zana unayotaka kutumia kwenye menyu ya pembeni kuanza uchambuzi.
+        Ourworthlinks Business imesimika chombo hiki kikuu cha kimkakati cha kidijitali barani Afrika kusanifisha na kuongeza thamani ya matumizi ya lugha ya Kiswahili kibiashara, kiviwanda na kiakademia ulimwenguni. Mfumo wetu unaendeshwa na algoridimu za kibaolojia (Biomimetic Neural Nets) zinazochakata na kutafsiri matini kwa kasi ya radi ya <b>0.1ms</b> pekee. Chagua zana unayotaka kutumia kwenye menyu ya pembeni kuanza uchambuzi wa bure.
     </p>
 </div>
 """, unsafe_allow_html=True)
@@ -67,8 +67,7 @@ str_platform.sidebar.markdown(f"""
 </div>
 """, unsafe_allow_html=True)
 
-# 👑 RECOVERY: Kurudisha rasmi vipengele vyote vinne (4) vilivyotofautiana mwanzo kwa usahihi wa kiwanda!
-str_platform.sidebar.markdown("<p style='color: #94A3B8; font-size: 12px; font-weight: 800; letter-spacing: 1px; margin-bottom: 5px;'>🌐 HUDUMA ZOTE NNE ZA BIFFU:</p>", unsafe_allow_html=True)
+str_platform.sidebar.markdown("<p style='color: #94A3B8; font-size: 12px; font-weight: 800; letter-spacing: 1px; margin-bottom: 5px;'>🌐 HUDUMA ZOTE NNE ZA BIASHARA:</p>", unsafe_allow_html=True)
 orodha_menyu = [
     "📝 Mhariri wa Kiswahili Sanifu Pro & Real-Time Prompt", 
     "🔀 Mtafsiri wa Lugha & Muktadha Suite", 
@@ -81,11 +80,14 @@ str_platform.sidebar.write("---")
 try: str_platform.sidebar.page_link("pages/dashboard.py", label="Fungua Lango la Utawala (Dashboard) ──►", icon="🔐")
 except Exception: pass
 
+# 👑 INITIALIZE FREEMIUM WORD TRACKER CACHE
 if "last_processed_text" not in str_platform.session_state:
     str_platform.session_state["last_processed_text"] = ""
+if "freemium_word_count" not in str_platform.session_state:
+    str_platform.session_state["freemium_word_count"] = 0
 
 # =====================================================================
-# 👑 IDARA YA 2: VIPENGELE VYOTE VINNE VIMESIMIKWA HAPA
+# 👑 WEBPAGE IDARA YA 2: VIPENGELE VYOTE VINNE VIMESIMIKWA HAPA
 # =====================================================================
 
 # Kipengele cha 1: Mhariri wa Kiswahili Sanifu Pro & Real-Time Prompt
@@ -93,7 +95,6 @@ if chaguo_menyu == "📝 Mhariri wa Kiswahili Sanifu Pro & Real-Time Prompt":
     str_platform.markdown("<h3 style='color: #D97706;'>📝 Mhariri wa Kiswahili Sanifu Pro (Grammarly Mode)</h3>", unsafe_allow_html=True)
     maandishi = str_platform.text_area("Andika au bandika maandishi ya Kiswahili hapa:", key="editor_v14_clean_box", height=150)
     
-    # Real-time interactive notification alert mapping
     if len(maandishi.strip().split()) >= 3 and maandishi.strip() != str_platform.session_state["last_processed_text"]:
         str_platform.markdown("""
         <div style='background: rgba(217, 119, 6, 0.05); border: 1px solid rgba(217, 119, 6, 0.3); padding: 15px; border-radius: 10px; margin-bottom: 10px;'>
