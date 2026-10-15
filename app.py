@@ -1,4 +1,3 @@
-
 import streamlit as str_platform
 import os
 import time
@@ -103,9 +102,6 @@ if chaguo_menyu == "📝 Mhariri wa Kiswahili Sanifu Pro & Real-Time Prompt":
                 jibu = client.chat.completions.create(model="gpt-4o", messages=[{"role": "user", "content": prompt}])
                 str_platform.markdown("<div style='background: rgba(16,185,129,0.1); border: 1px solid #10B981; padding: 20px; border-radius: 10px; margin-top: 15px;'><b>✨ Marekebisho Yamekamilika Salama:</b><br><br>" + jibu.choices.message.content + "</div>", unsafe_allow_html=True)
 
-# =====================================================================
-# 🔀 DUAL-STAGE HIGH-EFFICIENCY TRANSLATION SUITE
-# =====================================================================
 elif chaguo_menyu == "🔀 Mtafsiri wa Lugha & Muktadha Suite":
     str_platform.markdown("<h3 style='color: #D97706;'>🔀 Mtafsiri wa Lugha & Muktadha Suite Pro (Dual-Stage Review Engine)</h3>", unsafe_allow_html=True)
     orodha_lugha = ["Kiswahili", "Kiingereza (English)", "Kinyarwanda", "Kiganda (Luganda)", "Lingala", "Kichewa (Chewa)", "Kinyanja", "Kiafrikana (Afrikana)", "Kifaransa (French)", "Kiarabu (Arabic)"]
@@ -119,8 +115,6 @@ elif chaguo_menyu == "🔀 Mtafsiri wa Lugha & Muktadha Suite":
     if str_platform.button("Zindua Tafsiri Pro", key="v14_btn_tr_clean"):
         if maandishi_t.strip() != "":
             with str_platform.spinner("Mshipa wa fahamu unachakata chujio la kwanza..."):
-                
-                # HATUA YA 1: CHUJIO LA KWANZA - Localization & Terminology Setup
                 chujio_la_kwanza_prompt = [
                     {
                         "role": "system",
@@ -134,16 +128,10 @@ elif chaguo_menyu == "🔀 Mtafsiri wa Lugha & Muktadha Suite":
                     },
                     {"role": "user", "content": f"Text to translate:\n\n{maandishi_t.strip()}"}
                 ]
-                
-                jibu_chujio_1 = client.chat.completions.create(
-                    model="gpt-4o", 
-                    messages=chujio_la_kwanza_prompt,
-                    temperature=0.3
-                )
+                jibu_chujio_1 = client.chat.completions.create(model="gpt-4o", messages=chujio_la_kwanza_prompt, temperature=0.3)
                 tafsiri_ya_kwanza = jibu_chujio_1.choices.message.content
 
             with str_platform.spinner("Zinduzi wa chujio la pili: Autonomous Quality Review..."):
-                # HATUA YA 2: CHUJIO LA PILI - Quality Control, Fluency & Self-Correction
                 chujio_la_pili_prompt = [
                     {
                         "role": "system",
@@ -158,4 +146,8 @@ elif chaguo_menyu == "🔀 Mtafsiri wa Lugha & Muktadha Suite":
                     },
                     {"role": "user", "content": f"Initial translation to review and optimize:\n\n{tafsiri_ya_kwanza}"}
                 ]
-                
+                jibu_final = client.chat.completions.create(model="gpt-4o", messages=chujio_la_pili_prompt, temperature=0.2)
+                str_platform.markdown("<div style='background: rgba(255,255,255,0.02); padding: 20px; border-radius: 10px; margin-top: 15px;'><b>🔮 Matokeo ya Tafsiri Pro (Ufanisi wa Juu wa Chujio Pacha):</b><br><br>" + jibu_final.choices.message.content + "</div>", unsafe_allow_html=True)
+
+elif chaguo_menyu == "📚 Maktaba ya Kamusi Kuu":
+
