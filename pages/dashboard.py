@@ -30,7 +30,7 @@ try:
     if tracking_id_halisi:
         ufanisi = database.pandisha_hadhi_ya_mteja_kiotomatiki(tracking_id_halisi.strip(), status_ya_benki)
         if ufanisi:
-            str_platform.success(" Handshake imekamilika! Akaunti imesasishwa.")
+            str_platform.success("Handshake imekamilika! Akaunti imesasishwa.")
 except Exception:
     pass
 
@@ -118,7 +118,7 @@ elif str_platform.session_state["active_gateway"] == "premium_member_suite":
     str_platform.write("---")
     
     kiasi_cha_msingi_usd = 5.00
-    sarafu_chaguo = str_platform.selectbox("Chagua Sarafu Unayotaka Kulipia (Select Payment Currency):", ["USD (Dola ya Marekani - Base)", "TZS (Shilingi ya Tanzania - Converted)", "KES (Shilingi ya Kenya - Converted)"], key="currency_select_node")
+    sarafu_chaguo = str_platform.selectbox("Select Payment Currency:", ["USD (Dola ya Marekani - Base)", "TZS (Shilingi ya Tanzania - Converted)", "KES (Shilingi ya Kenya - Converted)"], key="currency_select_node")
     
     if "TZS" in sarafu_chaguo:
         sarafu_halisi = "TZS"
@@ -152,7 +152,6 @@ elif str_platform.session_state["active_gateway"] == "premium_member_suite":
         </div>
         """, unsafe_allow_html=True)
         
-        # 🔥 DAWA YA MWISHO YA ABOUT:BLANK: Inafungua kadi ya HTML yenye target="_blank" kwenda Pesapal Live
         if str(pesapal_redirect).strip() == "#" or "error" in str(pesapal_redirect):
             str_platform.warning("⚠️ Lango la Mtandao wa Simu (Pesapal) liko kwenye maboresho ya kiufundi kwa sasa.")
         else:
@@ -187,3 +186,10 @@ elif str_platform.session_state["active_gateway"] == "premium_member_suite":
         
         str_platform.link_button(
             label="Purchase Commercial B2B License ($49.00 USD)",
+            url=str(stripe_redirect).strip(),
+            type="secondary",
+            use_container_width=True,
+            key="native_stripe_btn_v3"
+        )
+
+
