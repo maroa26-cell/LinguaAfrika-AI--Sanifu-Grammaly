@@ -1,3 +1,4 @@
+
 import streamlit as str_platform
 import os
 import time
@@ -78,8 +79,15 @@ orodha_menyu = [
 chaguo_menyu = str_platform.sidebar.radio("", orodha_menyu, key="v14_clean_portal_radio_gate")
 
 str_platform.sidebar.write("---")
-try: str_platform.sidebar.page_link("pages/dashboard.py", label="Fungua Lango la Utawala (Dashboard) ──►", icon="🔐")
-except Exception: pass
+
+# 🔥 SULUHISHO LA INDENTATION ERROR: Inalazimisha kivinjari kufungua URL kamili ya dashboard
+str_platform.sidebar.link_button(
+    label="🔐 Fungua Lango la Utawala (Dashboard) ──►",
+    url="https://streamlit.app",
+    type="secondary",
+    use_container_width=True,
+    key="native_dashboard_redirect_btn"
+)
 
 # INITIALIZE FREEMIUM WORD TRACKER CACHE
 if "last_processed_text" not in str_platform.session_state:
@@ -138,5 +146,3 @@ elif chaguo_menyu == "📚 Maktaba ya Kamusi Kuu":
             with str_platform.spinner("Uti wa mgongo unatafuta msamiati..."):
                 hit_matokeo = database.query_neuroplasticity_lookup(msamiati)
                 if hit_matokeo:
-                    str_platform.markdown("<div style='background: rgba(217,119,6,0.1); border: 1px solid #D97706; padding: 20px; border-radius: 10px; margin-top: 15px;'><b>✨ Uchambuzi wa Kitaalamu:</b><br><br>" + str(hit_matokeo) + "</div>", unsafe_allow_html=True)
-                else:
