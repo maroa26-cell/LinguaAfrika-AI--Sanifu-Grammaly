@@ -150,4 +150,3 @@ elif chaguo_menyu == "🔀 Mtafsiri wa Lugha & Muktadha Suite":
                 str_platform.markdown("<div style='background: rgba(255,255,255,0.02); padding: 20px; border-radius: 10px; margin-top: 15px;'><b>🔮 Matokeo ya Tafsiri Pro (Ufanisi wa Juu wa Chujio Pacha):</b><br><br>" + jibu_final.choices.message.content + "</div>", unsafe_allow_html=True)
 
 elif chaguo_menyu == "📚 Maktaba ya Kamusi Kuu":
-
