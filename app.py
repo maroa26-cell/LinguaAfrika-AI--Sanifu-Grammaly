@@ -3,6 +3,7 @@ import os
 import time
 from openai import OpenAI
 import database
+import pesapal_core
 import owths_sovereign_automaton  # 👑 MASTER AUTOMATON: Combined filter & metabolic cell
 import skin_appearance            # 🎨 EPITHELIAL MATRIX: Central design architecture
 
@@ -139,4 +140,3 @@ elif chaguo_menyu == "📚 Maktaba ya Kamusi Kuu":
                 if hit_matokeo:
                     str_platform.markdown("<div style='background: rgba(217,119,6,0.1); border: 1px solid #D97706; padding: 20px; border-radius: 10px; margin-top: 15px;'><b>✨ Uchambuzi wa Kitaalamu (Uti wa Mgongo wa Mfumo):</b><br><br>" + str(hit_matokeo) + "</div>", unsafe_allow_html=True)
                 else:
-                    prompt_v = f"Ufafanuzi wa kina kwa neno: {msamiati.strip()}"
