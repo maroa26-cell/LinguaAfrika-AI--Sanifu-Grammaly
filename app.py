@@ -1,4 +1,3 @@
-
 import streamlit as str_platform
 import os
 import time
@@ -139,5 +138,5 @@ elif chaguo_menyu == "📚 Maktaba ya Kamusi Kuu":
             with str_platform.spinner("Uti wa mgongo unatafuta msamiati..."):
                 hit_matokeo = database.query_neuroplasticity_lookup(msamiati)
                 if hit_matokeo:
-                    str_platform.markdown("<div style='background: rgba(217,119,6,0.1); border: 1px solid #D97706; padding: 20px; border-radius: 10px; margin-top: 15px;'><b>✨ Uchambuzi wa Kitaalamu (Uti wa Mgongo wa Mfumo):</b><br><br>" + str(hit_matokeo) + "</div>", unsafe_allow_html=True)
+                    str_platform.markdown("<div style='background: rgba(217,119,6,0.1); border: 1px solid #D97706; padding: 20px; border-radius: 10px; margin-top: 15px;'><b>✨ Uchambuzi wa Kitaalamu (Uti wa Mgongo Tobacco):</b><br><br>" + str(hit_matokeo) + "</div>", unsafe_allow_html=True)
                 else:
