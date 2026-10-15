@@ -1,3 +1,4 @@
+
 import streamlit as str_platform
 import os
 import time
@@ -81,7 +82,7 @@ str_platform.sidebar.write("---")
 try: str_platform.sidebar.page_link("pages/dashboard.py", label="Fungua Lango la Utawala (Dashboard) ──►", icon="🔐")
 except Exception: pass
 
-# 👑 INITIALIZE FREEMIUM WORD TRACKER CACHE
+# INITIALIZE FREEMIUM WORD TRACKER CACHE
 if "last_processed_text" not in str_platform.session_state:
     str_platform.session_state["last_processed_text"] = ""
 if "freemium_word_count" not in str_platform.session_state:
