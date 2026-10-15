@@ -47,7 +47,7 @@ str_platform.markdown("""
 <div class='b2b-safe-ad-banner' style='background: rgba(255,255,255,0.01) !important; border-left: 4px solid #D97706 !important; padding: 25px; border-radius: 12px;'>
     <h3 style='color: #D97706; margin-top: 0; font-weight: 800;'>🚀 Welcome to the Headquarters of LinguaAfrika AI Website</h3>
     <p style='color: #F8FAFC; font-size: 15px; line-height: 1.8; margin-bottom: 0;'>
-        Ourworthlinks Business imesimika chombo hiki kikuu cha kimkakati cha kidijitali barani Afrika kusanifisha na kuongeza thamani ya matumizi ya lugha ya Kiswahili kibiashara na kiviwanda ulimwenguni. Mfumo wetu unaendeshwa na algoridimu za kibaolojia (Biomimetic Neural Nets) zinazochakata na kutafsiri matini kwa kasi ya radi ya <b>0.1ms</b> pekee. Chagua zana unayotaka kutumia kwenye menyu ya pembeni kuanza uchambuzi wa bure.
+        Ourworthlinks Business imesimika chombo hiki kikuu cha kimkakati cha kidijitali barani Afrika kusanifisha na kuongeza thamani ya matumizi ya lugha ya Kiswahili kibiashara, kiviwanda na kiakademia ulimwenguni. Mfumo wetu unaendeshwa na algoridimu za kibaolojia (Biomimetic Neural Nets) zinazochakata na kutafsiri matini kwa kasi ya radi ya <b>0.1ms</b> pekee. Chagua zana unayotaka kutumia kwenye menyu ya pembeni kuanza uchambuzi wa bure.
     </p>
 </div>
 """, unsafe_allow_html=True)
