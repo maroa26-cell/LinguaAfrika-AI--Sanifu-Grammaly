@@ -120,9 +120,6 @@ if str_platform.session_state["admin_authenticated"]:
         except Exception as e: str_platform.error(f"Ingestion anomaly caught: {str(e)}")
     str_platform.write("---")
 
-# ---------------------------------------------------------------------
-# PANEL PANELS MANAGEMENT (UI HANDSHAKE COUPLING)
-# ---------------------------------------------------------------------
 if chaguo_menyu == ["mhariri"]:
     str_platform.markdown("<h3 style='color: #D97706;'>📝 Mhariri wa Kiswahili Sanifu Pro (Grammarly Mode)</h3>", unsafe_allow_html=True)
     maandishi = str_platform.text_area("Andika au bandika maandishi ya Kiswahili hapa:", key="editor_v14_clean_box", height=150)
