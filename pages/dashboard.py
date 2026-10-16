@@ -23,8 +23,7 @@ try:
     if tid:
         if database.pandisha_hadhi_ya_mteja_kiotomatiki(tid.strip(), v.get("status", "completed")):
             str_platform.success(" Handshake ya Webhook imekamilika kikamilifu!")
-except Exception: 
-    pass
+except Exception: pass
 
 if "active_gateway" not in str_platform.session_state or str_platform.session_state["active_gateway"] != "premium_member_suite": 
     str_platform.session_state["active_gateway"] = "client_auth_s"
@@ -52,7 +51,6 @@ elif gate == "premium_member_suite":
     str_platform.markdown(f"### Welcome to the Ourworthlinks Global Marketplace, {u_active.upper()}!")
     
     curr = str_platform.selectbox("Chagua Sarafu:", ["USD (Base)", "TZS (Converted)", "KES (Converted)"])
-    
     kiasi_cha_msingi_usd = 5.00
     if "TZS" in curr:
         amt = kiasi_cha_msingi_usd * 2600.00
