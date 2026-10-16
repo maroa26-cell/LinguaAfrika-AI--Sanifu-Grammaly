@@ -25,7 +25,7 @@ if "otp_verified" not in str_platform.session_state:
 if "generated_otp" not in str_platform.session_state:
     str_platform.session_state["generated_otp"] = None
 
-# HATUA YA 1: VERIFICATION YA PASSWORD KUU
+# HATUA YA 1: VERIFICATION YA PASSWORD KUU (CUSTOM CREDENTIALS LOCK)
 if not str_platform.session_state["admin_authenticated"]:
     str_platform.markdown("<h2 style='text-align: center; color: #D97706;'>🔐 ADMIN CONTROL GATEWAY - PASSWORD STAGE</h2>", unsafe_allow_html=True)
     col1, col2, col3 = str_platform.columns(3)
@@ -33,7 +33,8 @@ if not str_platform.session_state["admin_authenticated"]:
         adm_user = str_platform.text_input("Admin Username:", key="admin_panel_u")
         adm_pass = str_platform.text_input("Admin Password:", type="password", key="admin_panel_p")
         if str_platform.button("Zindua Uhakiki wa Awali", use_container_width=True):
-            if database.thibitisha_utambulisho_wa_siri(adm_user, adm_pass, "admin") or (adm_user == "admin" and adm_pass == "owl-admin-2026"):
+            # 🔥 CHUJIO LA USALAMA: Username na Password mpya zimesimikwa hapa kiofisi kama ufunguo mkuu
+            if database.thibitisha_utambulisho_wa_siri(adm_user, adm_pass, "admin") or (adm_user == "owlsneworthlinks" and adm_pass == "MaroaBusiness2026"):
                 str_platform.session_state["admin_authenticated"] = True
                 # Kuzalisha OTP ya tarakimu sita
                 str_platform.session_state["generated_otp"] = str(random.randint(100000, 999999))
@@ -46,7 +47,6 @@ if not str_platform.session_state["admin_authenticated"]:
 if str_platform.session_state["admin_authenticated"] and not str_platform.session_state["otp_verified"]:
     str_platform.markdown("<h2 style='text-align: center; color: #3B82F6;'>🔐 TWO-FACTOR AUTHENTICATION (2FA SHIELD)</h2>", unsafe_allow_html=True)
     
-    # 🎯 MAREKEBISHO MAHUSUSI: Mawasiliano yako rasmi yamesimikwa kiofisi kwenye mfumo
     namba_ya_simu = "+255 742 710 697"
     barua_pepe = "ourneworthlinks@gmail.com"
     
@@ -55,7 +55,6 @@ if str_platform.session_state["admin_authenticated"] and not str_platform.sessio
         str_platform.warning(f"🔒 Mfumo umesafirisha nambari ya siri (OTP) kwenda kwenye simu yako: {namba_ya_simu} na barua pepe: {barua_pepe}")
         
         # 🟢 SECURE LIVE DIAGNOSTIC STREAM:
-        # Kwa kuwa kodi ipo mtandaoni kupitia Streamlit Share iFrame, mfumo unachapisha OTP hapa kiofisi ili uione na uijaribu mara moja
         str_platform.info(f" Diagnostic Radar: Nambari yako ya siri ya Live iliyotumwa sekunde hii ni: **{str_platform.session_state['generated_otp']}**")
         
         input_otp = str_platform.text_input("Ingiza Nambari ya Siri (6-Digit OTP Code):", max_chars=6, key="otp_input_box")
