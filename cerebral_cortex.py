@@ -12,7 +12,7 @@ class CerebralCortex:
             {
                 "role": "system",
                 "content": (
-                    "You are the Broca's Area Neural Critic of Ourworthlinks BUSINESS. "
+                    "You are the Broca's Area Neural Critic of LinguaAfrika AI. "
                     "Your performance exceeds human linguistic limits. Scan the input text "
                     "for deep syntax, semantic flaws, spelling errors, and style anomalies. "
                     "Provide a flawless output in professional Swahili."
@@ -56,7 +56,7 @@ class CerebralCortex:
         prompt = [
             {
                 "role": "system",
-                "content": "You are the Grand Dictionary Compiler of Ourworthlinks BUSINESS. Provide a deep definition, synonyms, and business usage examples of the Swahili word."
+                "content": "You are the Grand Dictionary Compiler of LinguaAfrika AI. Provide a deep definition, synonyms, and business usage examples of the Swahili word."
             },
             {"role": "user", "content": neno.strip()}
         ]
@@ -75,7 +75,7 @@ class CerebralCortex:
                 transcription = self.client.audio.transcriptions.create(
                     model="whisper-1",
                     file=open_audio,
-                    prompt="Huu ni uchambuzi wa kitaalamu na wa kiofisi wa lugha ya Kiswahili na huduma za Ourworthlinks Business."
+                    prompt="Huu ni uchambuzi wa kitaalamu na wa kiofisi wa lugha ya Kiswahili na huduma za LinguaAfrika AI."
                 )
             return transcription.text
         finally:
@@ -92,4 +92,3 @@ class CerebralCortex:
             input=f"Hapa kuna jinsi ya kutamka kwa usahihi katika lugha ya {lugha_lengwa}: {maandishi}"
         )
         return response.content
-
