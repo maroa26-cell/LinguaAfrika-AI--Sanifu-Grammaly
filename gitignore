@@ -1,0 +1,5 @@
+chore(security): ongeza .gitignore kuzuia secrets na database kwenda GitHub
+
+- Puuza .streamlit/secrets.toml, .env, *.env
+- Puuza faili za SQLite (*.db, *.sqlite, *.sqlite3)
+- Puuza __pycache__, mazingira ya venv, na faili za mfumo
