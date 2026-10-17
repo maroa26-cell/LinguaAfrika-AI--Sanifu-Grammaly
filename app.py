@@ -1,116 +1,211 @@
-
 import streamlit as str_platform
-import sqlite3
 import os
-import sys
-
-root_path = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-if root_path not in sys.path:
-    sys.path.append(root_path)
-
+import time
+import html
+from openai import OpenAI
 import database
-import pesapal_core
 import skin_appearance
+from cerebral_cortex import CerebralCortex
 
-str_platform.set_page_config(page_title="Ourworthlinks Business - Premium Hub", layout="wide")
-skin_appearance.inject_premium_glassmorphic_skin()
+muda_mwanzo = time.time()
+self_healing_status = "\U0001F7E2 autonomous shield: active & healthy"
+str_platform.set_page_config(page_title="Ourworthlinks Business - LinguaAfrika AI", page_icon="\U0001F9E0", layout="wide", initial_sidebar_state="expanded")
 
-str_platform.markdown("<h1 style='text-align: center; color: #D97706; font-weight: 900;'>\U0001F510 OURWORTHLINKS BUSINESS PREMIUM HUB</h1>", unsafe_allow_html=True)
-str_platform.write("---")
+# URL HALISI ya app yako (ilikuwa 'https://streamlit.app' - si sahihi)
+APP_URL = "https://linguaafrika-ai--sanifu-grammaly-ebor5bawjtziwwq8jcsx5v.streamlit.app"
+
+# Kikomo cha herufi kwa kila ingizo (kuzuia matumizi mabaya / gharama kubwa)
+MAX_CHARS = 5000
+
 
 # ------------------------------------------------------------------ #
-#  WEBHOOK / CALLBACK: Mteja amerudi kutoka Pesapal
-#  USALAMA: HATUAMINI kigezo 'status' kutoka URL. Tunahakiki hali
-#  HALISI moja kwa moja na Pesapal kabla ya kumpandisha mteja Premium.
+#  WASAIDIZI WA USALAMA / UIMARA
 # ------------------------------------------------------------------ #
+def _secret(jina):
+    """Soma siri kwa usalama; haitaanguka kama hakuna faili la secrets."""
+    try:
+        return str_platform.secrets.get(jina)
+    except Exception:
+        return None
+
+
+def onyesha_jibu(res, border_color="#10B981", bg="rgba(16,185,129,0.1)"):
+    """Onyesha jibu la AI kwa usalama (escape HTML ili kuzuia XSS)."""
+    salama = html.escape(str(res or ""))
+    str_platform.markdown(
+        f"<div style='background:{bg}; border:1px solid {border_color}; padding:20px; "
+        f"border-radius:10px; margin-top:15px; white-space:pre-wrap;'>{salama}</div>",
+        unsafe_allow_html=True,
+    )
+
+
 try:
-    v = str_platform.query_params
-    tid = v.get("OrderTrackingId") or v.get("pesapal_tracking_id")
-    if tid:
-        hali = pesapal_core.angalia_hali_ya_malipo(str(tid).strip())
-        if hali["status_desc"] == "COMPLETED":
-            if database.pandisha_hadhi_ya_mteja_kiotomatiki(str(tid).strip(), "completed"):
-                str_platform.success("\u2705 Malipo yamethibitishwa! Hadhi yako imepandishwa kuwa Premium.")
-        elif hali["status_desc"] == "PENDING":
-            str_platform.info("\u23F3 Malipo bado yanasubiri (PENDING). Tafadhali subiri kidogo kisha pakia upya.")
-        elif hali["status_desc"].startswith("ERROR"):
-            str_platform.warning("\u26A0\uFE0F Imeshindikana kuhakiki malipo kwa sasa. Jaribu tena baadaye.")
-        else:
-            str_platform.error(f"\u274C Hali ya malipo: {hali['status_desc']}")
+    database.anzisha_hifadhidata_ya_chuma()
 except Exception:
     pass
 
-if "active_gateway" not in str_platform.session_state or str_platform.session_state["active_gateway"] != "premium_member_suite":
-    str_platform.session_state["active_gateway"] = "client_auth_s"
+skin_appearance.inject_premium_glassmorphic_skin()
 
-gate = str_platform.session_state["active_gateway"]
+# DOSARI 3 IMEREKEBISHWA: soma secrets kwa usalama (haitaanguka ukiwa local)
+api_key_source = os.environ.get("OPENAI_API_KEY") or _secret("OPENAI_API_KEY")
 
-if gate == "client_auth_s":
-    t1, t2 = str_platform.tabs(["\U0001F4DD MTUMIAJI MPYA (Sign Up)", "\U0001F511 PREMIUM SIGN IN"])
-    with t1:
-        un = str_platform.text_input("Username Mpya:")
-        pw = str_platform.text_input("Password Mpya:", type="password")
-        if str_platform.button("Thibitisha Usajili") and un.strip() and pw.strip():
-            if database.sajili_mtumiaji_mpya(un.strip(), pw.strip(), "premium user"):
-                str_platform.success("Usajili umekubaliwa! Proceed to Sign In.")
-    with t2:
-        un_o = str_platform.text_input("Ingiza Username:")
-        pw_o = str_platform.text_input("Ingiza Password:", type="password")
-        if str_platform.button("Ingia Mfumo") and database.thibitisha_utambulisho_wa_siri(un_o.strip(), pw_o.strip(), "premium user"):
-            str_platform.session_state["active_gateway"] = "premium_member_suite"
-            str_platform.session_state["member_username"] = un_o.strip()
-            str_platform.rerun()
+if api_key_source:
+    client = OpenAI(api_key=api_key_source.strip())
+    ubongo = CerebralCortex(client)
+else:
+    str_platform.error("\U0001F512 secrets error! Weka OPENAI_API_KEY kwenye Secrets."); str_platform.stop()
 
-elif gate == "premium_member_suite":
-    u_active = str_platform.session_state["member_username"]
-    str_platform.markdown(f"### Welcome to the Ourworthlinks Global Marketplace, {u_active.upper()}!")
+skin_appearance.render_top_revenue_banner()
 
-    curr = str_platform.selectbox("Chagua Sarafu:", ["USD (Base)", "TZS (Converted)", "KES (Converted)"])
-    kiasi_cha_msingi_usd = 5.00
-    if "TZS" in curr:
-        amt = kiasi_cha_msingi_usd * 2600.00
-    elif "KES" in curr:
-        amt = kiasi_cha_msingi_usd * 130.00
+str_platform.markdown("<h1 style='text-align: center; color: #D97706; font-size: 56px; margin-bottom: 0; font-weight: 900; text-shadow: 0 0 40px rgba(217,119,6,0.3);'>\U0001F451 Ourworthlinks Business</h1>", unsafe_allow_html=True)
+str_platform.markdown("<p style='text-align: center; color: #94A3B8; font-size: 14px; font-weight: 700; margin-top: 5px; letter-spacing: 3px;'>LINGUAAFRIKA AI \u2022 THE AUTONOMOUS BIOMIMETIC WEB APPLICATION</p>", unsafe_allow_html=True)
+str_platform.write("---")
+
+kasi_ya_radi = (time.time() - muda_mwanzo) * 1000
+
+if "freemium_words_used" not in str_platform.session_state:
+    str_platform.session_state["freemium_words_used"] = 0
+
+maneno_yaliyotumika = str_platform.session_state["freemium_words_used"]
+maneno_yaliyobaki = max(0, 50 - maneno_yaliyotumika)
+
+str_platform.sidebar.markdown(f"""
+<div style='background: linear-gradient(135deg, #1E293B 0%, #0F172A 100%); border: 2px solid #D97706; padding: 18px; border-radius: 14px; margin-bottom: 20px; box-shadow: 0 10px 25px rgba(217,119,6,0.15);'>
+    <p style='color: #D97706; font-size: 13px; margin: 0 0 10px 0; text-align: center; font-weight: 900; letter-spacing: 1px;'>\U0001F4CA RADA YA UBONGO (CNS METRICS)</p>
+    <p style='color: #F59E0B; font-size: 13px; margin: 0;'>\U0001F381 <b>Salio la Bure:</b> {maneno_yaliyobaki}/50 Maneno</p>
+    <p style='color: #34D399; font-size: 13px; margin: 6px 0 0 0;'>\U0001F6E1\uFE0F <b>OWTHS Filter:</b> \U0001F7E2 100% Active</p>
+    <p style='color: #34D399; font-size: 13px; margin: 6px 0;'>\u26A1 <b>Synapse Latency:</b> {kasi_ya_radi:.3f}ms</p>
+    <hr style='border-color: rgba(255,255,255,0.05); margin: 8px 0;'>
+    <p style='color: #94A3B8; font-size: 11px; margin: 0; text-align: center;'>Status: {self_healing_status}</p>
+</div>
+""", unsafe_allow_html=True)
+
+str_platform.sidebar.markdown("<p style='color: #94A3B8; font-size: 12px; font-weight: 800; letter-spacing: 1px; margin-bottom: 5px;'>\U0001F310 HUDUMA ZOTE NNE ZA BIASHARA:</p>", unsafe_allow_html=True)
+
+menyu_kamili = {
+    "mhariri": "\U0001F4DD Mhariri wa Kiswahili Sanifu Pro & Real-Time Prompt",
+    "mtafsiri": "\U0001F500 Mtafsiri wa Lugha & Muktadha Suite",
+    "kamusi": "\U0001F4DA Maktaba ya Kamusi Kuu",
+    "sauti": "\U0001F399\uFE0F Roboti wa Sauti, Imla (Transcription) & TTS"
+}
+
+# DOSARI 4 IMEREKEBISHWA: label halisi + label_visibility badala ya label=""
+chaguo_display = str_platform.sidebar.radio(
+    label="Chagua huduma",
+    options=list(menyu_kamili.values()),
+    key="portal_radio_gate",
+    label_visibility="collapsed",
+)
+chaguo_menyu = [k for k, v in menyu_kamili.items() if v == chaguo_display]
+
+str_platform.sidebar.write("---")
+
+# IMEREKEBISHWA: viungo halisi (kama ni multipage app, hakikisha kurasa zipo kwenye pages/)
+str_platform.sidebar.link_button(
+    label="\U0001F510 Lango la Malipo na Usajili Mteja \u2500\u2500\u25BA",
+    url=f"{APP_URL}/dashboard",
+    type="primary",
+    use_container_width=True,
+    key="client_dashboard_btn_v4"
+)
+
+str_platform.sidebar.write("---")
+
+str_platform.sidebar.link_button(
+    label="\U0001F39B\uFE0F Fungua Lango la Utawala (Admin) \u2500\u2500\u25BA",
+    url=f"{APP_URL}/admin",
+    type="secondary",
+    use_container_width=True,
+    key="admin_dashboard_btn_v4"
+)
+
+if "mhariri" in chaguo_menyu:
+    str_platform.markdown("<h3 style='color: #D97706;'>\U0001F4DD Mhariri wa Kiswahili Sanifu Pro (Grammarly Mode)</h3>", unsafe_allow_html=True)
+    maandishi = str_platform.text_area("Andika au bandika maandishi ya Kiswahili hapa:", key="editor_v14_clean_box", height=150, max_chars=MAX_CHARS)
+    heabu_maneno = len(maandishi.strip().split()) if maandishi.strip() else 0
+    if maneno_yaliyobaki <= 0:
+        str_platform.error("\U0001F512 Salio LIMEISHA! Tafadhali fungua Lango la Mteja kulipia.")
     else:
-        amt = kiasi_cha_msingi_usd
+        if str_platform.button("Zindua Ukaguzi wa Sarufi Pro", key="v14_btn_ed_clean"):
+            if maandishi.strip() != "":
+                with str_platform.spinner("Chakata sarufi..."):
+                    try:
+                        res = ubongo.chakata_sarufi_pro(maandishi)
+                    except Exception as e:
+                        res = None
+                        str_platform.error(f"Hitilafu wakati wa kuchakata: {e}")
+                # DOSARI 1 IMEREKEBISHWA: hesabu maneno TU baada ya mafanikio
+                if res:
+                    str_platform.session_state["freemium_words_used"] += heabu_maneno
+                    onyesha_jibu(res)  # DOSARI 2 & 5: escape + str()
 
-    s_symbol = "TZS" if "TZS" in curr else ("KES" if "KES" in curr else "USD")
-    str_platform.info(f"Kiwango cha Kulipa: **{amt:,.2f} {s_symbol}**")
+elif "mtafsiri" in chaguo_menyu:
+    str_platform.markdown("<h3 style='color: #D97706;'>\U0001F500 Mtafsiri wa Lugha & Muktadha Suite Pro</h3>", unsafe_allow_html=True)
+    orodha_lugha = ["Kiswahili", "Kiingereza (English)", "Kinyarwanda", "Kiganda (Luganda)", "Lingala", "Kichewa", "Kifaransa", "Kiarabu"]
+    col1, col2 = str_platform.columns(2)
+    with col1: lugha_chanzo = str_platform.selectbox("Kutoka Lugha:", orodha_lugha, index=1, key="src_v14_clean")
+    with col2: lugha_lengwa = str_platform.selectbox("Kwenda Lugha:", orodha_lugha, index=0, key="trg_v14_clean")
+    muktadha_chaguo = str_platform.selectbox("\U0001F3AF Chagua Muktadha:", ["Kawaida", "Kibiashara", "Kisheria", "Kitiba", "Kielimu"], key="context_v14_clean")
+    maandishi_t = str_platform.text_area("Ingiza maandishi ya kutafsiri hapa:", key="trans_v14_clean_box", height=150, max_chars=MAX_CHARS)
+    heabu_maneno_t = len(maandishi_t.strip().split()) if maandishi_t.strip() else 0
+    if maneno_yaliyobaki <= 0:
+        str_platform.error("\U0001F512 Salio LIMEISHA! Tafadhali fungua Lango la Mteja kulipia.")
+    else:
+        if str_platform.button("Zindua Tafsiri Pro", key="v14_btn_tr_clean"):
+            if maandishi_t.strip() != "":
+                with str_platform.spinner("Processing..."):
+                    try:
+                        res = ubongo.chakata_tafsiri_pacha(maandishi_t, lugha_chanzo, lugha_lengwa, muktadha_chaguo)
+                    except Exception as e:
+                        res = None
+                        str_platform.error(f"Hitilafu wakati wa kutafsiri: {e}")
+                if res:
+                    str_platform.session_state["freemium_words_used"] += heabu_maneno_t
+                    onyesha_jibu(res, border_color="rgba(255,255,255,0.1)", bg="rgba(255,255,255,0.02)")
 
-    # Barua pepe halisi ya mteja ni muhimu kwa risiti - tumia iliyopo au bandika template
-    email_mteja = f"{u_active}@ourworthlinks.com"
-    pesapal_redirect = pesapal_core.anzisha_muamala_wa_pesapal(
-        u_active, email_mteja, kiasi_usd=kiasi_cha_msingi_usd, sarafu=s_symbol
-    )
-    # IMEREKEBISHWA: ilikuwa URL ya Stripe iliyoharibika (hakuna '?'). Tumia helper.
-    stripe_redirect = pesapal_core.generate_stripe_global_checkout(u_active, dynamic_cost=49.00)
+elif "kamusi" in chaguo_menyu:
+    str_platform.markdown("<h3 style='color: #D97706;'>\U0001F4DA Maktaba ya Msamiati na Kamusi Kuu</h3>", unsafe_allow_html=True)
+    msamiati = str_platform.text_input("Andika neno la Kiswahili hapa:", key="kamusi_input_v14_clean", max_chars=100)
+    if str_platform.button("Tafuta Kwenye Kamusi Kuu", key="v14_btn_kam_clean"):
+        if msamiati.strip() != "":
+            with str_platform.spinner("Searching..."):
+                try:
+                    res = ubongo.chakata_kamusi_kuu(msamiati, database)
+                except Exception as e:
+                    res = None
+                    str_platform.error(f"Hitilafu kwenye kamusi: {e}")
+            if res:
+                onyesha_jibu(res, border_color="#D97706", bg="rgba(255,255,255,0.02)")
 
-    cp1, cp2 = str_platform.columns(2)
-    with cp1:
-        str_platform.markdown(
-            f"<div style='border:1px solid #3B82F6; padding:20px; border-radius:12px;'>"
-            f"<h3>\U0001F48E LINGUAAFRIKA PREMIUM SUITE</h3><h1>{s_symbol} {amt:,.2f}</h1></div>",
-            unsafe_allow_html=True,
-        )
-        if "error" in str(pesapal_redirect) or str(pesapal_redirect).strip() == "#":
-            # Onyesha sababu halisi ya hitilafu ili iwe rahisi kurekebisha
-            sababu = str(pesapal_redirect).split("error=")[-1] if "error=" in str(pesapal_redirect) else "Unknown"
-            str_platform.warning(f"\u26A0\uFE0F Lango la Pesapal halijakamilika (sababu: {sababu}). Angalia Secrets.")
-        else:
-            str_platform.link_button(
-                "\U0001F4B3 Subscribe via Local Mobile Money",
-                str(pesapal_redirect).strip(),
-                type="primary",
-                use_container_width=True,
-            )
-    with cp2:
-        str_platform.markdown(
-            "<div style='border:1px solid #D97706; padding:20px; border-radius:12px;'>"
-            "<h3>\U0001F6E1\uFE0F SOVEREIGN CODE AUDITOR</h3><h1>USD $49.00</h1></div>",
-            unsafe_allow_html=True,
-        )
-        str_platform.link_button("Purchase Commercial B2B License", stripe_redirect, type="secondary", use_container_width=True)
+elif "sauti" in chaguo_menyu:
+    str_platform.markdown("<h3 style='color: #D97706;'>\U0001F399\uFE0F Roboti wa Sauti, Imla (Transcription) & Jifunze Lugha Suite</h3>", unsafe_allow_html=True)
+    t_imla, t_jifunze = str_platform.tabs(["\U0001F399\uFE0F Imla na Nakala (Transcription)", "\U0001F50A Jifunze Lugha kwa Sauti"])
+    with t_imla:
+        audio_file = str_platform.file_uploader("Pakia Faili la Sauti (MP3, WAV, M4A):", type=["mp3", "wav", "m4a"], key="whisper_audio_uploader")
+        if audio_file is not None:
+            str_platform.audio(audio_file, format="audio/wav")
+            if str_platform.button("Zindua Whisper-v3 Imla Pro", key="zindua_whisper_v3_btn"):
+                with str_platform.spinner("Auditory Cortex inasoma sauti..."):
+                    try:
+                        res_sauti = ubongo.chakata_sauti_na_imla(audio_file)
+                    except Exception as e:
+                        res_sauti = None
+                        str_platform.error(f"Hitilafu kwenye imla: {e}")
+                if res_sauti:
+                    str_platform.success("\u2728 Imla Imekamilika!")
+                    onyesha_jibu(res_sauti)
+    with t_jifunze:
+        maandishi_sauti = str_platform.text_area("Ingiza maandishi unayotaka kusikia:", value="Karibu kwenye chombo cha Ourworthlinks Business.", key="tts_input_box", max_chars=MAX_CHARS)
+        lugha_tutorial = str_platform.selectbox("Lugha ya Matamshi:", ["Kiswahili", "Kiingereza", "Kifaransa"], key="tts_lang_select")
+        if str_platform.button("Zalisha Sauti Pro", key="zalisha_tts_btn"):
+            with str_platform.spinner("Generating..."):
+                try:
+                    audio_bytes = ubongo.zindua_jifunze_lugha_audio(maandishi_sauti, lugha_tutorial)
+                except Exception as e:
+                    audio_bytes = None
+                    str_platform.error(f"Hitilafu kwenye kuzalisha sauti: {e}")
+            if audio_bytes:
+                str_platform.audio(audio_bytes, format="audio/mp3")
 
-    if str_platform.button("Ondoka kwenye Akaunti (Log Out)"):
-        str_platform.session_state["active_gateway"] = "client_auth_s"
-        str_platform.rerun()
+str_platform.write("---")
+skin_appearance.render_bottom_revenue_banner()
