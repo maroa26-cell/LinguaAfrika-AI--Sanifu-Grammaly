@@ -1,10 +1,11 @@
+
 import streamlit as str_platform
 import sqlite3
 import os
 import sys
 
 root_path = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-if root_path not in sys.path: 
+if root_path not in sys.path:
     sys.path.append(root_path)
 
 import database
@@ -14,29 +15,43 @@ import skin_appearance
 str_platform.set_page_config(page_title="Ourworthlinks Business - Premium Hub", layout="wide")
 skin_appearance.inject_premium_glassmorphic_skin()
 
-str_platform.markdown("<h1 style='text-align: center; color: #D97706; font-weight: 900;'>🔐 OURWORTHLINKS BUSINESS PREMIUM HUB</h1>", unsafe_allow_html=True)
+str_platform.markdown("<h1 style='text-align: center; color: #D97706; font-weight: 900;'>\U0001F510 OURWORTHLINKS BUSINESS PREMIUM HUB</h1>", unsafe_allow_html=True)
 str_platform.write("---")
 
+# ------------------------------------------------------------------ #
+#  WEBHOOK / CALLBACK: Mteja amerudi kutoka Pesapal
+#  USALAMA: HATUAMINI kigezo 'status' kutoka URL. Tunahakiki hali
+#  HALISI moja kwa moja na Pesapal kabla ya kumpandisha mteja Premium.
+# ------------------------------------------------------------------ #
 try:
     v = str_platform.query_params
     tid = v.get("OrderTrackingId") or v.get("pesapal_tracking_id")
     if tid:
-        if database.pandisha_hadhi_ya_mteja_kiotomatiki(tid.strip(), v.get("status", "completed")):
-            str_platform.success(" Handshake ya Webhook imekamilika kikamilifu!")
-except Exception: pass
+        hali = pesapal_core.angalia_hali_ya_malipo(str(tid).strip())
+        if hali["status_desc"] == "COMPLETED":
+            if database.pandisha_hadhi_ya_mteja_kiotomatiki(str(tid).strip(), "completed"):
+                str_platform.success("\u2705 Malipo yamethibitishwa! Hadhi yako imepandishwa kuwa Premium.")
+        elif hali["status_desc"] == "PENDING":
+            str_platform.info("\u23F3 Malipo bado yanasubiri (PENDING). Tafadhali subiri kidogo kisha pakia upya.")
+        elif hali["status_desc"].startswith("ERROR"):
+            str_platform.warning("\u26A0\uFE0F Imeshindikana kuhakiki malipo kwa sasa. Jaribu tena baadaye.")
+        else:
+            str_platform.error(f"\u274C Hali ya malipo: {hali['status_desc']}")
+except Exception:
+    pass
 
-if "active_gateway" not in str_platform.session_state or str_platform.session_state["active_gateway"] != "premium_member_suite": 
+if "active_gateway" not in str_platform.session_state or str_platform.session_state["active_gateway"] != "premium_member_suite":
     str_platform.session_state["active_gateway"] = "client_auth_s"
 
 gate = str_platform.session_state["active_gateway"]
 
 if gate == "client_auth_s":
-    t1, t2 = str_platform.tabs(["📝 MTUMIAJI MPYA (Sign Up)", "🔑 PREMIUM SIGN IN"])
+    t1, t2 = str_platform.tabs(["\U0001F4DD MTUMIAJI MPYA (Sign Up)", "\U0001F511 PREMIUM SIGN IN"])
     with t1:
         un = str_platform.text_input("Username Mpya:")
         pw = str_platform.text_input("Password Mpya:", type="password")
         if str_platform.button("Thibitisha Usajili") and un.strip() and pw.strip():
-            if database.sajili_mtumiaji_mpya(un.strip(), pw.strip(), "premium user"): 
+            if database.sajili_mtumiaji_mpya(un.strip(), pw.strip(), "premium user"):
                 str_platform.success("Usajili umekubaliwa! Proceed to Sign In.")
     with t2:
         un_o = str_platform.text_input("Ingiza Username:")
@@ -49,7 +64,7 @@ if gate == "client_auth_s":
 elif gate == "premium_member_suite":
     u_active = str_platform.session_state["member_username"]
     str_platform.markdown(f"### Welcome to the Ourworthlinks Global Marketplace, {u_active.upper()}!")
-    
+
     curr = str_platform.selectbox("Chagua Sarafu:", ["USD (Base)", "TZS (Converted)", "KES (Converted)"])
     kiasi_cha_msingi_usd = 5.00
     if "TZS" in curr:
@@ -58,22 +73,42 @@ elif gate == "premium_member_suite":
         amt = kiasi_cha_msingi_usd * 130.00
     else:
         amt = kiasi_cha_msingi_usd
-        
+
     s_symbol = "TZS" if "TZS" in curr else ("KES" if "KES" in curr else "USD")
     str_platform.info(f"Kiwango cha Kulipa: **{amt:,.2f} {s_symbol}**")
-    
-    pesapal_redirect = pesapal_core.anzisha_muamala_wa_pesapal(u_active, f"{u_active}@ourworthlinks.com", kiasi_usd=kiasi_cha_msingi_usd, sarafu=s_symbol)
-    stripe_redirect = f"https://stripe.com{u_active.lower()}&amount=49.00&currency=usd"
+
+    # Barua pepe halisi ya mteja ni muhimu kwa risiti - tumia iliyopo au bandika template
+    email_mteja = f"{u_active}@ourworthlinks.com"
+    pesapal_redirect = pesapal_core.anzisha_muamala_wa_pesapal(
+        u_active, email_mteja, kiasi_usd=kiasi_cha_msingi_usd, sarafu=s_symbol
+    )
+    # IMEREKEBISHWA: ilikuwa URL ya Stripe iliyoharibika (hakuna '?'). Tumia helper.
+    stripe_redirect = pesapal_core.generate_stripe_global_checkout(u_active, dynamic_cost=49.00)
 
     cp1, cp2 = str_platform.columns(2)
     with cp1:
-        str_platform.markdown(f"<div style='border:1px solid #3B82F6; padding:20px; border-radius:12px;'><h3>💎 LINGUAAFRIKA PREMIUM SUITE</h3><h1>{s_symbol} {amt:,.2f}</h1></div>", unsafe_allow_html=True)
+        str_platform.markdown(
+            f"<div style='border:1px solid #3B82F6; padding:20px; border-radius:12px;'>"
+            f"<h3>\U0001F48E LINGUAAFRIKA PREMIUM SUITE</h3><h1>{s_symbol} {amt:,.2f}</h1></div>",
+            unsafe_allow_html=True,
+        )
         if "error" in str(pesapal_redirect) or str(pesapal_redirect).strip() == "#":
-            str_platform.warning("⚠️ Lango la Pesapal Live liko kwenye maboresho. Tafadhali tumia Stripe kulipa.")
+            # Onyesha sababu halisi ya hitilafu ili iwe rahisi kurekebisha
+            sababu = str(pesapal_redirect).split("error=")[-1] if "error=" in str(pesapal_redirect) else "Unknown"
+            str_platform.warning(f"\u26A0\uFE0F Lango la Pesapal halijakamilika (sababu: {sababu}). Angalia Secrets.")
         else:
-            str_platform.markdown(f'<a href="{str(pesapal_redirect).strip()}" target="_blank" style="text-decoration:none;"><button style="width:100%; background-color:#3B82F6; color:white; padding:12px; border:none; border-radius:8px; font-weight:bold; cursor:pointer; margin-top:10px;">💳 Subscribe via Local Mobile Money</button></a>', unsafe_allow_html=True)
+            str_platform.link_button(
+                "\U0001F4B3 Subscribe via Local Mobile Money",
+                str(pesapal_redirect).strip(),
+                type="primary",
+                use_container_width=True,
+            )
     with cp2:
-        str_platform.markdown("<div style='border:1px solid #D97706; padding:20px; border-radius:12px;'><h3>🛡️ SOVEREIGN CODE AUDITOR</h3><h1>USD $49.00</h1></div>", unsafe_allow_html=True)
+        str_platform.markdown(
+            "<div style='border:1px solid #D97706; padding:20px; border-radius:12px;'>"
+            "<h3>\U0001F6E1\uFE0F SOVEREIGN CODE AUDITOR</h3><h1>USD $49.00</h1></div>",
+            unsafe_allow_html=True,
+        )
         str_platform.link_button("Purchase Commercial B2B License", stripe_redirect, type="secondary", use_container_width=True)
 
     if str_platform.button("Ondoka kwenye Akaunti (Log Out)"):
