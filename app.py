@@ -1,3 +1,4 @@
+
 import streamlit as str_platform
 import os
 import time
@@ -9,7 +10,7 @@ from cerebral_cortex import CerebralCortex
 
 muda_mwanzo = time.time()
 self_healing_status = "\U0001F7E2 autonomous shield: active & healthy"
-str_platform.set_page_config(page_title="Ourworthlinks Business - LinguaAfrika AI", page_icon="\U0001F9E0", layout="wide", initial_sidebar_state="expanded")
+str_platform.set_page_config(page_title="LinguaAfrika AI — Sanifu Grammaly", page_icon="\U0001F9E0", layout="wide", initial_sidebar_state="expanded")
 
 # URL HALISI ya app yako (ilikuwa 'https://streamlit.app' - si sahihi)
 APP_URL = "https://linguaafrika-ai--sanifu-grammaly-ebor5bawjtziwwq8jcsx5v.streamlit.app"
@@ -57,8 +58,8 @@ else:
 
 skin_appearance.render_top_revenue_banner()
 
-str_platform.markdown("<h1 style='text-align: center; color: #D97706; font-size: 56px; margin-bottom: 0; font-weight: 900; text-shadow: 0 0 40px rgba(217,119,6,0.3);'>\U0001F451 Ourworthlinks Business</h1>", unsafe_allow_html=True)
-str_platform.markdown("<p style='text-align: center; color: #94A3B8; font-size: 14px; font-weight: 700; margin-top: 5px; letter-spacing: 3px;'>LINGUAAFRIKA AI \u2022 THE AUTONOMOUS BIOMIMETIC WEB APPLICATION</p>", unsafe_allow_html=True)
+str_platform.markdown("<h1 style='text-align: center; color: #D97706; font-size: 46px; margin-bottom: 0; font-weight: 900; text-shadow: 0 0 40px rgba(217,119,6,0.3);'>\U0001F451 LinguaAfrika AI \u2014 Sanifu Grammaly</h1>", unsafe_allow_html=True)
+str_platform.markdown("<p style='text-align: center; color: #94A3B8; font-size: 14px; font-weight: 700; margin-top: 5px; letter-spacing: 3px;'>HUDUMA YA OURWORTHLINKS BUSINESS \u2022 THE AUTONOMOUS BIOMIMETIC WEB APPLICATION</p>", unsafe_allow_html=True)
 str_platform.write("---")
 
 kasi_ya_radi = (time.time() - muda_mwanzo) * 1000
@@ -108,6 +109,7 @@ str_platform.sidebar.link_button(
     use_container_width=True,
     key="client_dashboard_btn_v4"
 )
+str_platform.sidebar.markdown("<p style='text-align: center; color: #64748B; font-size: 11px; margin-top: 6px;'>\U0001F512 Malipo yanachakatwa salama na <b>Ourworthlinks Business</b> kupitia Pesapal.</p>", unsafe_allow_html=True)
 
 str_platform.sidebar.write("---")
 
