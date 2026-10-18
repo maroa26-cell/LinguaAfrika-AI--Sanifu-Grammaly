@@ -41,15 +41,18 @@ def onyesha_jibu(res, border_color="#10B981", bg="rgba(16,185,129,0.1)"):
 
 try:
     database.anzisha_hifadhidata_ya_chuma()
-except Exception:
-    pass
+except Exception as exc:
+    str_platform.error("Imeshindikana kuanzisha hifadhidata. Kagua usanidi wa database kisha jaribu tena.")
+    # Maelezo ya kiufundi yanaonyeshwa kwenye log ya server, si kwa mtumiaji.
+    print(f"Database initialization failed: {type(exc).__name__}: {exc}")
+    str_platform.stop()
 
 skin_appearance.inject_premium_glassmorphic_skin()
 
 # DOSARI 3 IMEREKEBISHWA: soma secrets kwa usalama (haitaanguka ukiwa local)
 api_key_source = os.environ.get("OPENAI_API_KEY") or _secret("OPENAI_API_KEY")
 
-if api_key_source:
+if isinstance(api_key_source, str) and api_key_source.strip():
     client = OpenAI(api_key=api_key_source.strip())
     ubongo = CerebralCortex(client)
 else:
@@ -128,7 +131,14 @@ if "mhariri" in chaguo_menyu:
         str_platform.error("\U0001F512 Salio LIMEISHA! Tafadhali fungua Lango la Mteja kulipia.")
     else:
         if str_platform.button("Zindua Ukaguzi wa Sarufi Pro", key="v14_btn_ed_clean"):
-            if maandishi.strip() != "":
+            if not maandishi.strip():
+                str_platform.warning("Tafadhali andika maandishi kwanza.")
+            elif heabu_maneno > maneno_yaliyobaki:
+                str_platform.warning(
+                    f"Maandishi yana maneno {heabu_maneno}, lakini salio lako ni {maneno_yaliyobaki}. "
+                    "Punguza maandishi au fungua Lango la Mteja."
+                )
+            else:
                 with str_platform.spinner("Chakata sarufi..."):
                     try:
                         res = ubongo.chakata_sarufi_pro(maandishi)
@@ -153,7 +163,14 @@ elif "mtafsiri" in chaguo_menyu:
         str_platform.error("\U0001F512 Salio LIMEISHA! Tafadhali fungua Lango la Mteja kulipia.")
     else:
         if str_platform.button("Zindua Tafsiri Pro", key="v14_btn_tr_clean"):
-            if maandishi_t.strip() != "":
+            if not maandishi_t.strip():
+                str_platform.warning("Tafadhali ingiza maandishi ya kutafsiri kwanza.")
+            elif heabu_maneno_t > maneno_yaliyobaki:
+                str_platform.warning(
+                    f"Maandishi yana maneno {heabu_maneno_t}, lakini salio lako ni {maneno_yaliyobaki}. "
+                    "Punguza maandishi au fungua Lango la Mteja."
+                )
+            else:
                 with str_platform.spinner("Processing..."):
                     try:
                         res = ubongo.chakata_tafsiri_pacha(maandishi_t, lugha_chanzo, lugha_lengwa, muktadha_chaguo)
@@ -184,7 +201,8 @@ elif "sauti" in chaguo_menyu:
     with t_imla:
         audio_file = str_platform.file_uploader("Pakia Faili la Sauti (MP3, WAV, M4A):", type=["mp3", "wav", "m4a"], key="whisper_audio_uploader")
         if audio_file is not None:
-            str_platform.audio(audio_file, format="audio/wav")
+            aina_sauti = audio_file.type or "audio/mpeg"
+            str_platform.audio(audio_file, format=aina_sauti)
             if str_platform.button("Zindua Whisper-v3 Imla Pro", key="zindua_whisper_v3_btn"):
                 with str_platform.spinner("Auditory Cortex inasoma sauti..."):
                     try:
