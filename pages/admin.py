@@ -5,9 +5,10 @@ import os
 import sys
 import pandas as pd
 import numpy as np
-import random
+import secrets as py_secrets
 import time
 import smtplib
+import ssl
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
@@ -29,6 +30,7 @@ MAX_LOGIN_ATTEMPTS = 5          # majaribio kabla ya kufungiwa
 LOCKOUT_SECONDS = 300           # dakika 5 za kufungiwa
 SESSION_TIMEOUT_SECONDS = 900   # dakika 15 bila kazi -> toka
 OTP_TTL_SECONDS = 300           # OTP huisha baada ya dakika 5
+MAX_OTP_ATTEMPTS = 5              # jaribio la OTP kabla ya lockout
 MAX_CSV_BYTES = 5 * 1024 * 1024  # 5 MB
 MAX_CSV_ROWS = 20000            # kiwango cha juu cha mistari
 
@@ -42,6 +44,7 @@ for _k, _v in {
     "otp_email_sent": False,
     "otp_email_reason": "",
     "otp_created_at": 0.0,
+    "otp_attempts": 0,
     "login_attempts": 0,
     "lockout_until": 0.0,
     "auth_time": 0.0,
@@ -59,44 +62,51 @@ def tuma_otp_kwenda_email(otp_code, target_email):
     """
     sender_email = (str_platform.secrets.get("EMAIL_SENDER_USER", "") or "").strip()
     sender_password = (str_platform.secrets.get("EMAIL_SENDER_PASSWORD", "") or "").strip()
-    # Gmail huonyesha App Password kwa makundi ya herufi 4 zenye nafasi;
-    # ondoa nafasi zote za ndani ili login isishindwe kwa sababu ya nafasi.
-    sender_password = sender_password.replace(" ", "")
+    smtp_server = (str_platform.secrets.get("SMTP_SERVER", "smtp.gmail.com") or "smtp.gmail.com").strip()
+    try:
+        smtp_port = int(str_platform.secrets.get("SMTP_PORT", 587) or 587)
+    except (TypeError, ValueError):
+        return False, "bad_smtp_port"
 
-    # UTAMBUZI WA SIRI: kama hazijawekwa au ni tupu, rudi sababu mahususi.
-    if not sender_email or not sender_password:
+    # Gmail App Password mara nyingi huonyeshwa ikiwa na nafasi; ziondoe kwa login.
+    sender_password = sender_password.replace(" ", "")
+    target_email = (target_email or "").strip()
+
+    if not sender_email or not sender_password or not target_email:
         return False, "no_secrets"
 
     msg = MIMEMultipart()
-    msg['From'] = f"Ourworthlinks Business Security <{sender_email}>"
-    msg['To'] = target_email
-    msg['Subject'] = f"\U0001F512 2FA Verification Code: {otp_code}"
+    msg["From"] = f"Ourworthlinks Business Security <{sender_email}>"
+    msg["To"] = target_email
+    msg["Subject"] = f"🔒 2FA Verification Code: {otp_code}"
     body = f"""
-    Hello Director,
+Hello,
 
-    A login attempt was made on the Ourworthlinks Business Management Control Panel.
-    Your secure 6-digit administrative verification code is:
+A login attempt was made on the Ourworthlinks Business Management Control Panel.
+Your six-digit administrative verification code is:
 
-    \U0001F449 {otp_code}
+{otp_code}
 
-    This code is valid for 5 minutes. If you did not initiate this login, please
-    change your master credentials immediately.
+This code expires in 5 minutes. If you did not initiate this login, secure your account.
 
-    \u00A9 2026 Ourworthlinks Autonomous Suite.
-    """
-    msg.attach(MIMEText(body, 'plain'))
+© 2026 Ourworthlinks Autonomous Suite.
+"""
+    msg.attach(MIMEText(body, "plain"))
+
     try:
-        server = smtplib.SMTP("smtp.gmail.com", 587, timeout=15.0)
-        server.starttls()
-        server.login(sender_email, sender_password)
-        server.sendmail(sender_email, target_email, msg.as_string())
-        server.quit()
+        # STARTTLS on port 587; server and port can be configured in Streamlit Secrets.
+        with smtplib.SMTP(smtp_server, smtp_port, timeout=15.0) as server:
+            server.ehlo()
+            server.starttls(context=ssl.create_default_context())
+            server.ehlo()
+            server.login(sender_email, sender_password)
+            server.send_message(msg)
         return True, "ok"
     except smtplib.SMTPAuthenticationError:
-        # Login imekataliwa - karibu kila mara ni App Password isiyo sahihi.
         return False, "auth_failed"
-    except Exception:
-        # Hitilafu nyingine ya SMTP / mtandao / muda kuisha.
+    except Exception as exc:
+        # Diagnostic is written to the server log; never log credentials or OTP.
+        print(f"OTP email delivery failed ({type(exc).__name__}): {exc}")
         return False, "smtp_error"
 
 
@@ -108,6 +118,7 @@ def funga_kipindi():
     str_platform.session_state["otp_email_sent"] = False
     str_platform.session_state["otp_email_reason"] = ""
     str_platform.session_state["otp_created_at"] = 0.0
+    str_platform.session_state["otp_attempts"] = 0
     str_platform.session_state["auth_time"] = 0.0
 
 
@@ -136,10 +147,10 @@ if not str_platform.session_state["admin_authenticated"]:
             if ni_sahihi:
                 str_platform.session_state["admin_authenticated"] = True
                 str_platform.session_state["login_attempts"] = 0
-                code_generated = str(random.randint(100000, 999999))
+                code_generated = str(py_secrets.randbelow(900000) + 100000)
                 str_platform.session_state["generated_otp"] = code_generated
                 str_platform.session_state["otp_created_at"] = time.time()
-                target = str_platform.secrets.get("EMAIL_SENDER_USER", "ournethworthlinks@gmail.com").strip()
+                target = (str_platform.secrets.get("ADMIN_OTP_EMAIL", "") or str_platform.secrets.get("EMAIL_SENDER_USER", "") or "").strip()
                 ok_sent, sababu_sent = tuma_otp_kwenda_email(code_generated, target)
                 str_platform.session_state["otp_email_sent"] = ok_sent
                 str_platform.session_state["otp_email_reason"] = sababu_sent
@@ -160,7 +171,7 @@ if not str_platform.session_state["admin_authenticated"]:
 # ------------------------------------------------------------------ #
 if str_platform.session_state["admin_authenticated"] and not str_platform.session_state["otp_verified"]:
     str_platform.markdown("<h2 style='text-align: center; color: #3B82F6;'>\U0001F510 TWO-FACTOR AUTHENTICATION (2FA SHIELD)</h2>", unsafe_allow_html=True)
-    barua_pepe = str_platform.secrets.get("EMAIL_SENDER_USER", "ournethworthlinks@gmail.com").strip()
+    barua_pepe = (str_platform.secrets.get("ADMIN_OTP_EMAIL", "") or str_platform.secrets.get("EMAIL_SENDER_USER", "") or "").strip()
 
     col1, col2, col3 = str_platform.columns(3)
     with col2:
@@ -172,25 +183,31 @@ if str_platform.session_state["admin_authenticated"] and not str_platform.sessio
                 str_platform.rerun()
             str_platform.stop()
 
-        if str_platform.session_state["otp_email_sent"]:
-            str_platform.warning(f"\U0001F512 Nambari ya siri (OTP) imetumwa kwenye barua pepe: {barua_pepe}")
-        else:
+        if not str_platform.session_state["otp_email_sent"]:
             sababu = str_platform.session_state.get("otp_email_reason", "smtp_error")
             if sababu == "no_secrets":
                 str_platform.error(
-                    "\u26A0\uFE0F Siri za barua pepe hazijawekwa. Weka EMAIL_SENDER_USER na "
+                    "Siri za barua pepe hazijawekwa. Weka EMAIL_SENDER_USER na "
                     "EMAIL_SENDER_PASSWORD kwenye Streamlit Secrets."
                 )
             elif sababu == "auth_failed":
                 str_platform.error(
-                    "\u26A0\uFE0F Gmail imekataa kuingia (login failed). Hakikisha unatumia Gmail "
-                    "App Password (herufi 16), SI nywila ya kawaida ya Gmail."
+                    "Gmail imekataa kuingia. Hakikisha unatumia Google App Password, "
+                    "si nywila ya kawaida ya Gmail."
                 )
+            elif sababu == "bad_smtp_port":
+                str_platform.error("SMTP_PORT si namba halali. Tumia 587 kwa Gmail STARTTLS.")
             else:
                 str_platform.error(
-                    "\u26A0\uFE0F Barua pepe haikutumwa (hitilafu ya SMTP/mtandao). Jaribu tena baadaye."
+                    "OTP haikutumwa. Angalia SMTP_SERVER, SMTP_PORT, credentials, na logs za hosting. "
+                    "Kwa usalama, mfumo hautaonyesha OTP ya dharura kwenye ukurasa."
                 )
-            str_platform.info(f"Nambari ya dharura (backup): **{str_platform.session_state['generated_otp']}**")
+            if str_platform.button("Rudia kuingia baada ya kurekebisha email"):
+                funga_kipindi()
+                str_platform.rerun()
+            str_platform.stop()
+
+        str_platform.warning(f"OTP imetumwa kwenye barua pepe ya msimamizi: {barua_pepe}")
 
         input_otp = str_platform.text_input("Ingiza Nambari ya Siri (6-Digit OTP Code):", max_chars=6, key="otp_input_box")
         if str_platform.button("Thibitisha Utambulisho wa Utawala", use_container_width=True, type="primary"):
@@ -201,7 +218,16 @@ if str_platform.session_state["admin_authenticated"] and not str_platform.sessio
                 time.sleep(1)
                 str_platform.rerun()
             else:
-                str_platform.error("Nambari ya siri ya OTP uliyoingiza si sahihi!")
+                str_platform.session_state["otp_attempts"] += 1
+                zilizobaki_otp = MAX_OTP_ATTEMPTS - str_platform.session_state["otp_attempts"]
+                if zilizobaki_otp <= 0:
+                    str_platform.session_state["lockout_until"] = time.time() + LOCKOUT_SECONDS
+                    funga_kipindi()
+                    str_platform.error("Majaribio ya OTP yamezidi. Akaunti imefungwa kwa dakika 5.")
+                    str_platform.rerun()
+                else:
+                    str_platform.error(f"OTP si sahihi. Una majaribio {zilizobaki_otp} yaliyobaki.")
+
     str_platform.stop()
 
 # ------------------------------------------------------------------ #
