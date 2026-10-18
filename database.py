@@ -3,8 +3,10 @@
 import sqlite3
 import hashlib
 import bcrypt
+import os
 
-db_file = "ourworthlinks_data.db"
+# Tumia njia thabiti inayotegemea eneo la database.py, si working directory.
+db_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "ourworthlinks_data.db")
 
 # ONYO: Chumvi tuli ya zamani (SHA-256). Inatunzwa TU kwa ajili ya kuhakiki
 # nywila za zamani zilizohifadhiwa kabla ya kuhamia bcrypt, kisha kuzipandisha
@@ -97,19 +99,23 @@ def anzisha_hifadhidata_ya_chuma():
         except sqlite3.IntegrityError:
             pass
 
-    # Panda admin wa mwanzo kwa bcrypt. Nywila halisi IWEKWE kupitia Streamlit
-    # Secrets, SI ndani ya msimbo. 'admin123' ni ya mwanzo tu ya maendeleo.
+    # Tengeneza admin wa mwanzo tu ikiwa nywila imewekwa wazi kwenye Secrets.
+    # Hakuna nywila ya kawaida iliyowekwa ndani ya msimbo.
     try:
         import streamlit as st
-        admin_pwd = st.secrets.get("ADMIN_SEED_PASSWORD", "admin123")
+        admin_pwd = str(st.secrets.get("ADMIN_SEED_PASSWORD", "") or "").strip()
     except Exception:
-        admin_pwd = "admin123"
+        admin_pwd = ""
 
-    try:
-        p_admin = _tengeneza_hash(admin_pwd)
-        cursor.execute("INSERT INTO watumiaji (username, password_hash, hadhi) VALUES ('admin', ?, 'admin')", (p_admin,))
-    except sqlite3.IntegrityError:
-        pass
+    if admin_pwd:
+        try:
+            p_admin = _tengeneza_hash(admin_pwd)
+            cursor.execute(
+                "INSERT INTO watumiaji (username, password_hash, hadhi) VALUES ('admin', ?, 'admin')",
+                (p_admin,),
+            )
+        except sqlite3.IntegrityError:
+            pass
 
     conn.commit()
     conn.close()
