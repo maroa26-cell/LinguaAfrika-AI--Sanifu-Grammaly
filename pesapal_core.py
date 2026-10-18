@@ -15,7 +15,7 @@ ORDER_URL = f"{PESAPAL_BASE}/api/Transactions/SubmitOrderRequest"
 STATUS_URL = f"{PESAPAL_BASE}/api/Transactions/GetTransactionStatus"
 
 #  URL HALISI ya app yako (ilikuwa 'https://streamlit.app' - si sahihi)
-APP_URL = str_platform.secrets.get("APP_URL", "https://linguaafrika-ai--sanifu-grammaly-9jv3o9ocfcjmjtzbqkvwfw.streamlit.app").rstrip("/")
+APP_URL = str_platform.secrets.get("APP_URL", "APP_URL = "https://linguaafrika-ai--sanifu-grammaly-mftitfb5knlg6sgnbsrfdc.streamlit.app").rstrip("/")
 #  IPN id yako kutoka Pesapal
 IPN_ID = "329329ce-4caf-438d-b30b-d9ca91cf68a6"
 
