@@ -9,6 +9,7 @@ import secrets as py_secrets
 import time
 import smtplib
 import ssl
+import logging
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
@@ -94,19 +95,28 @@ This code expires in 5 minutes. If you did not initiate this login, secure your 
     msg.attach(MIMEText(body, "plain"))
 
     try:
-        # STARTTLS on port 587; server and port can be configured in Streamlit Secrets.
-        with smtplib.SMTP(smtp_server, smtp_port, timeout=15.0) as server:
-            server.ehlo()
-            server.starttls(context=ssl.create_default_context())
-            server.ehlo()
-            server.login(sender_email, sender_password)
-            server.send_message(msg)
+        # Port 465 uses implicit SSL; other configured ports use STARTTLS.
+        context = ssl.create_default_context()
+        if smtp_port == 465:
+            with smtplib.SMTP_SSL(
+                smtp_server, smtp_port, timeout=20.0, context=context
+            ) as server:
+                server.login(sender_email, sender_password)
+                server.send_message(msg)
+        else:
+            with smtplib.SMTP(smtp_server, smtp_port, timeout=20.0) as server:
+                server.ehlo()
+                server.starttls(context=context)
+                server.ehlo()
+                server.login(sender_email, sender_password)
+                server.send_message(msg)
         return True, "ok"
     except smtplib.SMTPAuthenticationError:
+        logging.exception("SMTP authentication failed while sending admin OTP.")
         return False, "auth_failed"
-    except Exception as exc:
-        # Diagnostic is written to the server log; never log credentials or OTP.
-        print(f"OTP email delivery failed ({type(exc).__name__}): {exc}")
+    except Exception:
+        # Log technical details on the server only; never log credentials or OTP.
+        logging.exception("SMTP delivery failed while sending admin OTP.")
         return False, "smtp_error"
 
 
@@ -150,7 +160,7 @@ if not str_platform.session_state["admin_authenticated"]:
                 code_generated = str(py_secrets.randbelow(900000) + 100000)
                 str_platform.session_state["generated_otp"] = code_generated
                 str_platform.session_state["otp_created_at"] = time.time()
-                target = (str_platform.secrets.get("ADMIN_OTP_EMAIL", "") or str_platform.secrets.get("EMAIL_SENDER_USER", "") or "").strip()
+                target = (str_platform.secrets.get("ADMIN_OTP_EMAIL", "") or "").strip()
                 ok_sent, sababu_sent = tuma_otp_kwenda_email(code_generated, target)
                 str_platform.session_state["otp_email_sent"] = ok_sent
                 str_platform.session_state["otp_email_reason"] = sababu_sent
@@ -171,7 +181,7 @@ if not str_platform.session_state["admin_authenticated"]:
 # ------------------------------------------------------------------ #
 if str_platform.session_state["admin_authenticated"] and not str_platform.session_state["otp_verified"]:
     str_platform.markdown("<h2 style='text-align: center; color: #3B82F6;'>\U0001F510 TWO-FACTOR AUTHENTICATION (2FA SHIELD)</h2>", unsafe_allow_html=True)
-    barua_pepe = (str_platform.secrets.get("ADMIN_OTP_EMAIL", "") or str_platform.secrets.get("EMAIL_SENDER_USER", "") or "").strip()
+    barua_pepe = (str_platform.secrets.get("ADMIN_OTP_EMAIL", "") or "").strip()
 
     col1, col2, col3 = str_platform.columns(3)
     with col2:
@@ -187,8 +197,8 @@ if str_platform.session_state["admin_authenticated"] and not str_platform.sessio
             sababu = str_platform.session_state.get("otp_email_reason", "smtp_error")
             if sababu == "no_secrets":
                 str_platform.error(
-                    "Siri za barua pepe hazijawekwa. Weka EMAIL_SENDER_USER na "
-                    "EMAIL_SENDER_PASSWORD kwenye Streamlit Secrets."
+                    "Mipangilio ya barua pepe haijakamilika. Weka EMAIL_SENDER_USER, "
+                    "EMAIL_SENDER_PASSWORD, na ADMIN_OTP_EMAIL kwenye Streamlit Secrets."
                 )
             elif sababu == "auth_failed":
                 str_platform.error(
@@ -196,7 +206,7 @@ if str_platform.session_state["admin_authenticated"] and not str_platform.sessio
                     "si nywila ya kawaida ya Gmail."
                 )
             elif sababu == "bad_smtp_port":
-                str_platform.error("SMTP_PORT si namba halali. Tumia 587 kwa Gmail STARTTLS.")
+                str_platform.error("SMTP_PORT si namba halali. Tumia 587 (STARTTLS) au 465 (SSL), kulingana na mtoa huduma.")
             else:
                 str_platform.error(
                     "OTP haikutumwa. Angalia SMTP_SERVER, SMTP_PORT, credentials, na logs za hosting. "
