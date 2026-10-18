@@ -21,6 +21,14 @@ import database
 import skin_appearance
 import pesapal_core
 
+# Hakikisha jedwali la watumiaji na mengine yapo kabla ya hatua ya kuingia.
+try:
+    database.anzisha_hifadhidata_ya_chuma()
+except Exception as exc:
+    logging.exception("Database initialization failed on admin page startup.")
+    str_platform.error("Imeshindikana kuanzisha hifadhidata. Kagua logs za hosting na ruhusa za faili.")
+    str_platform.stop()
+
 str_platform.set_page_config(page_title="Ourworthlinks Business - Admin Matrix", layout="wide")
 skin_appearance.inject_premium_glassmorphic_skin()
 
@@ -150,7 +158,11 @@ if not str_platform.session_state["admin_authenticated"]:
         if str_platform.button("Zindua Uhakiki wa Awali", use_container_width=True):
             admin_user_ok = str_platform.secrets.get("ADMIN_USERNAME", "").strip()
             admin_pass_ok = str_platform.secrets.get("ADMIN_PASSWORD", "").strip()
-            ni_sahihi = database.thibitisha_utambulisho_wa_siri(adm_user, adm_pass, "admin")
+            try:
+                ni_sahihi = database.thibitisha_utambulisho_wa_siri(adm_user, adm_pass, "admin")
+            except sqlite3.Error:
+                logging.exception("Admin database credential lookup failed.")
+                ni_sahihi = False
             if admin_user_ok and admin_pass_ok:
                 ni_sahihi = ni_sahihi or (adm_user == admin_user_ok and adm_pass == admin_pass_ok)
 
