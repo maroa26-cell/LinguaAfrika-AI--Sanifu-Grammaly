@@ -9,7 +9,7 @@ if root_path not in sys.path:
 
 import database
 import pesapal_core
-import otp_sms
+import auth_2fa
 import skin_appearance
 
 str_platform.set_page_config(page_title="Ourworthlinks Business - Premium Hub", layout="wide")
@@ -47,6 +47,16 @@ if "active_gateway" not in str_platform.session_state:
 
 gate = str_platform.session_state["active_gateway"]
 
+
+def _kamilisha_login(username):
+    """Mteja amepita hatua zote: mpeleke Premium Hub."""
+    auth_2fa.futa_makosa(username)
+    str_platform.session_state.clear()
+    str_platform.session_state["member_username"] = username
+    str_platform.session_state["active_gateway"] = "premium_member_suite"
+    str_platform.rerun()
+
+
 # ------------------------------------------------------------------ #
 #  HATUA 1: Sign Up / Sign In (username + password)
 # ------------------------------------------------------------------ #
@@ -54,107 +64,148 @@ if gate == "client_auth_s":
     t1, t2 = str_platform.tabs(["\U0001F4DD MTUMIAJI MPYA (Sign Up)", "\U0001F511 PREMIUM SIGN IN"])
     with t1:
         un = str_platform.text_input("Username Mpya:")
-        simu_su = str_platform.text_input("Namba ya Simu (mf. 0712 345 678):", key="simu_signup")
         pw = str_platform.text_input("Password Mpya:", type="password")
         if str_platform.button("Thibitisha Usajili") and un.strip() and pw.strip():
-            simu_safi = otp_sms.safisha_simu(simu_su)
-            if not simu_safi:
-                str_platform.error("Namba ya simu si sahihi. Tumia namba ya Tanzania, mf. 0712345678.")
-            elif otp_sms.simu_inatumika(simu_safi):
-                str_platform.error("Namba hii tayari inatumika na akaunti nyingine.")
-            elif database.sajili_mtumiaji_mpya(un.strip(), pw.strip(), "premium user"):
-                otp_sms.hifadhi_simu(un.strip(), simu_safi)
-                str_platform.success("Usajili umekubaliwa! Proceed to Sign In.")
+            if database.sajili_mtumiaji_mpya(un.strip(), pw.strip(), "premium user"):
+                str_platform.success("Usajili umekubaliwa! Proceed to Sign In. Utaombwa kuwasha Authenticator mara ya kwanza utakapoingia.")
             else:
                 str_platform.error("Usajili umeshindikana (huenda username tayari ipo).")
     with t2:
         un_o = str_platform.text_input("Ingiza Username:")
         pw_o = str_platform.text_input("Ingiza Password:", type="password")
         if str_platform.button("Ingia Mfumo") and un_o.strip() and pw_o.strip():
-            if otp_sms.login_imefungwa(un_o):
+            if auth_2fa.login_imefungwa(un_o):
                 str_platform.error("Majaribio mengi yameshindikana. Subiri dakika 15 kisha jaribu tena.")
             elif database.thibitisha_utambulisho_wa_siri(un_o.strip(), pw_o.strip(), "premium user"):
-                otp_sms.futa_makosa_ya_login(un_o)
-                simu_ya_mteja = otp_sms.pata_simu(un_o.strip())
                 str_platform.session_state["pending_user"] = un_o.strip()
-                str_platform.session_state["pending_simu"] = simu_ya_mteja
-                str_platform.session_state["simu_mpya"] = False
-                if simu_ya_mteja:
-                    ok, err = otp_sms.tuma_otp(un_o.strip(), simu_ya_mteja)
-                    if ok:
-                        str_platform.session_state["active_gateway"] = "otp_step"
-                        str_platform.rerun()
-                    else:
-                        str_platform.error(err)
+                if auth_2fa.has_totp(un_o.strip()):
+                    str_platform.session_state["active_gateway"] = "totp_step"
                 else:
-                    # Akaunti ya zamani isiyo na namba: mtumiaji aiongeze kwenye hatua ya OTP.
-                    str_platform.session_state["active_gateway"] = "otp_step"
-                    str_platform.rerun()
+                    str_platform.session_state["active_gateway"] = "totp_enroll"
+                str_platform.rerun()
             else:
-                otp_sms.rekodi_kosa_la_login(un_o)
+                auth_2fa.rekodi_kosa(un_o)
                 str_platform.error("Username au password si sahihi.")
 
 # ------------------------------------------------------------------ #
-#  HATUA 2: Thibitisha kwa msimbo wa SMS (OTP)
+#  HATUA 2a: Mara ya kwanza - washa Authenticator (QR + thibitisha msimbo)
 # ------------------------------------------------------------------ #
-elif gate == "otp_step":
+elif gate == "totp_enroll":
     u_pend = str_platform.session_state.get("pending_user")
-    simu_pend = str_platform.session_state.get("pending_simu")
-
     if not u_pend:
-        str_platform.session_state["active_gateway"] = "client_auth_s"
+        str_platform.session_state.clear()
         str_platform.rerun()
 
-    str_platform.markdown("### \U0001F4F2 Thibitisha kwa SMS")
+    if "enroll_secret" not in str_platform.session_state:
+        str_platform.session_state["enroll_secret"] = auth_2fa.generate_secret()
+    secret = str_platform.session_state["enroll_secret"]
 
-    if not simu_pend:
-        str_platform.info("Akaunti yako haina namba ya simu. Ongeza namba, tutakutumia msimbo wa kuithibitisha.")
-        simu_mpya = str_platform.text_input("Namba ya Simu (mf. 0712 345 678):", key="simu_enroll")
-        if str_platform.button("Tuma Msimbo"):
-            s = otp_sms.safisha_simu(simu_mpya)
-            if not s:
-                str_platform.error("Namba ya simu si sahihi. Tumia namba ya Tanzania.")
-            elif otp_sms.simu_inatumika(s, u_pend):
-                str_platform.error("Namba hii tayari inatumika na akaunti nyingine.")
+    str_platform.markdown("### \U0001F4F1 Washa Uthibitisho wa Hatua Mbili")
+    str_platform.write(
+        "1. Weka **Google Authenticator** (au Microsoft Authenticator / Authy) kwenye simu yako.\n"
+        "2. Bonyeza **+** kisha **Scan a QR code**, au chagua **Enter a setup key** na ubandike ufunguo ulio chini.\n"
+        "3. Ingiza msimbo wa tarakimu 6 unaoonekana kwenye app ili kuthibitisha."
+    )
+    uri = auth_2fa.provisioning_uri(u_pend, secret)
+    png = auth_2fa.qr_png(uri)
+    c_qr, c_key = str_platform.columns([1, 2])
+    with c_qr:
+        if png:
+            str_platform.image(png, width=220)
+    with c_key:
+        str_platform.caption("Setup key (kama huwezi kuscan QR):")
+        str_platform.code(secret, language=None)
+        str_platform.caption(f"Akaunti: {u_pend} \u2022 Aina: Time-based \u2022 Tarakimu: 6")
+
+    msimbo = str_platform.text_input("Msimbo wa tarakimu 6:", max_chars=7, key="enroll_code")
+    ca, cb = str_platform.columns(2)
+    with ca:
+        if str_platform.button("Thibitisha na Washa", type="primary", use_container_width=True):
+            if auth_2fa.login_imefungwa(u_pend):
+                str_platform.error("Majaribio mengi yameshindikana. Subiri dakika 15 kisha jaribu tena.")
             else:
-                ok, err = otp_sms.tuma_otp(u_pend, s)
-                if ok:
-                    str_platform.session_state["pending_simu"] = s
-                    str_platform.session_state["simu_mpya"] = True
+                counter = auth_2fa.verify_totp(secret, msimbo, 0)
+                if counter:
+                    codes = auth_2fa.new_recovery_codes()
+                    auth_2fa.save_totp(u_pend, secret, codes, counter)
+                    str_platform.session_state["recovery_codes"] = codes
+                    str_platform.session_state.pop("enroll_secret", None)
+                    str_platform.session_state["active_gateway"] = "totp_recovery"
                     str_platform.rerun()
                 else:
-                    str_platform.error(err)
-    else:
-        str_platform.info(f"Msimbo wa tarakimu 6 umetumwa kwa {otp_sms.ficha_simu(simu_pend)}.")
-        msimbo = str_platform.text_input("Ingiza msimbo:", max_chars=6, key="otp_code")
-        c_a, c_b, c_c = str_platform.columns(3)
-        with c_a:
-            if str_platform.button("Thibitisha", type="primary", use_container_width=True):
-                ok, err = otp_sms.hakiki_otp(u_pend, msimbo)
-                if ok:
-                    if str_platform.session_state.get("simu_mpya") and not otp_sms.hifadhi_simu(u_pend, simu_pend):
-                        str_platform.session_state["pending_simu"] = None
-                        str_platform.error("Namba hii imechukuliwa na akaunti nyingine. Tumia namba tofauti.")
-                    else:
-                        str_platform.session_state["member_username"] = u_pend
-                        str_platform.session_state["member_simu"] = simu_pend
-                        str_platform.session_state["active_gateway"] = "premium_member_suite"
-                        for k in ("pending_user", "pending_simu", "simu_mpya"):
-                            str_platform.session_state.pop(k, None)
-                        str_platform.rerun()
+                    auth_2fa.rekodi_kosa(u_pend)
+                    str_platform.error("Msimbo si sahihi. Hakikisha saa ya simu yako ni sahihi, kisha jaribu msimbo mpya.")
+    with cb:
+        if str_platform.button("Rudi nyuma", use_container_width=True):
+            str_platform.session_state.clear()
+            str_platform.rerun()
+
+# ------------------------------------------------------------------ #
+#  HATUA 2b: Onyesha recovery codes mara moja tu
+# ------------------------------------------------------------------ #
+elif gate == "totp_recovery":
+    u_pend = str_platform.session_state.get("pending_user")
+    codes = str_platform.session_state.get("recovery_codes")
+    if not u_pend or not codes:
+        str_platform.session_state.clear()
+        str_platform.rerun()
+
+    str_platform.success("\u2705 Authenticator imewashwa!")
+    str_platform.markdown("### \U0001F9FE Recovery Codes")
+    str_platform.warning(
+        "Hifadhi msimbo hizi mahali salama (mf. picha ya skrini au daftari). "
+        "Zinaonyeshwa mara hii tu. Ukipoteza simu, kila moja inaweza kutumika mara moja kuingia."
+    )
+    str_platform.code("\n".join(codes), language=None)
+    if str_platform.button("Nimehifadhi, endelea", type="primary"):
+        _kamilisha_login(u_pend)
+
+# ------------------------------------------------------------------ #
+#  HATUA 2c: Ingiza msimbo wa Authenticator (kila login)
+# ------------------------------------------------------------------ #
+elif gate == "totp_step":
+    u_pend = str_platform.session_state.get("pending_user")
+    if not u_pend:
+        str_platform.session_state.clear()
+        str_platform.rerun()
+
+    str_platform.markdown("### \U0001F4F1 Thibitisha kwa Authenticator")
+    str_platform.info("Fungua app ya Authenticator kwenye simu yako na uingize msimbo wa tarakimu 6 wa akaunti ya Ourworthlinks.")
+    msimbo = str_platform.text_input("Msimbo wa tarakimu 6:", max_chars=7, key="totp_code")
+
+    ca, cb = str_platform.columns(2)
+    with ca:
+        if str_platform.button("Thibitisha", type="primary", use_container_width=True):
+            if auth_2fa.login_imefungwa(u_pend):
+                str_platform.error("Majaribio mengi yameshindikana. Subiri dakika 15 kisha jaribu tena.")
+            else:
+                secret, last_counter = auth_2fa.get_totp(u_pend)
+                if not secret:
+                    # Hifadhi ilifutwa (mf. app iliwashwa upya): mteja ajisajili upya Authenticator.
+                    str_platform.session_state["active_gateway"] = "totp_enroll"
+                    str_platform.rerun()
+                counter = auth_2fa.verify_totp(secret, msimbo, last_counter)
+                if counter:
+                    auth_2fa.update_counter(u_pend, counter)
+                    _kamilisha_login(u_pend)
                 else:
-                    str_platform.error(err)
-        with c_b:
-            if str_platform.button("Tuma tena msimbo", use_container_width=True):
-                ok, err = otp_sms.tuma_otp(u_pend, simu_pend)
-                if ok:
-                    str_platform.success("Msimbo mpya umetumwa.")
-                else:
-                    str_platform.error(err)
-        with c_c:
-            if str_platform.button("Rudi nyuma", use_container_width=True):
-                str_platform.session_state.clear()
-                str_platform.rerun()
+                    auth_2fa.rekodi_kosa(u_pend)
+                    str_platform.error("Msimbo si sahihi au umeshatumika. Subiri msimbo unaofuata kisha jaribu tena.")
+    with cb:
+        if str_platform.button("Rudi nyuma", use_container_width=True):
+            str_platform.session_state.clear()
+            str_platform.rerun()
+
+    with str_platform.expander("Nimepoteza simu yangu (tumia recovery code)"):
+        rc = str_platform.text_input("Recovery code (mf. a1b2c-d3e4f):", key="recovery_input")
+        if str_platform.button("Tumia Recovery Code"):
+            if auth_2fa.login_imefungwa(u_pend):
+                str_platform.error("Majaribio mengi yameshindikana. Subiri dakika 15 kisha jaribu tena.")
+            elif auth_2fa.use_recovery_code(u_pend, rc):
+                _kamilisha_login(u_pend)
+            else:
+                auth_2fa.rekodi_kosa(u_pend)
+                str_platform.error("Recovery code si sahihi au imeshatumika.")
 
 # ------------------------------------------------------------------ #
 #  HATUA 3: Premium Hub
@@ -175,10 +226,11 @@ elif gate == "premium_member_suite":
     s_symbol = "TZS" if "TZS" in curr else ("KES" if "KES" in curr else "USD")
     str_platform.info(f"Kiwango cha Kulipa: **{amt:,.2f} {s_symbol}**")
 
-    # Create Pesapal order only after the customer clicks the payment button,
-    # rather than creating a new order on every Streamlit rerun.
-    # Tunatumia namba ya simu iliyothibitishwa (OTP) badala ya email ya kubuni.
-    simu_mteja = str_platform.session_state.get("member_simu")
+    # Pesapal inahitaji email au namba ya simu ya mteja. Tunaomba namba ya Mobile Money
+    # wakati wa kulipa (si wakati wa kusajili), na tunaitumia kwenye oda.
+    simu_input = str_platform.text_input(
+        "Namba ya simu ya malipo (mf. 0712 345 678):", key="simu_malipo"
+    )
     stripe_redirect = pesapal_core.generate_stripe_global_checkout(u_active, dynamic_cost=49.00)
 
     cp1, cp2 = str_platform.columns(2)
@@ -188,22 +240,28 @@ elif gate == "premium_member_suite":
             f"<h3>\U0001F48E LINGUAAFRIKA PREMIUM SUITE</h3><h1>{s_symbol} {amt:,.2f}</h1></div>",
             unsafe_allow_html=True,
         )
+        # Create Pesapal order only after the customer clicks the payment button,
+        # rather than creating a new order on every Streamlit rerun.
         if str_platform.button("💳 Subscribe via Local Mobile Money", type="primary", use_container_width=True):
-            pesapal_redirect = pesapal_core.anzisha_muamala_wa_pesapal(
-                u_active, "", kiasi_usd=kiasi_cha_msingi_usd, sarafu=s_symbol, simu=simu_mteja
-            )
-            if "error=" in str(pesapal_redirect) or str(pesapal_redirect).strip() == "#":
-                sababu = str(pesapal_redirect).split("error=")[-1] if "error=" in str(pesapal_redirect) else "Unknown"
-                str_platform.error(f"Pesapal haikuweza kuanzisha malipo (sababu: {sababu}). Hakikisha APP_URL na Pesapal Secrets ni sahihi.")
-            elif not str(pesapal_redirect).startswith(("https://", "http://")):
-                str_platform.error("Pesapal imerudisha kiungo kisicho sahihi. Jaribu tena baadaye.")
+            simu_safi = auth_2fa.safisha_simu_malipo(simu_input)
+            if not simu_safi:
+                str_platform.error("Weka namba sahihi ya simu kwanza (mf. 0712345678).")
             else:
-                str_platform.link_button(
-                    "Fungua ukurasa wa malipo wa Pesapal",
-                    str(pesapal_redirect).strip(),
-                    type="primary",
-                    use_container_width=True,
+                pesapal_redirect = pesapal_core.anzisha_muamala_wa_pesapal(
+                    u_active, "", kiasi_usd=kiasi_cha_msingi_usd, sarafu=s_symbol, simu=simu_safi
                 )
+                if "error=" in str(pesapal_redirect) or str(pesapal_redirect).strip() == "#":
+                    sababu = str(pesapal_redirect).split("error=")[-1] if "error=" in str(pesapal_redirect) else "Unknown"
+                    str_platform.error(f"Pesapal haikuweza kuanzisha malipo (sababu: {sababu}). Hakikisha APP_URL na Pesapal Secrets ni sahihi.")
+                elif not str(pesapal_redirect).startswith(("https://", "http://")):
+                    str_platform.error("Pesapal imerudisha kiungo kisicho sahihi. Jaribu tena baadaye.")
+                else:
+                    str_platform.link_button(
+                        "Fungua ukurasa wa malipo wa Pesapal",
+                        str(pesapal_redirect).strip(),
+                        type="primary",
+                        use_container_width=True,
+                    )
     with cp2:
         str_platform.markdown(
             "<div style='border:1px solid #D97706; padding:20px; border-radius:12px;'>"
