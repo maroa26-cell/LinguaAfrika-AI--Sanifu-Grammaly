@@ -114,3 +114,4 @@ elif gate == "premium_member_suite":
     if str_platform.button("Ondoka kwenye Akaunti (Log Out)"):
         str_platform.session_state["active_gateway"] = "client_auth_s"
         str_platform.rerun()
+
