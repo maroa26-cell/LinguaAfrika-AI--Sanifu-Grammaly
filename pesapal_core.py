@@ -1,33 +1,44 @@
 
-import streamlit as str_platform
-import requests
+import re
 import time
 import uuid
 
+import requests
+import streamlit as st
+
 # ====================================================================== #
-#  PESAPAL API 3.0 - ENDPOINTS HALISI (zilikuwa za uongo awali)
+#  PESAPAL API 3.0
 # ====================================================================== #
 #  Live:    https://pay.pesapal.com/v3
 #  Sandbox: https://cybqa.pesapal.com/pesapalv3
+#  Funguo (Consumer Key/Secret) lazima zilingane na mazingira (live au sandbox).
 PESAPAL_BASE = "https://pay.pesapal.com/v3"
 AUTH_URL = f"{PESAPAL_BASE}/api/Auth/RequestToken"
 ORDER_URL = f"{PESAPAL_BASE}/api/Transactions/SubmitOrderRequest"
 STATUS_URL = f"{PESAPAL_BASE}/api/Transactions/GetTransactionStatus"
 
-#  URL HALISI ya app yako (ilikuwa 'https://streamlit.app' - si sahihi)
-APP_URL = str_platform.secrets.get("APP_URL", "APP_URL = "https://linguaafrika-ai--sanifu-grammaly-mftitfb5knlg6sgnbsrfdc.streamlit.app").rstrip("/")
-#  IPN id yako kutoka Pesapal
-IPN_ID = "329329ce-4caf-438d-b30b-d9ca91cf68a6"
+
+def _secret(key, default=""):
+    """Soma Streamlit secret bila kuvunjika kama secrets hazipo."""
+    try:
+        return str(st.secrets.get(key, default)).strip()
+    except Exception:
+        return default
+
+
+# URL ya app yako (inaweza kuwekwa pia kwenye Secrets kama APP_URL)
+APP_URL = _secret(
+    "APP_URL",
+    "https://linguaafrika-ai--sanifu-grammaly-mftitfb5knlg6sgnbsrfdc.streamlit.app",
+).rstrip("/")
+
+# IPN id kutoka Pesapal (inaweza kuwekwa kwenye Secrets kama PESAPAL_IPN_ID)
+IPN_ID = _secret("PESAPAL_IPN_ID", "329329ce-4caf-438d-b30b-d9ca91cf68a6")
 
 
 def _pata_funguo():
     """Soma Consumer Key/Secret kutoka Streamlit Secrets."""
-    if hasattr(str_platform, "secrets"):
-        consumer_key = str_platform.secrets.get("PESAPAL_CONSUMER_KEY", "").strip()
-        consumer_secret = str_platform.secrets.get("PESAPAL_CONSUMER_SECRET", "").strip()
-    else:
-        consumer_key = consumer_secret = ""
-    return consumer_key, consumer_secret
+    return _secret("PESAPAL_CONSUMER_KEY"), _secret("PESAPAL_CONSUMER_SECRET")
 
 
 def _pata_token():
@@ -40,10 +51,12 @@ def _pata_token():
     payload = {"consumer_key": consumer_key, "consumer_secret": consumer_secret}
     try:
         resp = requests.post(AUTH_URL, headers=headers, json=payload, timeout=20.0)
-    except Exception:
+    except Exception as e:
+        print(f"[pesapal] auth exception: {e}")
         return None, "System_Exception"
 
     if resp.status_code != 200:
+        print(f"[pesapal] auth failed {resp.status_code}: {resp.text[:300]}")
         return None, f"Auth_Failed_{resp.status_code}"
     try:
         data = resp.json()
@@ -52,18 +65,21 @@ def _pata_token():
 
     token = data.get("token")
     if not token:
+        print(f"[pesapal] auth no token: {str(data)[:300]}")
         return None, "Auth_No_Token"
     return token, None
 
 
-def anzisha_muamala_wa_pesapal(username, email, kiasi_usd=5.00, sarafu="TZS"):
-    """\U0001F451 LIVE PRODUCTION GATEWAY: Hupeleka oda Pesapal na kurejesha redirect_url.
+def anzisha_muamala_wa_pesapal(username, email, kiasi_usd=5.00, sarafu="TZS", simu=None):
+    """Hupeleka oda Pesapal na kurejesha redirect_url.
 
-    IMEREKEBISHWA: endpoints halisi za Pesapal API 3.0 na URL halisi ya app.
+    Kama kuna hitilafu, hurejesha APP_URL?error=... (ili UI iweze kuionyesha).
     """
-    id_ya_muamala = f"owl-{int(time.time())}-{uuid.uuid4().hex[:8]}-{str(username).lower()}"
+    # Pesapal: 'id' ni max herufi 50, hivyo tunaikata na kusafisha username.
+    jina_safi = re.sub(r"[^a-z0-9]", "", str(username).lower())[:15] or "user"
+    id_ya_muamala = f"owl-{int(time.time())}-{uuid.uuid4().hex[:8]}-{jina_safi}"[:50]
 
-    # Badilisha sarafu / kiasi
+    # Badilisha sarafu / kiasi (viwango ni vya kukadiria; badilisha ukihitaji)
     sarafu_halisi = str(sarafu).upper().strip()
     if sarafu_halisi == "TZS":
         kiasi_cha_malipo = float(kiasi_usd) * 2600.00
@@ -81,6 +97,15 @@ def anzisha_muamala_wa_pesapal(username, email, kiasi_usd=5.00, sarafu="TZS"):
 
     # 2) Peleka oda
     nchi = "TZ" if sarafu_halisi == "TZS" else ("KE" if sarafu_halisi == "KES" else "US")
+    billing = {
+        "email_address": email,
+        "country_code": nchi,
+        "first_name": str(username) if len(str(username)) >= 2 else "Mteja",
+        "last_name": "Business",
+    }
+    if simu:  # weka namba halisi ya mteja kama unayo (mf. 2557XXXXXXXX)
+        billing["phone_number"] = str(simu)
+
     order_payload = {
         "id": id_ya_muamala,
         "currency": sarafu_halisi,
@@ -89,13 +114,7 @@ def anzisha_muamala_wa_pesapal(username, email, kiasi_usd=5.00, sarafu="TZS"):
         "callback_url": f"{APP_URL}/dashboard",
         "cancellation_url": f"{APP_URL}/dashboard",
         "notification_id": IPN_ID,
-        "billing_address": {
-            "email_address": email,
-            "phone_number": "0712345678",
-            "country_code": nchi,
-            "first_name": username if len(str(username)) >= 2 else "Mteja",
-            "last_name": "Business",
-        },
+        "billing_address": billing,
     }
     headers_order = {
         "Content-Type": "application/json",
@@ -104,10 +123,12 @@ def anzisha_muamala_wa_pesapal(username, email, kiasi_usd=5.00, sarafu="TZS"):
     }
     try:
         resp = requests.post(ORDER_URL, json=order_payload, headers=headers_order, timeout=20.0)
-    except Exception:
+    except Exception as e:
+        print(f"[pesapal] order exception: {e}")
         return f"{APP_URL}?error=System_Exception"
 
     if resp.status_code != 200:
+        print(f"[pesapal] order failed {resp.status_code}: {resp.text[:500]}")
         return f"{APP_URL}?error=Order_Failed_{resp.status_code}"
     try:
         data = resp.json()
@@ -117,6 +138,7 @@ def anzisha_muamala_wa_pesapal(username, email, kiasi_usd=5.00, sarafu="TZS"):
     redirect_url = data.get("redirect_url")
     if not redirect_url:
         # Pesapal mara nyingine huweka hitilafu kwenye 'error'
+        print(f"[pesapal] no redirect_url: {str(data)[:500]}")
         return f"{APP_URL}?error=Order_No_Redirect"
     return redirect_url
 
@@ -125,8 +147,8 @@ def angalia_hali_ya_malipo(order_tracking_id):
     """Hakiki hali HALISI ya malipo moja kwa moja na Pesapal.
 
     Hurejesha dict: {status_desc, amount, currency, reference, raw}.
-    Hii ndiyo tunayotumia kabla ya kumpandisha mteja Premium - usiamini
-    kigezo cha 'status' kutoka kwenye URL pekee.
+    Tumia hii kabla ya kumpandisha mteja Premium - usiamini kigezo cha
+    'status' kutoka kwenye URL pekee.
     """
     tokeo = {"status_desc": "UNKNOWN", "amount": 0.0, "currency": "", "reference": "", "raw": None}
     if not order_tracking_id:
@@ -150,7 +172,8 @@ def angalia_hali_ya_malipo(order_tracking_id):
             timeout=20.0,
         )
         data = resp.json()
-    except Exception:
+    except Exception as e:
+        print(f"[pesapal] status exception: {e}")
         tokeo["status_desc"] = "ERROR_System_Exception"
         return tokeo
 
@@ -163,13 +186,11 @@ def angalia_hali_ya_malipo(order_tracking_id):
 
 
 def generate_stripe_global_checkout(username, client_package="code_auditor_license", dynamic_cost=49.00):
-    """\U0001F310 GLOBAL CREDIT CARD PIPELINE (placeholder).
+    """GLOBAL CREDIT CARD PIPELINE (placeholder).
 
-    TAHADHARI: hii bado inatumia kiungo cha mfano cha Stripe. Ili ifanye kazi
-    halisi, unahitaji kuunda Stripe Checkout Session upande wa seva. Kwa sasa
-    inarejesha URL ya mfano tu.
+    TAHADHARI: bado inarejesha kiungo cha mfano. Ili ifanye kazi halisi,
+    tengeneza Stripe Checkout Session upande wa seva.
     """
     base_stripe_vault_link = "https://stripe.com"
     query = f"?package={client_package}&user={str(username).lower()}&amount={dynamic_cost}&currency=usd"
     return f"{base_stripe_vault_link}{query}"
-
