@@ -28,7 +28,7 @@ def _secret(key, default=""):
 # URL ya app yako (inaweza kuwekwa pia kwenye Secrets kama APP_URL)
 APP_URL = _secret(
     "APP_URL",
-    "https://linguaafrika-ai--sanifu-grammaly-mftitfb5knlg6sgnbsrfdc.streamlit.app",
+    "https://linguaafrika-ai--sanifu-grammaly-jkqruzz5uppo8ruzw82oa9.streamlit.app",
 ).rstrip("/")
 
 # IPN id kutoka Pesapal (inaweza kuwekwa kwenye Secrets kama PESAPAL_IPN_ID)
