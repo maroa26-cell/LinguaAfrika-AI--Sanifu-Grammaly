@@ -1,4 +1,5 @@
 
+
 import streamlit as str_platform
 import sqlite3
 import os
@@ -38,9 +39,11 @@ try:
         else:
             str_platform.error(f"\u274C Hali ya malipo: {hali['status_desc']}")
 except Exception:
-    pass
+    # Pesapal status may be temporarily unavailable; keep the page usable.
+    str_platform.warning("Tumerejea kutoka Pesapal, lakini hali ya malipo haikuweza kuhakikiwa sasa hivi. Tafadhali jaribu kupakia upya.")
 
-if "active_gateway" not in str_platform.session_state or str_platform.session_state["active_gateway"] != "premium_member_suite":
+# Do not overwrite an existing authenticated session on every rerun.
+if "active_gateway" not in str_platform.session_state:
     str_platform.session_state["active_gateway"] = "client_auth_s"
 
 gate = str_platform.session_state["active_gateway"]
@@ -77,12 +80,9 @@ elif gate == "premium_member_suite":
     s_symbol = "TZS" if "TZS" in curr else ("KES" if "KES" in curr else "USD")
     str_platform.info(f"Kiwango cha Kulipa: **{amt:,.2f} {s_symbol}**")
 
-    # Barua pepe halisi ya mteja ni muhimu kwa risiti - tumia iliyopo au bandika template
+    # Create Pesapal order only after the customer clicks the payment button,
+    # rather than creating a new order on every Streamlit rerun.
     email_mteja = f"{u_active}@ourworthlinks.com"
-    pesapal_redirect = pesapal_core.anzisha_muamala_wa_pesapal(
-        u_active, email_mteja, kiasi_usd=kiasi_cha_msingi_usd, sarafu=s_symbol
-    )
-    # IMEREKEBISHWA: ilikuwa URL ya Stripe iliyoharibika (hakuna '?'). Tumia helper.
     stripe_redirect = pesapal_core.generate_stripe_global_checkout(u_active, dynamic_cost=49.00)
 
     cp1, cp2 = str_platform.columns(2)
@@ -92,17 +92,22 @@ elif gate == "premium_member_suite":
             f"<h3>\U0001F48E LINGUAAFRIKA PREMIUM SUITE</h3><h1>{s_symbol} {amt:,.2f}</h1></div>",
             unsafe_allow_html=True,
         )
-        if "error" in str(pesapal_redirect) or str(pesapal_redirect).strip() == "#":
-            # Onyesha sababu halisi ya hitilafu ili iwe rahisi kurekebisha
-            sababu = str(pesapal_redirect).split("error=")[-1] if "error=" in str(pesapal_redirect) else "Unknown"
-            str_platform.warning(f"\u26A0\uFE0F Lango la Pesapal halijakamilika (sababu: {sababu}). Angalia Secrets.")
-        else:
-            str_platform.link_button(
-                "\U0001F4B3 Subscribe via Local Mobile Money",
-                str(pesapal_redirect).strip(),
-                type="primary",
-                use_container_width=True,
+        if str_platform.button("💳 Subscribe via Local Mobile Money", type="primary", use_container_width=True):
+            pesapal_redirect = pesapal_core.anzisha_muamala_wa_pesapal(
+                u_active, email_mteja, kiasi_usd=kiasi_cha_msingi_usd, sarafu=s_symbol
             )
+            if "error=" in str(pesapal_redirect) or str(pesapal_redirect).strip() == "#":
+                sababu = str(pesapal_redirect).split("error=")[-1] if "error=" in str(pesapal_redirect) else "Unknown"
+                str_platform.error(f"Pesapal haikuweza kuanzisha malipo (sababu: {sababu}). Hakikisha APP_URL na Pesapal Secrets ni sahihi.")
+            elif not str(pesapal_redirect).startswith(("https://", "http://")):
+                str_platform.error("Pesapal imerudisha kiungo kisicho sahihi. Jaribu tena baadaye.")
+            else:
+                str_platform.link_button(
+                    "Fungua ukurasa wa malipo wa Pesapal",
+                    str(pesapal_redirect).strip(),
+                    type="primary",
+                    use_container_width=True,
+                )
     with cp2:
         str_platform.markdown(
             "<div style='border:1px solid #D97706; padding:20px; border-radius:12px;'>"
