@@ -2,6 +2,7 @@
 import streamlit as str_platform
 import requests
 import time
+import uuid
 
 # ====================================================================== #
 #  PESAPAL API 3.0 - ENDPOINTS HALISI (zilikuwa za uongo awali)
@@ -14,8 +15,7 @@ ORDER_URL = f"{PESAPAL_BASE}/api/Transactions/SubmitOrderRequest"
 STATUS_URL = f"{PESAPAL_BASE}/api/Transactions/GetTransactionStatus"
 
 #  URL HALISI ya app yako (ilikuwa 'https://streamlit.app' - si sahihi)
-APP_URL = "https://linguaafrika-ai--sanifu-grammaly-ebor5bawjtziwwq8jcsx5v.streamlit.app"
-
+APP_URL = str_platform.secrets.get("APP_URL", "https://linguaafrika-ai--sanifu-grammaly-9jv3o9ocfcjmjtzbqkvwfw.streamlit.app").rstrip("/")
 #  IPN id yako kutoka Pesapal
 IPN_ID = "329329ce-4caf-438d-b30b-d9ca91cf68a6"
 
@@ -61,7 +61,7 @@ def anzisha_muamala_wa_pesapal(username, email, kiasi_usd=5.00, sarafu="TZS"):
 
     IMEREKEBISHWA: endpoints halisi za Pesapal API 3.0 na URL halisi ya app.
     """
-    id_ya_muamala = f"owl-{int(time.time())}-{str(username).lower()}"
+    id_ya_muamala = f"owl-{int(time.time())}-{uuid.uuid4().hex[:8]}-{str(username).lower()}"
 
     # Badilisha sarafu / kiasi
     sarafu_halisi = str(sarafu).upper().strip()
@@ -86,8 +86,8 @@ def anzisha_muamala_wa_pesapal(username, email, kiasi_usd=5.00, sarafu="TZS"):
         "currency": sarafu_halisi,
         "amount": kiasi_kilichozungushwa,
         "description": f"Ourworthlinks BUSINESS premium suite (base ${kiasi_usd} usd)"[:100],
-        "callback_url": APP_URL,
-        "cancellation_url": APP_URL,
+        "callback_url": f"{APP_URL}/dashboard",
+        "cancellation_url": f"{APP_URL}/dashboard",
         "notification_id": IPN_ID,
         "billing_address": {
             "email_address": email,
@@ -172,3 +172,4 @@ def generate_stripe_global_checkout(username, client_package="code_auditor_licen
     base_stripe_vault_link = "https://stripe.com"
     query = f"?package={client_package}&user={str(username).lower()}&amount={dynamic_cost}&currency=usd"
     return f"{base_stripe_vault_link}{query}"
+
