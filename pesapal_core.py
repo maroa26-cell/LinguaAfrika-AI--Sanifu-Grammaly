@@ -1,4 +1,3 @@
-
 import re
 import time
 import uuid
@@ -97,13 +96,17 @@ def anzisha_muamala_wa_pesapal(username, email, kiasi_usd=5.00, sarafu="TZS", si
 
     # 2) Peleka oda
     nchi = "TZ" if sarafu_halisi == "TZS" else ("KE" if sarafu_halisi == "KES" else "US")
+    # Pesapal inahitaji angalau email AU namba ya simu.
+    if not email and not simu:
+        return f"{APP_URL}?error=Missing_Email_Or_Phone"
     billing = {
-        "email_address": email,
         "country_code": nchi,
         "first_name": str(username) if len(str(username)) >= 2 else "Mteja",
         "last_name": "Business",
     }
-    if simu:  # weka namba halisi ya mteja kama unayo (mf. 2557XXXXXXXX)
+    if email:
+        billing["email_address"] = email
+    if simu:  # namba halisi ya mteja (mf. 2557XXXXXXXX)
         billing["phone_number"] = str(simu)
 
     order_payload = {
