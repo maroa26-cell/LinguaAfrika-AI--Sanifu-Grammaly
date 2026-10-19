@@ -29,8 +29,23 @@ try:
     if tid:
         hali = pesapal_core.angalia_hali_ya_malipo(str(tid).strip())
         if hali["status_desc"] == "COMPLETED":
-            if database.pandisha_hadhi_ya_mteja_kiotomatiki(str(tid).strip(), "completed"):
-                str_platform.success("\u2705 Malipo yamethibitishwa! Hadhi yako imepandishwa kuwa Premium.")
+            natija = database.pandisha_hadhi_ya_mteja_kiotomatiki(
+                str(tid).strip(),
+                "completed",
+                merchant_reference=hali.get("reference", ""),
+                kiasi=hali.get("amount", 0.0),
+                sarafu=hali.get("currency", ""),
+            )
+            if natija == "applied":
+                str_platform.success("\u2705 Malipo yamethibitishwa! Hadhi yako imepandishwa kuwa Premium. Ingia ili uone Premium yako.")
+            elif natija == "already":
+                str_platform.info("\u2139\uFE0F Malipo haya yalishathibitishwa tayari. Ingia kuona hali ya Premium yako.")
+            elif natija == "mismatch":
+                str_platform.error(f"\u274C Malipo yamepokelewa lakini kiasi au sarafu havilingani na oda. Wasiliana na msaada na namba hii: {tid}")
+            elif natija == "unknown_order":
+                str_platform.error(f"\u274C Malipo haya hayakupatikana kwenye mfumo wetu. Wasiliana na msaada na namba hii: {tid}")
+            else:
+                str_platform.warning("\u26A0\uFE0F Malipo yamekamilika lakini hatukuweza kusasisha akaunti sasa hivi. Pakia upya ukurasa, au wasiliana na msaada.")
         elif hali["status_desc"] == "PENDING":
             str_platform.info("\u23F3 Malipo bado yanasubiri (PENDING). Tafadhali subiri kidogo kisha pakia upya.")
         elif hali["status_desc"].startswith("ERROR"):
@@ -66,7 +81,10 @@ if gate == "client_auth_s":
         un = str_platform.text_input("Username Mpya:")
         pw = str_platform.text_input("Password Mpya:", type="password")
         if str_platform.button("Thibitisha Usajili") and un.strip() and pw.strip():
-            if database.sajili_mtumiaji_mpya(un.strip(), pw.strip(), "premium user"):
+            kosa_la_usajili = database.thibitisha_data_ya_usajili(un, pw)
+            if kosa_la_usajili:
+                str_platform.error(kosa_la_usajili)
+            elif database.sajili_mtumiaji_mpya(un.strip(), pw.strip(), "premium user"):
                 str_platform.success("Usajili umekubaliwa! Proceed to Sign In. Utaombwa kuwasha Authenticator mara ya kwanza utakapoingia.")
             else:
                 str_platform.error("Usajili umeshindikana (huenda username tayari ipo).")
@@ -213,6 +231,10 @@ elif gate == "totp_step":
 elif gate == "premium_member_suite":
     u_active = str_platform.session_state["member_username"]
     str_platform.markdown(f"### Welcome to the Ourworthlinks Global Marketplace, {u_active.upper()}!")
+
+    premium_hadi = database.premium_hadi_lini(u_active)
+    if premium_hadi:
+        str_platform.success(f"\u2705 Premium yako inatumika hadi {premium_hadi.strftime('%d/%m/%Y')}.")
 
     curr = str_platform.selectbox("Chagua Sarafu:", ["USD (Base)", "TZS (Converted)", "KES (Converted)"])
     kiasi_cha_msingi_usd = 5.00
