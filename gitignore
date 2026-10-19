@@ -2,4 +2,5 @@ chore(security): ongeza .gitignore kuzuia secrets na database kwenda GitHub
 
 - Puuza .streamlit/secrets.toml, .env, *.env
 - Puuza faili za SQLite (*.db, *.sqlite, *.sqlite3)
-- Puuza __pycache__, mazingira ya venv, na faili za mfumo
+- Puuza __pycache__, mazingira ya venv, na faili za mfumoauth_2fa.db, otp_phones.db,ourworthlinks_data.db 
+
