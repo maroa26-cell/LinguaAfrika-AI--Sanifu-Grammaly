@@ -124,6 +124,19 @@ def anzisha_muamala_wa_pesapal(username, email, kiasi_usd=5.00, sarafu="TZS", si
         "Accept": "application/json",
         "Authorization": f"Bearer {access_token}",
     }
+
+    # Rekodi oda (mteja + kiasi) KABLA ya kwenda Pesapal, ili malipo yakirudi
+    # tuweze kujua ni nani alilipa na kiasi gani kilitarajiwa.
+    try:
+        import database
+        if not database.rekodi_oda_inasubiri(
+            id_ya_muamala, str(username).strip().lower(), kiasi_kilichozungushwa, sarafu_halisi
+        ):
+            return f"{APP_URL}?error=Order_Record_Fail"
+    except Exception as e:
+        print(f"[pesapal] order record exception: {e}")
+        return f"{APP_URL}?error=Order_Record_Fail"
+
     try:
         resp = requests.post(ORDER_URL, json=order_payload, headers=headers_order, timeout=20.0)
     except Exception as e:
