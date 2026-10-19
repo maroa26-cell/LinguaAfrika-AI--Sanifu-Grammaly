@@ -116,6 +116,8 @@ def anzisha_muamala_wa_pesapal(username, email, kiasi_usd=5.00, sarafu="TZS", si
         "description": f"Ourworthlinks BUSINESS premium suite (base ${kiasi_usd} usd)"[:100],
         "callback_url": f"{APP_URL}/dashboard",
         "cancellation_url": f"{APP_URL}/dashboard",
+        # Muhimu: mtoe mteja kwenye iframe ya Pesapal arudi kwenye app yako (dirisha kuu)
+        "redirect_mode": "TOP_WINDOW",
         "notification_id": IPN_ID,
         "billing_address": billing,
     }
@@ -166,7 +168,11 @@ def angalia_hali_ya_malipo(order_tracking_id):
     Tumia hii kabla ya kumpandisha mteja Premium - usiamini kigezo cha
     'status' kutoka kwenye URL pekee.
     """
-    tokeo = {"status_desc": "UNKNOWN", "amount": 0.0, "currency": "", "reference": "", "raw": None}
+    tokeo = {
+        "status_desc": "UNKNOWN", "amount": 0.0, "currency": "", "reference": "",
+        "payment_method": "", "confirmation_code": "", "created_date": "",
+        "payment_account": "", "raw": None,
+    }
     if not order_tracking_id:
         return tokeo
 
@@ -197,6 +203,10 @@ def angalia_hali_ya_malipo(order_tracking_id):
     tokeo["amount"] = float(data.get("amount", 0) or 0)
     tokeo["currency"] = data.get("currency", "")
     tokeo["reference"] = data.get("merchant_reference", "")
+    tokeo["payment_method"] = data.get("payment_method") or ""
+    tokeo["confirmation_code"] = data.get("confirmation_code") or ""
+    tokeo["created_date"] = data.get("created_date") or ""
+    tokeo["payment_account"] = data.get("payment_account") or ""
     tokeo["raw"] = data
     return tokeo
 
