@@ -2,6 +2,7 @@ import streamlit as str_platform
 import sqlite3
 import os
 import sys
+import re
 
 root_path = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 if root_path not in sys.path:
@@ -9,6 +10,7 @@ if root_path not in sys.path:
 
 import database
 import pesapal_core
+import risiti
 import auth_2fa
 import skin_appearance
 
@@ -23,38 +25,89 @@ str_platform.write("---")
 #  USALAMA: HATUAMINI kigezo 'status' kutoka URL. Tunahakiki hali
 #  HALISI moja kwa moja na Pesapal kabla ya kumpandisha mteja Premium.
 # ------------------------------------------------------------------ #
-try:
+def _onyesha_historia_ya_malipo(username):
+    """Historia ya malipo + risiti (PDF) za mteja aliyeingia. Inasomwa kutoka Neon."""
+    malipo = database.orodha_ya_malipo(username)
+    if not malipo:
+        return
+    with str_platform.expander(f"\U0001F9FE Risiti na historia ya malipo yako ({len(malipo)})", expanded=False):
+        for i, m in enumerate(malipo):
+            c1, c2 = str_platform.columns([3, 1])
+            c1.markdown(
+                f"**{m['sarafu']} {m['kiasi']:,.2f}** \u2022 {m['tarehe'] or '-'}  \n"
+                f"Risiti: `{m['order_ref']}` \u2022 Uthibitisho: {m['confirmation_code'] or '-'} "
+                f"\u2022 {m['payment_method'] or '-'}"
+            )
+            pdf = risiti.tengeneza_pdf(m)
+            if pdf:
+                c2.download_button(
+                    "\u2B07\uFE0F Pakua PDF", data=pdf,
+                    file_name=f"risiti_{m['order_ref']}.pdf", mime="application/pdf",
+                    key=f"risiti_pdf_{i}_{m['order_ref']}",
+                )
+            else:
+                c2.download_button(
+                    "\u2B07\uFE0F Pakua risiti", data=risiti.tengeneza_html(m).encode("utf-8"),
+                    file_name=f"risiti_{m['order_ref']}.html", mime="text/html",
+                    key=f"risiti_html_{i}_{m['order_ref']}",
+                )
+            str_platform.write("---")
+
+
+def _hakiki_malipo_yaliyorudi():
+    """Mteja amerudi kutoka Pesapal: hakiki, kisha SAFISHA URL ili isirudie."""
     v = str_platform.query_params
     tid = v.get("OrderTrackingId") or v.get("pesapal_tracking_id")
-    if tid:
-        hali = pesapal_core.angalia_hali_ya_malipo(str(tid).strip())
-        if hali["status_desc"] == "COMPLETED":
-            natija = database.pandisha_hadhi_ya_mteja_kiotomatiki(
-                str(tid).strip(),
-                "completed",
-                merchant_reference=hali.get("reference", ""),
-                kiasi=hali.get("amount", 0.0),
-                sarafu=hali.get("currency", ""),
-            )
-            if natija == "applied":
-                str_platform.success("\u2705 Malipo yamethibitishwa! Hadhi yako imepandishwa kuwa Premium. Ingia ili uone Premium yako.")
-            elif natija == "already":
-                str_platform.info("\u2139\uFE0F Malipo haya yalishathibitishwa tayari. Ingia kuona hali ya Premium yako.")
-            elif natija == "mismatch":
-                str_platform.error(f"\u274C Malipo yamepokelewa lakini kiasi au sarafu havilingani na oda. Wasiliana na msaada na namba hii: {tid}")
-            elif natija == "unknown_order":
-                str_platform.error(f"\u274C Malipo haya hayakupatikana kwenye mfumo wetu. Wasiliana na msaada na namba hii: {tid}")
-            else:
-                str_platform.warning("\u26A0\uFE0F Malipo yamekamilika lakini hatukuweza kusasisha akaunti sasa hivi. Pakia upya ukurasa, au wasiliana na msaada.")
-        elif hali["status_desc"] == "PENDING":
-            str_platform.info("\u23F3 Malipo bado yanasubiri (PENDING). Tafadhali subiri kidogo kisha pakia upya.")
-        elif hali["status_desc"].startswith("ERROR"):
-            str_platform.warning("\u26A0\uFE0F Imeshindikana kuhakiki malipo kwa sasa. Jaribu tena baadaye.")
+    if not tid:
+        return
+    tid = str(tid).strip()
+    try:
+        hali = pesapal_core.angalia_hali_ya_malipo(tid)
+    except Exception:
+        hali = {"status_desc": "ERROR_Exception"}
+    st_desc = hali["status_desc"]
+
+    if st_desc == "PENDING" or st_desc.startswith("ERROR"):
+        # Usisafishe URL: mteja abonyeze "Angalia tena" na tutahakiki tena.
+        str_platform.info("\u23F3 Tunasubiri uthibitisho wa malipo yako (thibitisha PIN kwenye simu kama bado).")
+        if str_platform.button("\U0001F504 Angalia tena hali ya malipo"):
+            str_platform.rerun()
+        return
+
+    if st_desc == "COMPLETED":
+        natija = database.pandisha_hadhi_ya_mteja_kiotomatiki(
+            tid, "completed",
+            merchant_reference=hali.get("reference", ""),
+            kiasi=hali.get("amount", 0.0),
+            sarafu=hali.get("currency", ""),
+            confirmation_code=hali.get("confirmation_code", ""),
+            payment_method=hali.get("payment_method", ""),
+            tarehe_malipo=hali.get("created_date", ""),
+        )
+        if natija in ("applied", "already"):
+            jina = database.pata_mteja_wa_oda(hali.get("reference", ""))
+            if jina:
+                str_platform.session_state["jina_la_kulipa"] = jina
+            ujumbe = ("success", "\u2705 Malipo yamethibitishwa! Premium yako imewashwa. Ingia hapa chini (username yako imeandaliwa) kuendelea kwenye Dashboard yako na kupakua risiti yako.")
+        elif natija == "mismatch":
+            ujumbe = ("error", f"\u274C Kiasi au sarafu havilingani na oda. Wasiliana na msaada na namba hii: {tid}")
+        elif natija == "unknown_order":
+            ujumbe = ("error", f"\u274C Malipo hayakupatikana kwenye mfumo wetu. Wasiliana na msaada na namba hii: {tid}")
         else:
-            str_platform.error(f"\u274C Hali ya malipo: {hali['status_desc']}")
-except Exception:
-    # Pesapal status may be temporarily unavailable; keep the page usable.
-    str_platform.warning("Tumerejea kutoka Pesapal, lakini hali ya malipo haikuweza kuhakikiwa sasa hivi. Tafadhali jaribu kupakia upya.")
+            ujumbe = ("warning", "\u26A0\uFE0F Malipo yamekamilika lakini akaunti haikusasishwa sasa hivi. Pakia upya ukurasa au wasiliana na msaada.")
+    else:
+        ujumbe = ("error", f"\u274C Malipo hayakukamilika (hali: {st_desc}). Unaweza kujaribu tena.")
+
+    str_platform.session_state["pesapal_msg"] = ujumbe
+    str_platform.query_params.clear()  # huzuia kuhakiki tena kila rerun
+
+
+_hakiki_malipo_yaliyorudi()
+
+# Onyesha ujumbe wa malipo mpaka mteja aingie (login huifuta session)
+_pm = str_platform.session_state.get("pesapal_msg")
+if _pm:
+    getattr(str_platform, _pm[0])(_pm[1])
 
 # Do not overwrite an existing authenticated session on every rerun.
 if "active_gateway" not in str_platform.session_state:
@@ -89,7 +142,7 @@ if gate == "client_auth_s":
             else:
                 str_platform.error("Usajili umeshindikana (huenda username tayari ipo).")
     with t2:
-        un_o = str_platform.text_input("Ingiza Username:")
+        un_o = str_platform.text_input("Ingiza Username:", value=str_platform.session_state.get("jina_la_kulipa", ""))
         pw_o = str_platform.text_input("Ingiza Password:", type="password")
         if str_platform.button("Ingia Mfumo") and un_o.strip() and pw_o.strip():
             if auth_2fa.login_imefungwa(un_o):
@@ -231,6 +284,7 @@ elif gate == "totp_step":
 elif gate == "premium_member_suite":
     u_active = str_platform.session_state["member_username"]
     str_platform.markdown(f"### Welcome to the Ourworthlinks Global Marketplace, {u_active.upper()}!")
+    _onyesha_historia_ya_malipo(u_active)
 
     premium_hadi = database.premium_hadi_lini(u_active)
     if premium_hadi:
@@ -253,6 +307,9 @@ elif gate == "premium_member_suite":
     simu_input = str_platform.text_input(
         "Namba ya simu ya malipo (mf. 0712 345 678):", key="simu_malipo"
     )
+    email_input = str_platform.text_input(
+        "Barua pepe (hiari, kwa ajili ya risiti kutoka Pesapal):", key="email_malipo"
+    ).strip()
     stripe_redirect = pesapal_core.generate_stripe_global_checkout(u_active, dynamic_cost=49.00)
 
     cp1, cp2 = str_platform.columns(2)
@@ -268,9 +325,11 @@ elif gate == "premium_member_suite":
             simu_safi = auth_2fa.safisha_simu_malipo(simu_input)
             if not simu_safi:
                 str_platform.error("Weka namba sahihi ya simu kwanza (mf. 0712345678).")
+            elif email_input and not re.fullmatch(r"[^@\s]+@[^@\s]+\.[^@\s]+", email_input):
+                str_platform.error("Barua pepe si sahihi. Iandike vizuri au iache wazi.")
             else:
                 pesapal_redirect = pesapal_core.anzisha_muamala_wa_pesapal(
-                    u_active, "", kiasi_usd=kiasi_cha_msingi_usd, sarafu=s_symbol, simu=simu_safi
+                    u_active, email_input, kiasi_usd=kiasi_cha_msingi_usd, sarafu=s_symbol, simu=simu_safi
                 )
                 if "error=" in str(pesapal_redirect) or str(pesapal_redirect).strip() == "#":
                     sababu = str(pesapal_redirect).split("error=")[-1] if "error=" in str(pesapal_redirect) else "Unknown"
