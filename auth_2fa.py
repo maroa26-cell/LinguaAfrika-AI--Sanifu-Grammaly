@@ -22,6 +22,8 @@ from urllib.parse import quote
 
 import streamlit as st
 
+import db_conn
+
 ISSUER = "Ourworthlinks"
 STEP = 30           # sekunde 30 kwa kila msimbo
 DIGITS = 6
@@ -90,13 +92,22 @@ def qr_png(data):
 # ------------------------------------------------------------------ #
 #  Hifadhi (SQLite)
 # ------------------------------------------------------------------ #
+_TABLE_READY_FOR = None
+
+
 def _conn():
-    c = sqlite3.connect(DB_FILE)
-    c.execute(
-        "CREATE TABLE IF NOT EXISTS totp_secrets ("
-        "username TEXT PRIMARY KEY, secret TEXT NOT NULL, "
-        "last_counter INTEGER NOT NULL DEFAULT 0, recovery TEXT NOT NULL DEFAULT '')"
-    )
+    """Muunganisho (Neon Postgres kama DATABASE_URL ipo, vinginevyo SQLite) + jedwali tayari."""
+    global _TABLE_READY_FOR
+    c = db_conn.connect(DB_FILE)
+    ufunguo = (db_conn.database_url(), DB_FILE)
+    if _TABLE_READY_FOR != ufunguo:
+        c.execute(
+            "CREATE TABLE IF NOT EXISTS totp_secrets ("
+            "username TEXT PRIMARY KEY, secret TEXT NOT NULL, "
+            "last_counter BIGINT NOT NULL DEFAULT 0, recovery TEXT NOT NULL DEFAULT '')"
+        )
+        c.commit()
+        _TABLE_READY_FOR = ufunguo
     return c
 
 
@@ -153,7 +164,7 @@ def update_counter(username, counter):
 
 
 def use_recovery_code(username, code):
-    """True kama recovery code ni sahihi; inafutwa baada ya kutumika."""
+    """True kama recovery code ni sahihi; inafutwa baada ya kutumika (mara moja tu)."""
     h = _hash_recovery(code)
     with closing(_conn()) as c:
         row = c.execute(
@@ -161,7 +172,8 @@ def use_recovery_code(username, code):
         ).fetchone()
         if not row or not row[0]:
             return False
-        hashes = row[0].split(",")
+        zamani = row[0]
+        hashes = zamani.split(",")
         match = None
         for x in hashes:
             if hmac.compare_digest(x, h):
@@ -169,11 +181,14 @@ def use_recovery_code(username, code):
         if match is None:
             return False
         hashes.remove(match)
-        c.execute(
-            "UPDATE totp_secrets SET recovery = ? WHERE username = ?", (",".join(hashes), _u(username))
+        # Compare-and-set: ikiwa ombi lingine limeshatumia code hii, hakuna safu itakayobadilika.
+        cur = c.execute(
+            "UPDATE totp_secrets SET recovery = ? WHERE username = ? AND recovery = ?",
+            (",".join(hashes), _u(username), zamani),
         )
+        ok = cur.rowcount == 1
         c.commit()
-    return True
+    return ok
 
 
 def reset_totp(username):
