@@ -1,5 +1,3 @@
-
-import sqlite3
 import hashlib
 import hmac
 import re
@@ -7,7 +5,10 @@ import bcrypt
 import os
 from datetime import datetime, timedelta, timezone
 
-# Tumia njia thabiti inayotegemea eneo la database.py, si working directory.
+import db_conn
+
+# Faili la SQLite linatumika TU kama `DATABASE_URL` haijawekwa kwenye Secrets
+# (mf. majaribio kwenye kompyuta yako). Kwenye Streamlit Cloud tumia Neon (Postgres).
 db_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "ourworthlinks_data.db")
 
 # ONYO: Chumvi tuli ya zamani (SHA-256). Inatunzwa TU kwa ajili ya kuhakiki
@@ -21,6 +22,8 @@ SIKU_ZA_PREMIUM = 30
 # Majina ambayo mtumiaji wa kawaida haruhusiwi kujisajili nayo.
 RESERVED_USERNAMES = {"admin", "administrator", "root", "support", "owner", "system", "staff", "ourworthlinks"}
 USERNAME_RE = re.compile(r"^[a-z0-9_.-]{3,30}$")
+
+IntegrityError = db_conn.IntegrityError
 
 
 def _tengeneza_hash(password_ghafi):
@@ -60,97 +63,94 @@ def _safisha_jina(username):
 
 
 def pata_muunganisho_wa_chuma():
-    """👑 NO-LOCK CONNECTION MATRIX: Resolves concurrency database lock risks"""
-    return sqlite3.connect(
-        db_file,
-        timeout=30.0,
-        check_same_thread=False
-    )
+    """👑 Muunganisho wa database: Neon Postgres (DATABASE_URL) au SQLite ya ndani.
 
-
-def _ongeza_safu_kama_haipo(cursor, jedwali, safu, aina):
-    """Ongeza safu mpya kwenye jedwali la zamani bila kufuta data (migration salama)."""
-    cursor.execute(f"PRAGMA table_info({jedwali})")
-    zilizopo = {r[1] for r in cursor.fetchall()}
-    if safu not in zilizopo:
-        cursor.execute(f"ALTER TABLE {jedwali} ADD COLUMN {safu} {aina}")
+    Tumia `conn.cursor()`, `cursor.execute(sql, params)` na `?` kama kishika-nafasi
+    kwa SQL zote; safu hii inazibadilisha kuwa `%s` kwa Postgres.
+    """
+    return db_conn.connect(db_file)
 
 
 def anzisha_hifadhidata_ya_chuma():
     """📊 SCHEMA INITIALIZER: Creates and indexes localized production tables"""
     conn = pata_muunganisho_wa_chuma()
-    cursor = conn.cursor()
-
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS watumiaji (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            username TEXT UNIQUE,
-            password_hash TEXT,
-            hadhi TEXT DEFAULT 'standard user'
-        )
-    """)
-
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS malipo_trans (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            username TEXT,
-            tracking_id TEXT UNIQUE,
-            kiasi REAL,
-            status TEXT DEFAULT 'pending',
-            muda TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-    """)
-
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS kamusi_dataset (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            keyword TEXT UNIQUE,
-            semantic_meaning TEXT,
-            category TEXT DEFAULT 'general'
-        )
-    """)
-
-    # Migration: safu mpya za premium na za kulinganisha malipo na oda.
-    _ongeza_safu_kama_haipo(cursor, "watumiaji", "premium_hadi", "TEXT")
-    _ongeza_safu_kama_haipo(cursor, "malipo_trans", "merchant_ref", "TEXT")
-    _ongeza_safu_kama_haipo(cursor, "malipo_trans", "sarafu", "TEXT")
-    cursor.execute("CREATE UNIQUE INDEX IF NOT EXISTS idx_malipo_merchant_ref ON malipo_trans (merchant_ref)")
-
-    cursor.execute("CREATE INDEX IF NOT EXISTS idx_keyword_lookup ON kamusi_dataset (keyword)")
-
-    baseline_data = [
-        ("mshandao", "Mstari imara au kiungo kilichounganishwa katika mtandao wa mawasiliano (Network Pathway / Pipeline Node).", "technical"),
-        ("mnyororo wa kache", "Hifadhi ya muda pfupi ya kumbukumbu ya kompyuta inayozuia mifumo isigande kiofisi.", "infrastructure"),
-        ("chujio", "Zana maalum ya kukagua na kusafisha mistari ya msimbo dhidi ya hitilafu za uandishi au kiusalama.", "security"),
-        ("urari", "Usawa kamili uliopo kati ya ankara za kiofisi na fedha zilizochakatwa kupitia lango la malipo.", "billing")
-    ]
-
-    for key, definition, cat in baseline_data:
-        try:
-            cursor.execute("INSERT INTO kamusi_dataset (keyword, semantic_meaning, category) VALUES (?, ?, ?)", (key, definition, cat))
-        except sqlite3.IntegrityError:
-            pass
-
-    # Tengeneza admin wa mwanzo tu ikiwa nywila imewekwa wazi kwenye Secrets.
-    # Hakuna nywila ya kawaida iliyowekwa ndani ya msimbo.
     try:
-        import streamlit as st
-        admin_pwd = str(st.secrets.get("ADMIN_SEED_PASSWORD", "") or "").strip()
-    except Exception:
-        admin_pwd = ""
+        id_col = db_conn.aina_ya_id(conn)
 
-    if admin_pwd:
-        try:
-            p_admin = _tengeneza_hash(admin_pwd)
-            cursor.execute(
-                "INSERT INTO watumiaji (username, password_hash, hadhi) VALUES ('admin', ?, 'admin')",
-                (p_admin,),
+        conn.execute(f"""
+            CREATE TABLE IF NOT EXISTS watumiaji (
+                id {id_col},
+                username TEXT UNIQUE,
+                password_hash TEXT,
+                hadhi TEXT DEFAULT 'standard user'
             )
-        except sqlite3.IntegrityError:
-            pass
+        """)
 
-    conn.commit()
-    conn.close()
+        conn.execute(f"""
+            CREATE TABLE IF NOT EXISTS malipo_trans (
+                id {id_col},
+                username TEXT,
+                tracking_id TEXT UNIQUE,
+                kiasi DOUBLE PRECISION,
+                status TEXT DEFAULT 'pending',
+                muda TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+
+        conn.execute(f"""
+            CREATE TABLE IF NOT EXISTS kamusi_dataset (
+                id {id_col},
+                keyword TEXT UNIQUE,
+                semantic_meaning TEXT,
+                category TEXT DEFAULT 'general'
+            )
+        """)
+
+        # Migration: safu mpya za premium na za kulinganisha malipo na oda.
+        db_conn.ongeza_safu_kama_haipo(conn, "watumiaji", "premium_hadi", "TEXT")
+        db_conn.ongeza_safu_kama_haipo(conn, "malipo_trans", "merchant_ref", "TEXT")
+        db_conn.ongeza_safu_kama_haipo(conn, "malipo_trans", "sarafu", "TEXT")
+        conn.execute("CREATE UNIQUE INDEX IF NOT EXISTS idx_malipo_merchant_ref ON malipo_trans (merchant_ref)")
+
+        conn.execute("CREATE INDEX IF NOT EXISTS idx_keyword_lookup ON kamusi_dataset (keyword)")
+
+        baseline_data = [
+            ("mshandao", "Mstari imara au kiungo kilichounganishwa katika mtandao wa mawasiliano (Network Pathway / Pipeline Node).", "technical"),
+            ("mnyororo wa kache", "Hifadhi ya muda pfupi ya kumbukumbu ya kompyuta inayozuia mifumo isigande kiofisi.", "infrastructure"),
+            ("chujio", "Zana maalum ya kukagua na kusafisha mistari ya msimbo dhidi ya hitilafu za uandishi au kiusalama.", "security"),
+            ("urari", "Usawa kamili uliopo kati ya ankara za kiofisi na fedha zilizochakatwa kupitia lango la malipo.", "billing")
+        ]
+
+        for key, definition, cat in baseline_data:
+            # ON CONFLICT DO NOTHING inafanya kazi kwenye SQLite na Postgres
+            # (kukamata IntegrityError kungeharibu transaction ya Postgres).
+            conn.execute(
+                "INSERT INTO kamusi_dataset (keyword, semantic_meaning, category) VALUES (?, ?, ?) "
+                "ON CONFLICT (keyword) DO NOTHING",
+                (key, definition, cat),
+            )
+
+        # Tengeneza admin wa mwanzo tu ikiwa nywila imewekwa wazi kwenye Secrets.
+        # Hakuna nywila ya kawaida iliyowekwa ndani ya msimbo.
+        try:
+            import streamlit as st
+            admin_pwd = str(st.secrets.get("ADMIN_SEED_PASSWORD", "") or "").strip()
+        except Exception:
+            admin_pwd = ""
+
+        if admin_pwd:
+            conn.execute(
+                "INSERT INTO watumiaji (username, password_hash, hadhi) VALUES ('admin', ?, 'admin') "
+                "ON CONFLICT (username) DO NOTHING",
+                (_tengeneza_hash(admin_pwd),),
+            )
+
+        conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
 
 
 def query_neuroplasticity_lookup(search_term):
@@ -208,7 +208,8 @@ def sajili_mtumiaji_mpya(username, password_ghafi, hadhi_msingi="premium user"):
         cursor.execute("INSERT INTO watumiaji (username, password_hash, hadhi) VALUES (?, ?, ?)", (u_clean, p_hash, hadhi_msingi.lower()))
         conn.commit()
         success = True
-    except sqlite3.IntegrityError:
+    except IntegrityError:
+        conn.rollback()
         success = False
     finally:
         conn.close()
@@ -247,7 +248,7 @@ def thibitisha_utambulisho_wa_siri(username, password_ghafi, hadhi_inayotakiwa):
             cursor.execute("UPDATE watumiaji SET password_hash = ? WHERE id = ?", (mpya, user_id))
             conn.commit()
         except Exception:
-            pass
+            conn.rollback()
 
     conn.close()
     return True
@@ -270,7 +271,8 @@ def rekodi_oda_inasubiri(merchant_ref, username, kiasi, sarafu):
         )
         conn.commit()
         return True
-    except sqlite3.Error as e:
+    except db_conn.Error as e:
+        conn.rollback()
         print(f"[db] rekodi_oda_inasubiri failed: {e}")
         return False
     finally:
@@ -322,7 +324,8 @@ def pandisha_hadhi_ya_mteja_kiotomatiki(tracking_id, status, merchant_reference=
             print(f"[db] mismatch ref={merchant_reference} lipwa={kiasi} {sarafu} tarajiwa={kiasi_alichotarajiwa} {sarafu_inayotarajiwa}")
             return "mismatch"
 
-        # Weka 'completed' mara moja tu (hata kama ukurasa unapakiwa mara mbili kwa wakati mmoja)
+        # Weka 'completed' mara moja tu (hata kama ukurasa unapakiwa mara mbili kwa wakati mmoja).
+        # Kwenye Postgres, ombi la pili linasubiri la kwanza likamilike, kisha linaona 0 rows.
         cursor.execute(
             "UPDATE malipo_trans SET status = 'completed', tracking_id = ? WHERE id = ? AND status != 'completed'",
             (tracking_id, order_id),
@@ -345,7 +348,7 @@ def pandisha_hadhi_ya_mteja_kiotomatiki(tracking_id, status, merchant_reference=
         cursor.execute("UPDATE watumiaji SET premium_hadi = ? WHERE username = ?", (mpya.isoformat(), username))
         conn.commit()
         return "applied"
-    except sqlite3.IntegrityError as e:
+    except IntegrityError as e:
         conn.rollback()
         print(f"[db] integrity error: {e}")
         return "mismatch"
@@ -378,7 +381,7 @@ def ni_premium_aliyelipa(username):
 
 
 # Hakikisha majedwali yapo hata kama ukurasa huu ndio wa kwanza kufunguliwa
-# (Streamlit inaendesha ukurasa mmoja tu, na faili la database linaweza kufutwa app ikiwashwa upya).
+# (Streamlit inaendesha ukurasa mmoja tu).
 try:
     anzisha_hifadhidata_ya_chuma()
 except Exception as _e:
