@@ -110,6 +110,9 @@ def anzisha_hifadhidata_ya_chuma():
         db_conn.ongeza_safu_kama_haipo(conn, "watumiaji", "premium_hadi", "TEXT")
         db_conn.ongeza_safu_kama_haipo(conn, "malipo_trans", "merchant_ref", "TEXT")
         db_conn.ongeza_safu_kama_haipo(conn, "malipo_trans", "sarafu", "TEXT")
+        db_conn.ongeza_safu_kama_haipo(conn, "malipo_trans", "confirmation_code", "TEXT")
+        db_conn.ongeza_safu_kama_haipo(conn, "malipo_trans", "payment_method", "TEXT")
+        db_conn.ongeza_safu_kama_haipo(conn, "malipo_trans", "tarehe_ya_malipo", "TEXT")
         conn.execute("CREATE UNIQUE INDEX IF NOT EXISTS idx_malipo_merchant_ref ON malipo_trans (merchant_ref)")
 
         conn.execute("CREATE INDEX IF NOT EXISTS idx_keyword_lookup ON kamusi_dataset (keyword)")
@@ -287,7 +290,8 @@ def _soma_tarehe(s):
     return d if d.tzinfo else d.replace(tzinfo=timezone.utc)
 
 
-def pandisha_hadhi_ya_mteja_kiotomatiki(tracking_id, status, merchant_reference="", kiasi=0.0, sarafu=""):
+def pandisha_hadhi_ya_mteja_kiotomatiki(tracking_id, status, merchant_reference="", kiasi=0.0, sarafu="",
+                                        confirmation_code="", payment_method="", tarehe_malipo=""):
     """Mpe Premium mteja aliyeanzisha oda, baada ya Pesapal kuthibitisha malipo.
 
     Hurejesha moja ya:
@@ -318,6 +322,21 @@ def pandisha_hadhi_ya_mteja_kiotomatiki(tracking_id, status, merchant_reference=
         order_id, username, kiasi_alichotarajiwa, sarafu_inayotarajiwa, hali_ya_sasa = row
 
         if hali_ya_sasa == "completed":
+            # Jaza maelezo ya risiti kwa malipo ya zamani yasiyo nayo (haibadilishi yaliyopo).
+            if confirmation_code or payment_method or tarehe_malipo:
+                try:
+                    cursor.execute(
+                        "UPDATE malipo_trans SET "
+                        "confirmation_code = COALESCE(NULLIF(confirmation_code, ''), ?), "
+                        "payment_method = COALESCE(NULLIF(payment_method, ''), ?), "
+                        "tarehe_ya_malipo = COALESCE(NULLIF(tarehe_ya_malipo, ''), ?) "
+                        "WHERE id = ?",
+                        (str(confirmation_code or ""), str(payment_method or ""), str(tarehe_malipo or ""), order_id),
+                    )
+                    conn.commit()
+                except Exception as e:
+                    conn.rollback()
+                    print(f"[db] backfill risiti failed: {e}")
             return "already"
         if str(sarafu).upper() != str(sarafu_inayotarajiwa or "").upper() or \
                 float(kiasi or 0) + 0.01 < float(kiasi_alichotarajiwa or 0):
@@ -327,8 +346,10 @@ def pandisha_hadhi_ya_mteja_kiotomatiki(tracking_id, status, merchant_reference=
         # Weka 'completed' mara moja tu (hata kama ukurasa unapakiwa mara mbili kwa wakati mmoja).
         # Kwenye Postgres, ombi la pili linasubiri la kwanza likamilike, kisha linaona 0 rows.
         cursor.execute(
-            "UPDATE malipo_trans SET status = 'completed', tracking_id = ? WHERE id = ? AND status != 'completed'",
-            (tracking_id, order_id),
+            "UPDATE malipo_trans SET status = 'completed', tracking_id = ?, "
+            "confirmation_code = ?, payment_method = ?, tarehe_ya_malipo = ? "
+            "WHERE id = ? AND status != 'completed'",
+            (tracking_id, str(confirmation_code or ""), str(payment_method or ""), str(tarehe_malipo or ""), order_id),
         )
         if cursor.rowcount != 1:
             conn.rollback()
@@ -358,6 +379,55 @@ def pandisha_hadhi_ya_mteja_kiotomatiki(tracking_id, status, merchant_reference=
         return "error"
     finally:
         conn.close()
+
+
+def pata_mteja_wa_oda(merchant_ref):
+    """Hurejesha username aliyeanzisha oda hii, au None kama oda haipo."""
+    ref = str(merchant_ref or "").strip()
+    if not ref:
+        return None
+    conn = pata_muunganisho_wa_chuma()
+    try:
+        row = conn.execute(
+            "SELECT username FROM malipo_trans WHERE merchant_ref = ?", (ref,)
+        ).fetchone()
+    except Exception as e:
+        print(f"[db] pata_mteja_wa_oda error: {e}")
+        return None
+    finally:
+        conn.close()
+    return row[0] if row else None
+
+
+def orodha_ya_malipo(username, kikomo=20):
+    """Malipo yote yaliyokamilika ya mteja (mapya kwanza), kwa ajili ya risiti."""
+    conn = pata_muunganisho_wa_chuma()
+    try:
+        rows = conn.execute(
+            "SELECT merchant_ref, tracking_id, kiasi, sarafu, confirmation_code, "
+            "payment_method, tarehe_ya_malipo, muda FROM malipo_trans "
+            "WHERE username = ? AND status = 'completed' ORDER BY id DESC LIMIT ?",
+            (_safisha_jina(username), int(kikomo)),
+        ).fetchall()
+    except Exception as e:
+        print(f"[db] orodha_ya_malipo error: {e}")
+        return []
+    finally:
+        conn.close()
+    tokeo = []
+    for r in rows:
+        tokeo.append({
+            "username": _safisha_jina(username),
+            "order_ref": r[0] or "",
+            "tracking_id": r[1] or "",
+            "kiasi": float(r[2] or 0),
+            "sarafu": r[3] or "",
+            "confirmation_code": r[4] or "",
+            "payment_method": r[5] or "",
+            "tarehe": r[6] or (str(r[7])[:19] if r[7] else ""),
+            "siku_za_premium": SIKU_ZA_PREMIUM,
+        })
+    return tokeo
 
 
 def premium_hadi_lini(username):
