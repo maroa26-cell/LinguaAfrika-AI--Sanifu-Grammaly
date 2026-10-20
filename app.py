@@ -1,7 +1,11 @@
+
 import streamlit as str_platform
 import os
 import time
+import io
 import html
+import pandas as pd
+import requests
 from openai import OpenAI
 import database
 import skin_appearance
@@ -12,7 +16,7 @@ self_healing_status = "\U0001F7E2 autonomous shield: active & healthy"
 str_platform.set_page_config(page_title="LinguaAfrika AI — Sanifu Grammaly", page_icon="\U0001F9E0", layout="wide", initial_sidebar_state="expanded")
 
 # URL HALISI ya app yako (ilikuwa 'https://streamlit.app' - si sahihi)
-APP_URL = "https://linguaafrika-ai--sanifu-grammaly-ebor5bawjtziwwq8jcsx5v.streamlit.app"
+_APP_URL_MSINGI = "https://linguaafrika-ai--sanifu-grammaly-ebor5bawjtziwwq8jcsx5v.streamlit.app"
 
 # Kikomo cha herufi kwa kila ingizo (kuzuia matumizi mabaya / gharama kubwa)
 MAX_CHARS = 5000
@@ -29,6 +33,10 @@ def _secret(jina):
         return None
 
 
+# Anwani ya app: inasomwa kutoka Secrets (APP_URL), sawa na pesapal_core.py.
+APP_URL = str(_secret("APP_URL") or _APP_URL_MSINGI).strip().rstrip("/")
+
+
 def onyesha_jibu(res, border_color="#10B981", bg="rgba(16,185,129,0.1)"):
     """Onyesha jibu la AI kwa usalama (escape HTML ili kuzuia XSS)."""
     salama = html.escape(str(res or ""))
@@ -37,6 +45,71 @@ def onyesha_jibu(res, border_color="#10B981", bg="rgba(16,185,129,0.1)"):
         f"border-radius:10px; margin-top:15px; white-space:pre-wrap;'>{salama}</div>",
         unsafe_allow_html=True,
     )
+
+
+# ------------------------------------------------------------------ #
+#  KAMUSI YA DATA (CSV): chanzo cha kwanza cha ukweli kabla ya AI
+# ------------------------------------------------------------------ #
+# Weka faili la CSV kwenye repo yako, folda moja na app.py, kisha andika jina lake hapa.
+KAMUSI_CSV_FILE = "kamusi.csv"
+# Mbadala: kiungo kamili cha RAW (https://raw.githubusercontent.com/USER/REPO/main/faili.csv)
+# kinaweza kuwekwa kwenye Streamlit Secrets kama KAMUSI_CSV_URL.
+KAMUSI_CSV_URL = str(_secret("KAMUSI_CSV_URL") or "").strip()
+# Kwa repo ya FARAGHA: weka token ya kusoma tu kwenye Secrets kama KAMUSI_GITHUB_TOKEN.
+KAMUSI_GITHUB_TOKEN = str(_secret("KAMUSI_GITHUB_TOKEN") or "").strip()
+KAMUSI_SAFU = ["swahili_term", "english_term", "category", "description_sw"]
+
+
+@str_platform.cache_data(ttl=600, show_spinner=False)
+def pakia_kamusi_csv():
+    """Hurejesha (DataFrame, kosa). 'kosa' ni None kama yote sawa."""
+    tupu = pd.DataFrame(columns=KAMUSI_SAFU)
+    njia = os.path.join(os.path.dirname(os.path.abspath(__file__)), KAMUSI_CSV_FILE)
+    chanzo = njia if os.path.exists(njia) else (KAMUSI_CSV_URL or None)
+    if not chanzo:
+        print(f"[kamusi] hakuna chanzo: weka {KAMUSI_CSV_FILE} kwenye repo au KAMUSI_CSV_URL kwenye Secrets")
+        return tupu, "no_source"
+    try:
+        if chanzo == KAMUSI_CSV_URL and KAMUSI_GITHUB_TOKEN:
+            r = requests.get(chanzo, headers={"Authorization": f"token {KAMUSI_GITHUB_TOKEN}"}, timeout=20)
+            r.raise_for_status()
+            df = pd.read_csv(io.StringIO(r.text), dtype=str).fillna("")
+        else:
+            df = pd.read_csv(chanzo, dtype=str, encoding="utf-8").fillna("")
+    except Exception as e:
+        print(f"[kamusi] imeshindwa kusoma CSV: {type(e).__name__}: {e}")
+        return tupu, "read_error"
+    if "swahili_term" not in df.columns:
+        print(f"[kamusi] safu 'swahili_term' haipo. Safu zilizopo: {list(df.columns)}")
+        return tupu, "bad_columns"
+    for safu in KAMUSI_SAFU:
+        if safu not in df.columns:
+            df[safu] = ""
+    return df, None
+
+
+def tafuta_kwenye_kamusi_csv(neno, kikomo=20):
+    """Hurejesha (matokeo, kosa). Maneno kamili hutangulia, kisha yanayolingana kwa sehemu."""
+    df, kosa = pakia_kamusi_csv()
+    if kosa:
+        return None, kosa
+    q = str(neno).strip().lower()
+    istilahi = df["swahili_term"].str.lower().str.strip()
+    kamili = df[istilahi == q]
+    # regex=False: mtumiaji akiandika alama kama "(" au "*" isilete hitilafu
+    sehemu = df[istilahi.str.contains(q, regex=False) & (istilahi != q)]
+    return pd.concat([kamili, sehemu]).head(kikomo), None
+
+
+def onyesha_matokeo_ya_kamusi(matokeo):
+    for _, r in matokeo.iterrows():
+        str_platform.success(f"**Neno la Kiswahili:** {r['swahili_term']}")
+        str_platform.write(f"**Tafsiri ya Kiingereza (English):** *{r['english_term']}*")
+        if r["category"]:
+            str_platform.write(f"**Kundi (Category):** {r['category']}")
+        if r["description_sw"]:
+            str_platform.info(f"**Maelezo ya Kiswahili:** {r['description_sw']}")
+        str_platform.markdown("---")
 
 
 try:
@@ -186,14 +259,22 @@ elif "kamusi" in chaguo_menyu:
     msamiati = str_platform.text_input("Andika neno la Kiswahili hapa:", key="kamusi_input_v14_clean", max_chars=100)
     if str_platform.button("Tafuta Kwenye Kamusi Kuu", key="v14_btn_kam_clean"):
         if msamiati.strip() != "":
-            with str_platform.spinner("Searching..."):
-                try:
-                    res = ubongo.chakata_kamusi_kuu(msamiati, database)
-                except Exception as e:
-                    res = None
-                    str_platform.error(f"Hitilafu kwenye kamusi: {e}")
-            if res:
-                onyesha_jibu(res, border_color="#D97706", bg="rgba(255,255,255,0.02)")
+            matokeo_csv, kosa_csv = tafuta_kwenye_kamusi_csv(msamiati)
+            if matokeo_csv is not None and not matokeo_csv.empty:
+                onyesha_matokeo_ya_kamusi(matokeo_csv)
+            else:
+                if kosa_csv:
+                    str_platform.info("Kamusi ya data haipatikani kwa sasa. Hapa chini ni pendekezo la AI (halijahakikiwa).")
+                else:
+                    str_platform.warning("Neno hilo halijapatikana kwenye kamusi iliyohakikiwa. Hapa chini ni pendekezo la AI (halijahakikiwa).")
+                with str_platform.spinner("Searching..."):
+                    try:
+                        res = ubongo.chakata_kamusi_kuu(msamiati, database)
+                    except Exception as e:
+                        res = None
+                        str_platform.error(f"Hitilafu kwenye kamusi: {e}")
+                if res:
+                    onyesha_jibu(res, border_color="#D97706", bg="rgba(255,255,255,0.02)")
 
 elif "sauti" in chaguo_menyu:
     str_platform.markdown("<h3 style='color: #D97706;'>\U0001F399\uFE0F Roboti wa Sauti, Imla (Transcription) & Jifunze Lugha Suite</h3>", unsafe_allow_html=True)
