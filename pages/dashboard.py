@@ -25,6 +25,19 @@ str_platform.write("---")
 #  USALAMA: HATUAMINI kigezo 'status' kutoka URL. Tunahakiki hali
 #  HALISI moja kwa moja na Pesapal kabla ya kumpandisha mteja Premium.
 # ------------------------------------------------------------------ #
+BEI_YA_KAWAIDA_USD = 5.00
+
+
+def _bei_ya_premium_usd():
+    """Bei ya Premium kwa USD. Chaguo-msingi ni 5.00; kwa majaribio weka
+    PREMIUM_BEI_USD = "1.00" kwenye Streamlit Secrets (ifute ukimaliza kujaribu)."""
+    try:
+        v = float(str(str_platform.secrets.get("PREMIUM_BEI_USD", BEI_YA_KAWAIDA_USD)).strip())
+        return v if v > 0 else BEI_YA_KAWAIDA_USD
+    except Exception:
+        return BEI_YA_KAWAIDA_USD
+
+
 def _onyesha_historia_ya_malipo(username):
     """Historia ya malipo + risiti (PDF) za mteja aliyeingia. Inasomwa kutoka Neon."""
     malipo = database.orodha_ya_malipo(username)
@@ -291,7 +304,9 @@ elif gate == "premium_member_suite":
         str_platform.success(f"\u2705 Premium yako inatumika hadi {premium_hadi.strftime('%d/%m/%Y')}.")
 
     curr = str_platform.selectbox("Chagua Sarafu:", ["USD (Base)", "TZS (Converted)", "KES (Converted)"])
-    kiasi_cha_msingi_usd = 5.00
+    kiasi_cha_msingi_usd = _bei_ya_premium_usd()
+    if kiasi_cha_msingi_usd != BEI_YA_KAWAIDA_USD:
+        str_platform.warning(f"\U0001F9EA HALI YA MAJARIBIO: bei ya muda ni ${kiasi_cha_msingi_usd:,.2f}.")
     if "TZS" in curr:
         amt = kiasi_cha_msingi_usd * 2600.00
     elif "KES" in curr:
