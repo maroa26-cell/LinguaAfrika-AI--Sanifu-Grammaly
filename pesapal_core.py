@@ -28,7 +28,7 @@ def _secret(key, default=""):
 # URL ya app yako (inaweza kuwekwa pia kwenye Secrets kama APP_URL)
 APP_URL = _secret(
     "APP_URL",
-    "https://linguaafrika-ai--sanifu-grammaly-jkqruzz5uppo8ruzw82oa9.streamlit.app",
+    "https://linguaafrika-ai--sanifu-grammaly-m5xtj9pydnpe2qibp2jezc.streamlit.app",
 ).rstrip("/")
 
 # IPN id kutoka Pesapal (inaweza kuwekwa kwenye Secrets kama PESAPAL_IPN_ID)
@@ -158,6 +158,14 @@ def anzisha_muamala_wa_pesapal(username, email, kiasi_usd=5.00, sarafu="TZS", si
         # Pesapal mara nyingine huweka hitilafu kwenye 'error'
         print(f"[pesapal] no redirect_url: {str(data)[:500]}")
         return f"{APP_URL}?error=Order_No_Redirect"
+
+    # Hifadhi tracking id ili malipo yahakikiwe hata kama callback haikufika.
+    tracking = data.get("order_tracking_id")
+    if tracking:
+        try:
+            database.weka_tracking_id_ya_oda(id_ya_muamala, tracking)
+        except Exception as e:
+            print(f"[pesapal] save tracking id failed: {e}")
     return redirect_url
 
 
