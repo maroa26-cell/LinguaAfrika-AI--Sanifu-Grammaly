@@ -1,28 +1,12 @@
-google_seo_schema = """
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "DefinedTermSet",
-  "@id": "https://github.com",
-  "name": "Kamusi Kuu ya LinguaAfrika-AI--Sanifu-Grammaly",
-  "description": "Hifadhidata rasmi na kamusi ya kidijitali ya istilahi za Kisheria, Afya, na Kilimo (Kiswahili - Kiingereza).",
-  "provider": {
-    "@type": "Organization",
-    "name": "LinguaAfrika AI"
-  }
-}
-</script>
-"""
-import streamlit as st
-st.markdown(google_seo_schema, unsafe_allow_html=True)
-
 import streamlit as str_platform
 import os
 import time
 import io
+import json
 import html
 import pandas as pd
 import requests
+import streamlit.components.v1 as components
 from openai import OpenAI
 import database
 import skin_appearance
@@ -52,6 +36,34 @@ def _secret(jina):
 
 # Anwani ya app: inasomwa kutoka Secrets (APP_URL), sawa na pesapal_core.py.
 APP_URL = str(_secret("APP_URL") or _APP_URL_MSINGI).strip().rstrip("/")
+
+
+def weka_seo_schema():
+    """Weka alama za JSON-LD (schema.org) kwenye <head> ya ukurasa.
+
+    Inaitwa BAADA ya set_page_config. Maelezo yamo ndani ya kamusi ya Python (dict) na
+    json.dumps inahakikisha JSON ni sahihi. Kumbuka: Streamlit hujenga ukurasa kwa JavaScript,
+    kwa hiyo injini za utafutaji huenda zisiisome; hii ni juhudi ya ziada tu.
+    """
+    data = {
+        "@context": "https://schema.org",
+        "@type": "DefinedTermSet",
+        "@id": f"{APP_URL}/#kamusi",
+        "url": APP_URL,
+        "name": "Kamusi Kuu ya LinguaAfrika AI",
+        "description": "Kamusi ya kidijitali ya istilahi za Kiswahili na Kiingereza.",
+        "inLanguage": ["sw", "en"],
+        "provider": {"@type": "Organization", "name": "LinguaAfrika AI"},
+    }
+    payload = json.dumps(data, ensure_ascii=False).replace("</", "<\\/")
+    js_literal = json.dumps(payload)
+    components.html(
+        "<script>(function(){try{var d=window.parent.document;"
+        "if(d.getElementById('seo-jsonld'))return;"
+        "var s=d.createElement('script');s.type='application/ld+json';s.id='seo-jsonld';"
+        f"s.text={js_literal};d.head.appendChild(s);}}catch(e){{}}}})();</script>",
+        height=0,
+    )
 
 
 def onyesha_jibu(res, border_color="#10B981", bg="rgba(16,185,129,0.1)"):
@@ -148,6 +160,7 @@ if isinstance(api_key_source, str) and api_key_source.strip():
 else:
     str_platform.error("\U0001F512 secrets error! Weka OPENAI_API_KEY kwenye Secrets."); str_platform.stop()
 
+weka_seo_schema()
 skin_appearance.render_top_revenue_banner()
 
 str_platform.markdown("<h1 style='text-align: center; color: #D97706; font-size: 46px; margin-bottom: 0; font-weight: 900; text-shadow: 0 0 40px rgba(217,119,6,0.3);'>\U0001F451 LinguaAfrika AI \u2014 Sanifu Grammaly</h1>", unsafe_allow_html=True)
@@ -326,4 +339,3 @@ elif "sauti" in chaguo_menyu:
 
 str_platform.write("---")
 skin_appearance.render_bottom_revenue_banner()
-docs: add Google JSON-LD schema markup for advanced dictionary SEO
