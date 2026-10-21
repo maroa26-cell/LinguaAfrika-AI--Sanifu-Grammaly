@@ -16,7 +16,7 @@ self_healing_status = "\U0001F7E2 autonomous shield: active & healthy"
 str_platform.set_page_config(page_title="LinguaAfrika AI — Sanifu Grammaly", page_icon="\U0001F9E0", layout="wide", initial_sidebar_state="expanded")
 
 # URL HALISI ya app yako (ilikuwa 'https://streamlit.app' - si sahihi)
-_APP_URL_MSINGI = "https://linguaafrika-ai--sanifu-grammaly-ebor5bawjtziwwq8jcsx5v.streamlit.app"
+_APP_URL_MSINGI = "https://linguaafrika-ai--sanifu-grammaly-m5xtj9pydnpe2qibp2jezc.streamlit.app"
 
 # Kikomo cha herufi kwa kila ingizo (kuzuia matumizi mabaya / gharama kubwa)
 MAX_CHARS = 5000
