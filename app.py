@@ -1,3 +1,20 @@
+google_seo_schema = """
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "DefinedTermSet",
+  "@id": "https://github.com",
+  "name": "Kamusi Kuu ya LinguaAfrika-AI--Sanifu-Grammaly",
+  "description": "Hifadhidata rasmi na kamusi ya kidijitali ya istilahi za Kisheria, Afya, na Kilimo (Kiswahili - Kiingereza).",
+  "provider": {
+    "@type": "Organization",
+    "name": "LinguaAfrika AI"
+  }
+}
+</script>
+"""
+import streamlit as st
+st.markdown(google_seo_schema, unsafe_allow_html=True)
 
 import streamlit as str_platform
 import os
@@ -309,3 +326,4 @@ elif "sauti" in chaguo_menyu:
 
 str_platform.write("---")
 skin_appearance.render_bottom_revenue_banner()
+docs: add Google JSON-LD schema markup for advanced dictionary SEO
