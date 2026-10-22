@@ -2,6 +2,7 @@ import streamlit as str_platform
 import os
 import time
 import io
+import re
 import json
 import html
 import pandas as pd
@@ -76,6 +77,16 @@ def onyesha_jibu(res, border_color="#10B981", bg="rgba(16,185,129,0.1)"):
     )
 
 
+def onyesha_hitilafu(muktadha, e):
+    """Andika hitilafu halisi kwenye log ya server; mteja aone ujumbe wa kawaida tu."""
+    print(f"[hitilafu] {muktadha}: {type(e).__name__}: {e}")
+    t = str(e).lower()
+    if any(k in t for k in ("billing", "quota", "429", "rate limit", "insufficient")):
+        str_platform.error("Huduma ya AI haipatikani kwa sasa. Tafadhali jaribu tena baadaye.")
+    else:
+        str_platform.error(f"Imeshindikana {muktadha}. Tafadhali jaribu tena.")
+
+
 # ------------------------------------------------------------------ #
 #  KAMUSI YA DATA (CSV): chanzo cha kwanza cha ukweli kabla ya AI
 # ------------------------------------------------------------------ #
@@ -89,6 +100,15 @@ KAMUSI_GITHUB_TOKEN = str(_secret("KAMUSI_GITHUB_TOKEN") or "").strip()
 KAMUSI_SAFU = ["swahili_term", "english_term", "category", "description_sw"]
 
 
+def _kiungo_cha_api_cha_github(url):
+    """raw.githubusercontent.com/OWNER/REPO/REF/PATH -> (api_url, ref), au None."""
+    m = re.match(r"^https://raw\.githubusercontent\.com/([^/]+)/([^/]+)/([^/]+)/(.+?)(?:\?.*)?$", url)
+    if not m:
+        return None
+    owner, repo, ref, path = m.groups()
+    return f"https://api.github.com/repos/{owner}/{repo}/contents/{path}", ref
+
+
 @str_platform.cache_data(ttl=600, show_spinner=False)
 def pakia_kamusi_csv():
     """Hurejesha (DataFrame, kosa). 'kosa' ni None kama yote sawa."""
@@ -100,11 +120,20 @@ def pakia_kamusi_csv():
         return tupu, "no_source"
     try:
         if chanzo == KAMUSI_CSV_URL and KAMUSI_GITHUB_TOKEN:
-            r = requests.get(chanzo, headers={"Authorization": f"token {KAMUSI_GITHUB_TOKEN}"}, timeout=20)
-            r.raise_for_status()
-            df = pd.read_csv(io.StringIO(r.text), dtype=str).fillna("")
+            # Repo ya faragha: tumia GitHub API (njia rasmi ya token ya fine-grained).
+            vichwa = {"Authorization": f"Bearer {KAMUSI_GITHUB_TOKEN}"}
+            api = _kiungo_cha_api_cha_github(chanzo)
+            if api:
+                vichwa.update({"Accept": "application/vnd.github.raw+json", "X-GitHub-Api-Version": "2022-11-28"})
+                r = requests.get(api[0], params={"ref": api[1]}, headers=vichwa, timeout=20)
+            else:
+                r = requests.get(chanzo, headers=vichwa, timeout=20)
+            if r.status_code != 200:
+                print(f"[kamusi] GitHub ilijibu {r.status_code}: {r.text[:200]}")
+                return tupu, "read_error"
+            df = pd.read_csv(io.StringIO(r.content.decode("utf-8-sig")), dtype=str).fillna("")
         else:
-            df = pd.read_csv(chanzo, dtype=str, encoding="utf-8").fillna("")
+            df = pd.read_csv(chanzo, dtype=str, encoding="utf-8-sig").fillna("")
     except Exception as e:
         print(f"[kamusi] imeshindwa kusoma CSV: {type(e).__name__}: {e}")
         return tupu, "read_error"
@@ -247,7 +276,7 @@ if "mhariri" in chaguo_menyu:
                         res = ubongo.chakata_sarufi_pro(maandishi)
                     except Exception as e:
                         res = None
-                        str_platform.error(f"Hitilafu wakati wa kuchakata: {e}")
+                        onyesha_hitilafu("kuchakata sarufi", e)
                 # DOSARI 1 IMEREKEBISHWA: hesabu maneno TU baada ya mafanikio
                 if res:
                     str_platform.session_state["freemium_words_used"] += heabu_maneno
@@ -279,7 +308,7 @@ elif "mtafsiri" in chaguo_menyu:
                         res = ubongo.chakata_tafsiri_pacha(maandishi_t, lugha_chanzo, lugha_lengwa, muktadha_chaguo)
                     except Exception as e:
                         res = None
-                        str_platform.error(f"Hitilafu wakati wa kutafsiri: {e}")
+                        onyesha_hitilafu("kutafsiri", e)
                 if res:
                     str_platform.session_state["freemium_words_used"] += heabu_maneno_t
                     onyesha_jibu(res, border_color="rgba(255,255,255,0.1)", bg="rgba(255,255,255,0.02)")
@@ -303,7 +332,7 @@ elif "kamusi" in chaguo_menyu:
                         res = ubongo.chakata_kamusi_kuu(msamiati, database)
                     except Exception as e:
                         res = None
-                        str_platform.error(f"Hitilafu kwenye kamusi: {e}")
+                        onyesha_hitilafu("kutafuta kwenye kamusi", e)
                 if res:
                     onyesha_jibu(res, border_color="#D97706", bg="rgba(255,255,255,0.02)")
 
@@ -321,7 +350,7 @@ elif "sauti" in chaguo_menyu:
                         res_sauti = ubongo.chakata_sauti_na_imla(audio_file)
                     except Exception as e:
                         res_sauti = None
-                        str_platform.error(f"Hitilafu kwenye imla: {e}")
+                        onyesha_hitilafu("kuandika imla", e)
                 if res_sauti:
                     str_platform.success("\u2728 Imla Imekamilika!")
                     onyesha_jibu(res_sauti)
@@ -334,7 +363,7 @@ elif "sauti" in chaguo_menyu:
                     audio_bytes = ubongo.zindua_jifunze_lugha_audio(maandishi_sauti, lugha_tutorial)
                 except Exception as e:
                     audio_bytes = None
-                    str_platform.error(f"Hitilafu kwenye kuzalisha sauti: {e}")
+                    onyesha_hitilafu("kuzalisha sauti", e)
             if audio_bytes:
                 str_platform.audio(audio_bytes, format="audio/mp3")
 
