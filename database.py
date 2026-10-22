@@ -430,6 +430,48 @@ def orodha_ya_malipo(username, kikomo=20):
     return tokeo
 
 
+def weka_tracking_id_ya_oda(merchant_ref, tracking_id):
+    """Hifadhi namba ya Pesapal (tracking id) mara oda inapoundwa, ili malipo
+    yaweze kuhakikiwa hata mteja asiporudi kwenye app kupitia callback."""
+    ref = str(merchant_ref or "").strip()
+    tid = str(tracking_id or "").strip()
+    if not ref or not tid:
+        return False
+    conn = pata_muunganisho_wa_chuma()
+    try:
+        conn.execute(
+            "UPDATE malipo_trans SET tracking_id = ? WHERE merchant_ref = ? "
+            "AND status != 'completed' AND (tracking_id IS NULL OR tracking_id = '')",
+            (tid, ref),
+        )
+        conn.commit()
+        return True
+    except db_conn.Error as e:
+        conn.rollback()
+        print(f"[db] weka_tracking_id_ya_oda failed: {e}")
+        return False
+    finally:
+        conn.close()
+
+
+def orodha_ya_oda_zinazosubiri(username, kikomo=5):
+    """Oda za mteja ambazo bado hazijathibitishwa lakini zina tracking id: [(merchant_ref, tracking_id)]."""
+    conn = pata_muunganisho_wa_chuma()
+    try:
+        rows = conn.execute(
+            "SELECT merchant_ref, tracking_id FROM malipo_trans "
+            "WHERE username = ? AND status != 'completed' "
+            "AND tracking_id IS NOT NULL AND tracking_id != '' ORDER BY id DESC LIMIT ?",
+            (_safisha_jina(username), int(kikomo)),
+        ).fetchall()
+    except Exception as e:
+        print(f"[db] orodha_ya_oda_zinazosubiri error: {e}")
+        return []
+    finally:
+        conn.close()
+    return [(r[0], r[1]) for r in rows]
+
+
 def premium_hadi_lini(username):
     """Tarehe ambayo Premium inaisha (datetime), au None kama hajalipa / imeisha."""
     conn = pata_muunganisho_wa_chuma()
