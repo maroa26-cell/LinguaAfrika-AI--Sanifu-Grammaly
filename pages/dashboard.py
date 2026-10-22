@@ -38,6 +38,47 @@ def _bei_ya_premium_usd():
         return BEI_YA_KAWAIDA_USD
 
 
+def _angalia_malipo_yanayosubiri(username):
+    """Hakiki malipo ya mteja yasiyothibitishwa moja kwa moja na Pesapal, bila kutegemea
+    callback. Hufanya kazi mara moja baada ya kuingia, na tena mteja akibonyeza kitufe."""
+    kwanza = "malipo_yamekaguliwa" not in str_platform.session_state
+    str_platform.session_state["malipo_yamekaguliwa"] = True
+    bonyezwa = str_platform.button("\U0001F504 Nimeshalipa \u2014 angalia hali ya malipo yangu", key="angalia_malipo_btn")
+    if not (kwanza or bonyezwa):
+        return
+
+    oda = database.orodha_ya_oda_zinazosubiri(username)
+    if not oda:
+        if bonyezwa:
+            str_platform.info("Hakuna malipo yanayosubiri kuthibitishwa.")
+        return
+
+    yaliyokamilika, yanayosubiri = 0, 0
+    for merchant_ref, tracking_id in oda:
+        hali = pesapal_core.angalia_hali_ya_malipo(tracking_id)
+        if hali["status_desc"] == "COMPLETED":
+            natija = database.pandisha_hadhi_ya_mteja_kiotomatiki(
+                tracking_id, "completed",
+                merchant_reference=hali.get("reference") or merchant_ref,
+                kiasi=hali.get("amount", 0.0),
+                sarafu=hali.get("currency", ""),
+                confirmation_code=hali.get("confirmation_code", ""),
+                payment_method=hali.get("payment_method", ""),
+                tarehe_malipo=hali.get("created_date", ""),
+            )
+            if natija == "applied":
+                yaliyokamilika += 1
+        elif hali["status_desc"] in ("PENDING", "UNKNOWN") or hali["status_desc"].startswith("ERROR"):
+            yanayosubiri += 1
+
+    if yaliyokamilika:
+        str_platform.success(f"\u2705 Malipo {yaliyokamilika} yamethibitishwa na Premium yako imewashwa.")
+    elif bonyezwa and yanayosubiri:
+        str_platform.info("\u23F3 Malipo yako bado yanasubiri uthibitisho. Thibitisha PIN kwenye simu kisha ujaribu tena baada ya dakika moja.")
+    elif bonyezwa:
+        str_platform.warning("Malipo hayajakamilika. Unaweza kujaribu kulipa tena.")
+
+
 def _onyesha_historia_ya_malipo(username):
     """Historia ya malipo + risiti (PDF) za mteja aliyeingia. Inasomwa kutoka Neon."""
     malipo = database.orodha_ya_malipo(username)
@@ -297,6 +338,7 @@ elif gate == "totp_step":
 elif gate == "premium_member_suite":
     u_active = str_platform.session_state["member_username"]
     str_platform.markdown(f"### Welcome to the Ourworthlinks Global Marketplace, {u_active.upper()}!")
+    _angalia_malipo_yanayosubiri(u_active)
     _onyesha_historia_ya_malipo(u_active)
 
     premium_hadi = database.premium_hadi_lini(u_active)
@@ -331,7 +373,7 @@ elif gate == "premium_member_suite":
     with cp1:
         str_platform.markdown(
             f"<div style='border:1px solid #3B82F6; padding:20px; border-radius:12px;'>"
-            f"<h3>\U0001F48E LINGUAAFRIKA PREMIUM SUITE</h3><h1>{s_symbol} {amt:,.2f}</h1></div>",
+            f"<h3>\U0001F48E LINGUAL AFRICA PREMIUM SUITE</h3><h1>{s_symbol} {amt:,.2f}</h1></div>",
             unsafe_allow_html=True,
         )
         # Create Pesapal order only after the customer clicks the payment button,
