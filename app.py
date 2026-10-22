@@ -58,13 +58,20 @@ def weka_seo_schema():
     }
     payload = json.dumps(data, ensure_ascii=False).replace("</", "<\\/")
     js_literal = json.dumps(payload)
-    components.html(
+    kodi_html = (
         "<script>(function(){try{var d=window.parent.document;"
         "if(d.getElementById('seo-jsonld'))return;"
         "var s=d.createElement('script');s.type='application/ld+json';s.id='seo-jsonld';"
-        f"s.text={js_literal};d.head.appendChild(s);}}catch(e){{}}}})();</script>",
-        height=0,
+        f"s.text={js_literal};d.head.appendChild(s);}}catch(e){{}}}})();</script>"
     )
+    try:
+        # st.components.v1.html imeanza kuondolewa; tumia st.iframe kama ipo.
+        if hasattr(str_platform, "iframe"):
+            str_platform.iframe(kodi_html, height=0)
+        else:
+            components.html(kodi_html, height=0)
+    except Exception as e:
+        print(f"[seo] imeshindwa kuweka JSON-LD: {type(e).__name__}: {e}")
 
 
 def onyesha_jibu(res, border_color="#10B981", bg="rgba(16,185,129,0.1)"):
