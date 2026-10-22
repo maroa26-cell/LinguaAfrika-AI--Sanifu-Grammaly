@@ -291,12 +291,13 @@ elif "kamusi" in chaguo_menyu:
         if msamiati.strip() != "":
             matokeo_csv, kosa_csv = tafuta_kwenye_kamusi_csv(msamiati)
             if matokeo_csv is not None and not matokeo_csv.empty:
+                str_platform.caption("Chanzo: Kamusi ya LinguaAfrika")
                 onyesha_matokeo_ya_kamusi(matokeo_csv)
             else:
                 if kosa_csv:
-                    str_platform.info("Kamusi ya data haipatikani kwa sasa. Hapa chini ni pendekezo la AI (halijahakikiwa).")
+                    str_platform.info("Kamusi ya LinguaAfrika haipatikani kwa sasa. Hapa chini ni pendekezo la AI (halijahakikiwa).")
                 else:
-                    str_platform.warning("Neno hilo halijapatikana kwenye kamusi iliyohakikiwa. Hapa chini ni pendekezo la AI (halijahakikiwa).")
+                    str_platform.warning("Neno hilo halijapatikana kwenye Kamusi ya LinguaAfrika. Hapa chini ni pendekezo la AI (halijahakikiwa).")
                 with str_platform.spinner("Searching..."):
                     try:
                         res = ubongo.chakata_kamusi_kuu(msamiati, database)
