@@ -14,7 +14,7 @@ from cerebral_cortex import CerebralCortex
 
 muda_mwanzo = time.time()
 self_healing_status = "\U0001F7E2 autonomous shield: active & healthy"
-str_platform.set_page_config(page_title="LinguaAfrika AI — Sanifu Grammaly", page_icon="\U0001F9E0", layout="wide", initial_sidebar_state="expanded")
+str_platform.set_page_config(page_title="Lingual Africa Sanifu", page_icon="\U0001F9E0", layout="wide", initial_sidebar_state="expanded")
 
 # URL HALISI ya app yako (ilikuwa 'https://streamlit.app' - si sahihi)
 _APP_URL_MSINGI = "https://linguaafrika-ai--sanifu-grammaly-m5xtj9pydnpe2qibp2jezc.streamlit.app"
@@ -50,10 +50,10 @@ def weka_seo_schema():
         "@type": "DefinedTermSet",
         "@id": f"{APP_URL}/#kamusi",
         "url": APP_URL,
-        "name": "Kamusi Kuu ya LinguaAfrika AI",
+        "name": "Kamusi Kuu ya Lingual Africa Sanifu",
         "description": "Kamusi ya kidijitali ya istilahi za Kiswahili na Kiingereza.",
         "inLanguage": ["sw", "en"],
-        "provider": {"@type": "Organization", "name": "LinguaAfrika AI"},
+        "provider": {"@type": "Organization", "name": "Lingual Africa Sanifu"},
     }
     payload = json.dumps(data, ensure_ascii=False).replace("</", "<\\/")
     js_literal = json.dumps(payload)
@@ -163,7 +163,7 @@ else:
 weka_seo_schema()
 skin_appearance.render_top_revenue_banner()
 
-str_platform.markdown("<h1 style='text-align: center; color: #D97706; font-size: 46px; margin-bottom: 0; font-weight: 900; text-shadow: 0 0 40px rgba(217,119,6,0.3);'>\U0001F451 LinguaAfrika AI \u2014 Sanifu Grammaly</h1>", unsafe_allow_html=True)
+str_platform.markdown("<h1 style='text-align: center; color: #D97706; font-size: 46px; margin-bottom: 0; font-weight: 900; text-shadow: 0 0 40px rgba(217,119,6,0.3);'>\U0001F451 Lingual Africa Sanifu</h1>", unsafe_allow_html=True)
 str_platform.markdown("<p style='text-align: center; color: #94A3B8; font-size: 14px; font-weight: 700; margin-top: 5px; letter-spacing: 3px;'>HUDUMA YA OURWORTHLINKS BUSINESS \u2022 THE AUTONOMOUS BIOMIMETIC WEB APPLICATION</p>", unsafe_allow_html=True)
 str_platform.write("---")
 
@@ -291,13 +291,13 @@ elif "kamusi" in chaguo_menyu:
         if msamiati.strip() != "":
             matokeo_csv, kosa_csv = tafuta_kwenye_kamusi_csv(msamiati)
             if matokeo_csv is not None and not matokeo_csv.empty:
-                str_platform.caption("Chanzo: Kamusi ya LinguaAfrika")
+                str_platform.caption("Chanzo: Kamusi ya Lingual Africa")
                 onyesha_matokeo_ya_kamusi(matokeo_csv)
             else:
                 if kosa_csv:
-                    str_platform.info("Kamusi ya LinguaAfrika haipatikani kwa sasa. Hapa chini ni pendekezo la AI (halijahakikiwa).")
+                    str_platform.info("Kamusi ya Lingual Africa haipatikani kwa sasa. Hapa chini ni pendekezo la AI (halijahakikiwa).")
                 else:
-                    str_platform.warning("Neno hilo halijapatikana kwenye Kamusi ya LinguaAfrika. Hapa chini ni pendekezo la AI (halijahakikiwa).")
+                    str_platform.warning("Neno hilo halijapatikana kwenye Kamusi ya Lingual Africa. Hapa chini ni pendekezo la AI (halijahakikiwa).")
                 with str_platform.spinner("Searching..."):
                     try:
                         res = ubongo.chakata_kamusi_kuu(msamiati, database)
