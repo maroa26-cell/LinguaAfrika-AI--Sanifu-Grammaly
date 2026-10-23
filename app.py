@@ -3,6 +3,7 @@ import os
 import time
 import io
 import re
+import collections
 import json
 import html
 import pandas as pd
@@ -10,6 +11,7 @@ import requests
 import streamlit.components.v1 as components
 from openai import OpenAI
 import database
+import mhariri
 import skin_appearance
 from cerebral_cortex import CerebralCortex
 
@@ -92,6 +94,41 @@ def onyesha_hitilafu(muktadha, e):
         str_platform.error("Huduma ya AI haipatikani kwa sasa. Tafadhali jaribu tena baadaye.")
     else:
         str_platform.error(f"Imeshindikana {muktadha}. Tafadhali jaribu tena.")
+
+
+def _ep_md(t):
+    """Epuka alama za markdown ndani ya maandishi ya mtumiaji."""
+    return re.sub(r"([\\`*_{}\[\]()#+\-.!~|>$])", r"\\\1", str(t))
+
+
+def onyesha_matokeo_ya_mhariri():
+    """Onyesha matokeo ya ukaguzi (yamehifadhiwa kwenye session ili vitufe vya kuchagua vidumu)."""
+    m = str_platform.session_state.get("mhariri_matokeo")
+    if not m:
+        return
+    text, matatizo = m["text"], m["issues"]
+    str_platform.markdown("---")
+    if not m["ai_imetumika"]:
+        str_platform.info("Ukaguzi wa msingi tu (AI haipatikani kwa sasa). Salio lako halikukatwa.")
+    if not matatizo:
+        str_platform.success("\u2705 Hakuna makosa yaliyoonekana kwenye maandishi haya.")
+        return
+    idadi = collections.Counter(x["category"] for x in matatizo)
+    safu = str_platform.columns(len(mhariri.KATEGORIA) + 1)
+    safu[0].metric("Alama (makadirio)", f"{mhariri.alama(text, len(matatizo))}/100")
+    for n, (kat, (jina, _)) in enumerate(mhariri.KATEGORIA.items(), 1):
+        safu[n].metric(jina, idadi.get(kat, 0))
+    str_platform.caption("Maandishi yaliyokaguliwa. Elea juu ya sehemu iliyoalamishwa kuona maelezo.")
+    str_platform.markdown(mhariri.html_ya_kuonyesha(text, matatizo), unsafe_allow_html=True)
+    str_platform.markdown("**Chagua marekebisho ya kutumia:**")
+    chaguliwa = set()
+    for x in matatizo:
+        jina = mhariri.KATEGORIA.get(x["category"], ("Mengineyo", ""))[0]
+        lebo = f'{jina}: "{_ep_md(x["original"])}" \u2192 "{_ep_md(x["suggestion"])}". {_ep_md(x["explanation"])}'
+        if str_platform.checkbox(lebo, value=True, key=f"mh_{x['id']}"):
+            chaguliwa.add(x["id"])
+    str_platform.markdown("**Maandishi yaliyosahihishwa** (bonyeza ikoni ya kunakili):")
+    str_platform.code(mhariri.tumia_marekebisho(text, matatizo, chaguliwa), language=None)
 
 
 # ------------------------------------------------------------------ #
@@ -212,6 +249,27 @@ if isinstance(api_key_source, str) and api_key_source.strip():
 else:
     str_platform.error("\U0001F512 secrets error! Weka OPENAI_API_KEY kwenye Secrets."); str_platform.stop()
 
+def _piga_ai(mfumo, mtumiaji):
+    """Piga OpenAI kwa ajili ya mhariri. Modeli inaweza kuwekwa kwenye Secrets kama OPENAI_MODEL."""
+    modeli = str(_secret("OPENAI_MODEL") or "gpt-4o-mini")
+    ujumbe = [{"role": "system", "content": mfumo}, {"role": "user", "content": mtumiaji}]
+    majaribio = [
+        {"temperature": 0.1, "response_format": {"type": "json_object"}},
+        {"response_format": {"type": "json_object"}},
+        {},
+    ]
+    for n, kw in enumerate(majaribio):
+        try:
+            j = client.chat.completions.create(model=modeli, messages=ujumbe, timeout=40, **kw)
+            return j.choices[0].message.content
+        except AttributeError:
+            return client.responses.create(model=modeli, input=ujumbe).output_text
+        except Exception as e:
+            if n < len(majaribio) - 1 and any(k in str(e).lower() for k in ("temperature", "response_format", "unsupported", "unknown")):
+                continue
+            raise
+
+
 weka_seo_schema()
 skin_appearance.render_top_revenue_banner()
 
@@ -294,16 +352,17 @@ if "mhariri" in chaguo_menyu:
                     "Punguza maandishi au fungua Lango la Mteja."
                 )
             else:
-                with str_platform.spinner("Chakata sarufi..."):
-                    try:
-                        res = ubongo.chakata_sarufi_pro(maandishi)
-                    except Exception as e:
-                        res = None
-                        onyesha_hitilafu("kuchakata sarufi", e)
-                # DOSARI 1 IMEREKEBISHWA: hesabu maneno TU baada ya mafanikio
-                if res:
+                with str_platform.spinner("Nakagua maandishi..."):
+                    matokeo = mhariri.kagua(maandishi, piga_ai=_piga_ai)
+                # Maneno yanakatwa TU pale ukaguzi wa AI ulipofanikiwa
+                if matokeo["ai_imetumika"]:
                     str_platform.session_state["freemium_words_used"] += heabu_maneno
-                    onyesha_jibu(res)  # DOSARI 2 & 5: escape + str()
+                else:
+                    print(f"[mhariri] AI haikutumika: {matokeo['ai_kosa']}")
+                for k in [k for k in str_platform.session_state.keys() if str(k).startswith("mh_")]:
+                    del str_platform.session_state[k]
+                str_platform.session_state["mhariri_matokeo"] = {"text": maandishi, **matokeo}
+    onyesha_matokeo_ya_mhariri()
 
 elif "mtafsiri" in chaguo_menyu:
     str_platform.markdown("<h3 style='color: #D97706;'>\U0001F500 Mtafsiri wa Lugha & Muktadha Suite Pro</h3>", unsafe_allow_html=True)
