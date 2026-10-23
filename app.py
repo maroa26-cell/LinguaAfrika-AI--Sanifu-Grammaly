@@ -116,9 +116,25 @@ def _kiungo_cha_api_cha_github(url):
     return f"https://api.github.com/repos/{owner}/{repo}/contents/{path}", ref
 
 
-@str_platform.cache_data(ttl=600, show_spinner=False)
 def pakia_kamusi_csv():
-    """Hurejesha (DataFrame, kosa). 'kosa' ni None kama yote sawa."""
+    """Hurejesha (DataFrame, kosa). Makosa HAYAHIFADHIWI kwenye cache, ili ukirekebisha
+    Secrets au token, utafutaji unaofuata ujaribu tena mara moja."""
+    try:
+        return _pakia_kamusi_iliyofanikiwa(), None
+    except RuntimeError as e:
+        return pd.DataFrame(columns=KAMUSI_SAFU), str(e)
+
+
+@str_platform.cache_data(ttl=600, show_spinner=False)
+def _pakia_kamusi_iliyofanikiwa():
+    df, kosa = _soma_kamusi_csv()
+    if kosa:
+        raise RuntimeError(kosa)  # st.cache_data haihifadhi hitilafu
+    return df
+
+
+def _soma_kamusi_csv():
+    """Husoma CSV (faili la repo au kiungo). Hurejesha (DataFrame, kosa)."""
     tupu = pd.DataFrame(columns=KAMUSI_SAFU)
     njia = os.path.join(os.path.dirname(os.path.abspath(__file__)), KAMUSI_CSV_FILE)
     chanzo = njia if os.path.exists(njia) else (KAMUSI_CSV_URL or None)
@@ -137,13 +153,13 @@ def pakia_kamusi_csv():
                 r = requests.get(chanzo, headers=vichwa, timeout=20)
             if r.status_code != 200:
                 print(f"[kamusi] GitHub ilijibu {r.status_code}: {r.text[:200]}")
-                return tupu, "read_error"
+                return tupu, f"read_error:HTTP_{r.status_code}"
             df = pd.read_csv(io.StringIO(r.content.decode("utf-8-sig")), dtype=str).fillna("")
         else:
             df = pd.read_csv(chanzo, dtype=str, encoding="utf-8-sig").fillna("")
     except Exception as e:
         print(f"[kamusi] imeshindwa kusoma CSV: {type(e).__name__}: {e}")
-        return tupu, "read_error"
+        return tupu, f"read_error:{type(e).__name__}"
     if "swahili_term" not in df.columns:
         print(f"[kamusi] safu 'swahili_term' haipo. Safu zilizopo: {list(df.columns)}")
         return tupu, "bad_columns"
@@ -326,6 +342,15 @@ elif "kamusi" in chaguo_menyu:
     if str_platform.button("Tafuta Kwenye Kamusi Kuu", key="v14_btn_kam_clean"):
         if msamiati.strip() != "":
             matokeo_csv, kosa_csv = tafuta_kwenye_kamusi_csv(msamiati)
+            # Uchunguzi kwa mmiliki tu: weka KAMUSI_DEBUG = "1" kwenye Secrets (futa ukimaliza).
+            if kosa_csv and str(_secret("KAMUSI_DEBUG") or "").strip().lower() in ("1", "true", "yes", "ndiyo"):
+                _njia = os.path.join(os.path.dirname(os.path.abspath(__file__)), KAMUSI_CSV_FILE)
+                str_platform.warning(
+                    f"[uchunguzi] kosa: {kosa_csv} | KAMUSI_CSV_URL imewekwa: {bool(KAMUSI_CSV_URL)} | "
+                    f"token imewekwa: {bool(KAMUSI_GITHUB_TOKEN)} (urefu: {len(KAMUSI_GITHUB_TOKEN)}, "
+                    f"inaanza na github_pat_: {KAMUSI_GITHUB_TOKEN.startswith('github_pat_')}) | "
+                    f"faili {KAMUSI_CSV_FILE} kwenye repo: {os.path.exists(_njia)}"
+                )
             if matokeo_csv is not None and not matokeo_csv.empty:
                 str_platform.caption("Chanzo: Kamusi ya Lingual Africa")
                 onyesha_matokeo_ya_kamusi(matokeo_csv)
