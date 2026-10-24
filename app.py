@@ -89,6 +89,9 @@ def onyesha_jibu(res, border_color="#10B981", bg="rgba(16,185,129,0.1)"):
 def onyesha_hitilafu(muktadha, e):
     """Andika hitilafu halisi kwenye log ya server; mteja aone ujumbe wa kawaida tu."""
     print(f"[hitilafu] {muktadha}: {type(e).__name__}: {e}")
+    if isinstance(e, ValueError):
+        str_platform.error(str(e))  # ujumbe wetu wenyewe (mf. faili kubwa mno)
+        return
     t = str(e).lower()
     if any(k in t for k in ("billing", "quota", "429", "rate limit", "insufficient")):
         str_platform.error("Huduma ya AI haipatikani kwa sasa. Tafadhali jaribu tena baadaye.")
@@ -250,24 +253,8 @@ else:
     str_platform.error("\U0001F512 secrets error! Weka OPENAI_API_KEY kwenye Secrets."); str_platform.stop()
 
 def _piga_ai(mfumo, mtumiaji):
-    """Piga OpenAI kwa ajili ya mhariri. Modeli inaweza kuwekwa kwenye Secrets kama OPENAI_MODEL."""
-    modeli = str(_secret("OPENAI_MODEL") or "gpt-4o-mini")
-    ujumbe = [{"role": "system", "content": mfumo}, {"role": "user", "content": mtumiaji}]
-    majaribio = [
-        {"temperature": 0.1, "response_format": {"type": "json_object"}},
-        {"response_format": {"type": "json_object"}},
-        {},
-    ]
-    for n, kw in enumerate(majaribio):
-        try:
-            j = client.chat.completions.create(model=modeli, messages=ujumbe, timeout=40, **kw)
-            return j.choices[0].message.content
-        except AttributeError:
-            return client.responses.create(model=modeli, input=ujumbe).output_text
-        except Exception as e:
-            if n < len(majaribio) - 1 and any(k in str(e).lower() for k in ("temperature", "response_format", "unsupported", "unknown")):
-                continue
-            raise
+    """Mhariri hutumia njia ile ile ya OpenAI ya CerebralCortex (modeli: OPENAI_MODEL, chaguo-msingi gpt-4o)."""
+    return ubongo.piga_json(mfumo, mtumiaji)
 
 
 weka_seo_schema()
