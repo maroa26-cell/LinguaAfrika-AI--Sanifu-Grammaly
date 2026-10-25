@@ -61,11 +61,8 @@ s.setdefault("ai_text", "")
 s.setdefault("ai_error", "")
 s.setdefault("ai_calls", 0)
 
-# Njia ya component: components/live_editor iko kwenye mzizi wa repo.
-NJIA_YA_COMPONENT = os.path.join(MZIZI_WA_REPO, "components", "live_editor")
-
-# declare_component ni ngazi ya module: hutangazwa mara moja, si ndani ya mwito wa kila rerun.
-_kijenzi_cha_mhariri = components.declare_component("lingual_live_editor", path=NJIA_YA_COMPONENT)
+# Kijenzi kinatanganzwa kwenye live_editor_component.py (module halisi); hapa tunakiingiza tu.
+from live_editor_component import kijenzi_cha_mhariri as _kijenzi_cha_mhariri
 
 thamani = _kijenzi_cha_mhariri(
     ai_issues=s["ai_issues"], ai_text=s["ai_text"], ai_error=s["ai_error"], key="mhariri_live", default=None
