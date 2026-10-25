@@ -86,6 +86,10 @@ def onyesha_jibu(res, border_color="#10B981", bg="rgba(16,185,129,0.1)"):
     )
 
 
+def _ai_debug_imewashwa():
+    return str(_secret("AI_DEBUG") or "").strip().lower() in ("1", "true", "yes", "ndiyo")
+
+
 def onyesha_hitilafu(muktadha, e):
     """Andika hitilafu halisi kwenye log ya server; mteja aone ujumbe wa kawaida tu."""
     print(f"[hitilafu] {muktadha}: {type(e).__name__}: {e}")
@@ -97,6 +101,8 @@ def onyesha_hitilafu(muktadha, e):
         str_platform.error("Huduma ya AI haipatikani kwa sasa. Tafadhali jaribu tena baadaye.")
     else:
         str_platform.error(f"Imeshindikana {muktadha}. Tafadhali jaribu tena.")
+    if _ai_debug_imewashwa():  # kwa mmiliki tu: weka AI_DEBUG = "1" kwenye Secrets
+        str_platform.warning(f"[uchunguzi AI] {muktadha} | {type(e).__name__}: {str(e)[:300]}")
 
 
 def _ep_md(t):
@@ -272,16 +278,27 @@ if "freemium_words_used" not in str_platform.session_state:
 maneno_yaliyotumika = str_platform.session_state["freemium_words_used"]
 maneno_yaliyobaki = max(0, 50 - maneno_yaliyotumika)
 
-str_platform.sidebar.markdown(f"""
-<div style='background: linear-gradient(135deg, #1E293B 0%, #0F172A 100%); border: 2px solid #D97706; padding: 18px; border-radius: 14px; margin-bottom: 20px; box-shadow: 0 10px 25px rgba(217,119,6,0.15);'>
-    <p style='color: #D97706; font-size: 13px; margin: 0 0 10px 0; text-align: center; font-weight: 900; letter-spacing: 1px;'>\U0001F4CA RADA YA UBONGO (CNS METRICS)</p>
-    <p style='color: #F59E0B; font-size: 13px; margin: 0;'>\U0001F381 <b>Salio la Bure:</b> {maneno_yaliyobaki}/50 Maneno</p>
-    <p style='color: #34D399; font-size: 13px; margin: 6px 0 0 0;'>\U0001F6E1\uFE0F <b>OWTHS Filter:</b> \U0001F7E2 100% Active</p>
-    <p style='color: #34D399; font-size: 13px; margin: 6px 0;'>\u26A1 <b>Synapse Latency:</b> {kasi_ya_radi:.3f}ms</p>
-    <hr style='border-color: rgba(255,255,255,0.05); margin: 8px 0;'>
-    <p style='color: #94A3B8; font-size: 11px; margin: 0; text-align: center;'>Status: {self_healing_status}</p>
-</div>
-""", unsafe_allow_html=True)
+rada_nafasi = str_platform.sidebar.empty()
+
+
+def onyesha_rada():
+    """Onyesha salio la sasa. Inaitwa tena baada ya maneno kukatwa, ili salio lisichelewe."""
+    baki = max(0, 50 - str_platform.session_state["freemium_words_used"])
+    kodi = f"""
+    <div style='background: linear-gradient(135deg, #1E293B 0%, #0F172A 100%); border: 2px solid #D97706; padding: 18px; border-radius: 14px; margin-bottom: 20px; box-shadow: 0 10px 25px rgba(217,119,6,0.15);'>
+        <p style='color: #D97706; font-size: 13px; margin: 0 0 10px 0; text-align: center; font-weight: 900; letter-spacing: 1px;'>\U0001F4CA RADA YA UBONGO (CNS METRICS)</p>
+        <p style='color: #F59E0B; font-size: 13px; margin: 0;'>\U0001F381 <b>Salio la Bure:</b> {baki}/50 Maneno</p>
+        <p style='color: #34D399; font-size: 13px; margin: 6px 0 0 0;'>\U0001F6E1\uFE0F <b>OWTHS Filter:</b> \U0001F7E2 100% Active</p>
+        <p style='color: #34D399; font-size: 13px; margin: 6px 0;'>\u26A1 <b>Synapse Latency:</b> {kasi_ya_radi:.3f}ms</p>
+        <hr style='border-color: rgba(255,255,255,0.05); margin: 8px 0;'>
+        <p style='color: #94A3B8; font-size: 11px; margin: 0; text-align: center;'>Status: {self_healing_status}</p>
+    </div>
+    """
+    # Ondoa nafasi za mwanzo za kila mstari: markdown huchukulia mistari yenye nafasi 4 kama msimbo.
+    rada_nafasi.markdown("".join(l.strip() for l in kodi.splitlines()), unsafe_allow_html=True)
+
+
+onyesha_rada()
 
 str_platform.sidebar.markdown("<p style='color: #94A3B8; font-size: 12px; font-weight: 800; letter-spacing: 1px; margin-bottom: 5px;'>\U0001F310 HUDUMA ZOTE NNE ZA BIASHARA:</p>", unsafe_allow_html=True)
 
@@ -344,8 +361,11 @@ if "mhariri" in chaguo_menyu:
                 # Maneno yanakatwa TU pale ukaguzi wa AI ulipofanikiwa
                 if matokeo["ai_imetumika"]:
                     str_platform.session_state["freemium_words_used"] += heabu_maneno
+                    onyesha_rada()
                 else:
                     print(f"[mhariri] AI haikutumika: {matokeo['ai_kosa']}")
+                    if _ai_debug_imewashwa():
+                        str_platform.warning(f"[uchunguzi AI] mhariri | {str(matokeo['ai_kosa'])[:300]}")
                 for k in [k for k in str_platform.session_state.keys() if str(k).startswith("mh_")]:
                     del str_platform.session_state[k]
                 str_platform.session_state["mhariri_matokeo"] = {"text": maandishi, **matokeo}
@@ -380,6 +400,7 @@ elif "mtafsiri" in chaguo_menyu:
                         onyesha_hitilafu("kutafsiri", e)
                 if res:
                     str_platform.session_state["freemium_words_used"] += heabu_maneno_t
+                    onyesha_rada()
                     onyesha_jibu(res, border_color="rgba(255,255,255,0.1)", bg="rgba(255,255,255,0.02)")
 
 elif "kamusi" in chaguo_menyu:
