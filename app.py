@@ -206,12 +206,13 @@ def _soma_kamusi_csv():
     except Exception as e:
         print(f"[kamusi] imeshindwa kusoma CSV: {type(e).__name__}: {e}")
         return tupu, f"read_error:{type(e).__name__}"
-    if "swahili_term" not in df.columns:
-        print(f"[kamusi] safu 'swahili_term' haipo. Safu zilizopo: {list(df.columns)}")
-        return tupu, "bad_columns"
-    for safu in KAMUSI_SAFU:
-        if safu not in df.columns:
-            df[safu] = ""
+    # Ukaguzi wa safu: kamusi inayokubalika lazima iwe na safu hizi nne.
+    # Ramani kutoka lingua-master-lexicon: term_sw -> swahili_term, term_en -> english_term,
+    # domains -> category, definition_sw -> description_sw.
+    zilizokosekana = [safu for safu in KAMUSI_SAFU if safu not in df.columns]
+    if zilizokosekana:
+        print(f"[kamusi] safu hazipo: {zilizokosekana}. Safu zilizopo: {list(df.columns)}")
+        return tupu, "bad_columns:" + ",".join(zilizokosekana)
     return df, None
 
 
@@ -423,7 +424,18 @@ elif "kamusi" in chaguo_menyu:
                 onyesha_matokeo_ya_kamusi(matokeo_csv)
             else:
                 if kosa_csv:
-                    str_platform.info("Kamusi ya Lingual Africa haipatikani kwa sasa. Hapa chini ni pendekezo la AI (halijahakikiwa).")
+                    if str(kosa_csv).startswith("bad_columns"):
+                        str_platform.warning(
+                            "Kamusi ya Lingual Africa imepatikana lakini safu zake si sahihi "
+                            f"(hazipo: {kosa_csv.split(':', 1)[-1]}). Inatarajia safu: "
+                            "swahili_term, english_term, category, description_sw. "
+                            "Hapa chini ni pendekezo la AI (halijahakikiwa)."
+                        )
+                    else:
+                        str_platform.info(
+                            "Kamusi ya Lingual Africa haipatikani kwa sasa (hakuna kamusi.csv wala "
+                            "KAMUSI_CSV_URL). Hapa chini ni pendekezo la AI (halijahakikiwa)."
+                        )
                 else:
                     str_platform.warning("Neno hilo halijapatikana kwenye Kamusi ya Lingual Africa. Hapa chini ni pendekezo la AI (halijahakikiwa).")
                 with str_platform.spinner("Searching..."):
