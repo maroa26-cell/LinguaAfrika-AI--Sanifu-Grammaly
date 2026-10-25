@@ -38,6 +38,16 @@ def _bei_ya_premium_usd():
         return BEI_YA_KAWAIDA_USD
 
 
+def _stripe_imewashwa():
+    """Kitufe cha Stripe ni placeholder (pesapal_core.generate_stripe_global_checkout).
+    Kinaonyeshwa tu ikiwa STRIPE_ENABLED = "True" kwenye Secrets; chaguo-msingi ni kimezimwa."""
+    try:
+        v = str(str_platform.secrets.get("STRIPE_ENABLED", "False")).strip().lower()
+    except Exception:
+        v = "false"
+    return v in ("1", "true", "yes", "ndiyo")
+
+
 def _angalia_malipo_yanayosubiri(username):
     """Hakiki malipo ya mteja yasiyothibitishwa moja kwa moja na Pesapal, bila kutegemea
     callback. Hufanya kazi mara moja baada ya kuingia, na tena mteja akibonyeza kitufe."""
@@ -367,9 +377,10 @@ elif gate == "premium_member_suite":
     email_input = str_platform.text_input(
         "Barua pepe (hiari, kwa ajili ya risiti kutoka Pesapal):", key="email_malipo"
     ).strip()
-    stripe_redirect = pesapal_core.generate_stripe_global_checkout(u_active, dynamic_cost=49.00)
+    stripe_imewashwa = _stripe_imewashwa()
 
-    cp1, cp2 = str_platform.columns(2)
+    safu_za_malipo = str_platform.columns(2 if stripe_imewashwa else 1)
+    cp1 = safu_za_malipo[0]
     with cp1:
         str_platform.markdown(
             f"<div style='border:1px solid #3B82F6; padding:20px; border-radius:12px;'>"
@@ -400,13 +411,18 @@ elif gate == "premium_member_suite":
                         type="primary",
                         use_container_width=True,
                     )
-    with cp2:
-        str_platform.markdown(
-            "<div style='border:1px solid #D97706; padding:20px; border-radius:12px;'>"
-            "<h3>\U0001F6E1\uFE0F SOVEREIGN CODE AUDITOR</h3><h1>USD $49.00</h1></div>",
-            unsafe_allow_html=True,
-        )
-        str_platform.link_button("Purchase Commercial B2B License", stripe_redirect, type="secondary", use_container_width=True)
+    if stripe_imewashwa:
+        # TAHADHARI: hii bado ni placeholder; inaonyeshwa tu ikiwa STRIPE_ENABLED imewashwa.
+        stripe_redirect = pesapal_core.generate_stripe_global_checkout(u_active, dynamic_cost=49.00)
+        with safu_za_malipo[1]:
+            str_platform.markdown(
+                "<div style='border:1px solid #D97706; padding:20px; border-radius:12px;'>"
+                "<h3>\U0001F6E1\uFE0F SOVEREIGN CODE AUDITOR</h3><h1>USD $49.00</h1></div>",
+                unsafe_allow_html=True,
+            )
+            str_platform.link_button(
+                "Purchase Commercial B2B License", stripe_redirect, type="secondary", use_container_width=True
+            )
 
     if str_platform.button("Ondoka kwenye Akaunti (Log Out)"):
         str_platform.session_state.clear()
