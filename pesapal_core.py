@@ -1,3 +1,4 @@
+import os
 import re
 import time
 import uuid
@@ -11,10 +12,10 @@ import streamlit as st
 #  Live:    https://pay.pesapal.com/v3
 #  Sandbox: https://cybqa.pesapal.com/pesapalv3
 #  Funguo (Consumer Key/Secret) lazima zilingane na mazingira (live au sandbox).
-PESAPAL_BASE = "https://pay.pesapal.com/v3"
-AUTH_URL = f"{PESAPAL_BASE}/api/Auth/RequestToken"
-ORDER_URL = f"{PESAPAL_BASE}/api/Transactions/SubmitOrderRequest"
-STATUS_URL = f"{PESAPAL_BASE}/api/Transactions/GetTransactionStatus"
+MISINGI_YA_PESAPAL = {
+    "sandbox": "https://cybqa.pesapal.com/pesapalv3",
+    "live": "https://pay.pesapal.com/v3",
+}
 
 
 def _secret(key, default=""):
@@ -25,14 +26,28 @@ def _secret(key, default=""):
         return default
 
 
-# URL ya app yako (inaweza kuwekwa pia kwenye Secrets kama APP_URL)
-APP_URL = _secret(
-    "APP_URL",
-    "https://linguaafrika-ai--sanifu-grammaly-m5xtj9pydnpe2qibp2jezc.streamlit.app",
-).rstrip("/")
+def _mazingira():
+    """'sandbox' (chaguo-msingi) au 'live', kutoka Secrets au environment."""
+    thamani = (_secret("PESAPAL_ENV") or os.environ.get("PESAPAL_ENV") or "").strip().lower()
+    if thamani not in MISINGI_YA_PESAPAL:
+        if thamani:
+            print(f"[pesapal] PESAPAL_ENV='{thamani}' si sahihi; inatumika 'sandbox'.")
+        return "sandbox"
+    return thamani
 
-# IPN id kutoka Pesapal (inaweza kuwekwa kwenye Secrets kama PESAPAL_IPN_ID)
-IPN_ID = _secret("PESAPAL_IPN_ID", "329329ce-4caf-438d-b30b-d9ca91cf68a6")
+
+PESAPAL_ENV = _mazingira()
+PESAPAL_BASE = MISINGI_YA_PESAPAL[PESAPAL_ENV]
+AUTH_URL = f"{PESAPAL_BASE}/api/Auth/RequestToken"
+ORDER_URL = f"{PESAPAL_BASE}/api/Transactions/SubmitOrderRequest"
+STATUS_URL = f"{PESAPAL_BASE}/api/Transactions/GetTransactionStatus"
+
+# URL ya app yako na IPN id: LAZIMA zisomwe kutoka Secrets (APP_URL, PESAPAL_IPN_ID).
+APP_URL = _secret("APP_URL").rstrip("/")
+IPN_ID = _secret("PESAPAL_IPN_ID")
+
+if not APP_URL or not IPN_ID:
+    print("[pesapal] usanidi haujakamilika: weka APP_URL na PESAPAL_IPN_ID kwenye Secrets.")
 
 
 def _pata_funguo():
@@ -74,6 +89,10 @@ def anzisha_muamala_wa_pesapal(username, email, kiasi_usd=5.00, sarafu="TZS", si
 
     Kama kuna hitilafu, hurejesha APP_URL?error=... (ili UI iweze kuionyesha).
     """
+    if not APP_URL or not IPN_ID:
+        print("[pesapal] haiwezi kuanzisha malipo: APP_URL au PESAPAL_IPN_ID haipo kwenye Secrets.")
+        return f"{APP_URL}?error=Missing_Config"
+
     # Pesapal: 'id' ni max herufi 50, hivyo tunaikata na kusafisha username.
     jina_safi = re.sub(r"[^a-z0-9]", "", str(username).lower())[:15] or "user"
     id_ya_muamala = f"owl-{int(time.time())}-{uuid.uuid4().hex[:8]}-{jina_safi}"[:50]
