@@ -1,3 +1,4 @@
+
 """Mhariri wa Kiswahili wa moja kwa moja (mtindo wa Grammarly).
 
 Kihariri kiko kwenye components/live_editor/index.html. Makosa ya kanuni huonekana papo hapo ndani ya
@@ -7,7 +8,6 @@ import os
 import sys
 
 import streamlit as st
-import streamlit.components.v1 as components
 from openai import OpenAI
 
 # Faili hili liko kwenye pages/, hivyo ongeza mzizi wa repo kwenye sys.path ili
@@ -45,9 +45,11 @@ def _ubongo():
     return CerebralCortex(OpenAI(api_key=funguo))
 
 
-@st.cache_data(ttl=3600, show_spinner=False)
 def _matatizo_ya_ai(maandishi):
-    # Hitilafu hazihifadhiwi kwenye cache; ni mafanikio tu.
+    # Bila @st.cache_data: cache ya Streamlit ni ya mchakato mzima na hushirikiwa na
+    # kila session, hivyo maandishi ya mtumiaji mmoja yangehifadhiwa na kuonekana kwa
+    # watumiaji wengine. Kila session hukagua maandishi yake yenyewe; ukaguzi huu
+    # huitwa mara moja tu kwa kila mabadiliko ya maandishi (tazama ulinzi hapa chini).
     return mhariri.ukaguzi_wa_ai(maandishi, _ubongo().piga_json)
 
 
