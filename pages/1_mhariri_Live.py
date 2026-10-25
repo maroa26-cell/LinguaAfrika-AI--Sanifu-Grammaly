@@ -1,25 +1,19 @@
-
 """Mhariri wa Kiswahili wa moja kwa moja (mtindo wa Grammarly).
 
 Kihariri kiko kwenye components/live_editor/index.html. Makosa ya kanuni huonekana papo hapo ndani ya
 kivinjari; ukiacha kuandika kwa sekunde ~1, maandishi hutumwa hapa kwa ukaguzi wa AI.
 """
 import os
-import sys
 
 import streamlit as st
 from openai import OpenAI
-
-# Faili hili liko kwenye pages/, hivyo ongeza mzizi wa repo kwenye sys.path ili
-# `import mhariri` na `from cerebral_cortex import ...` vifanye kazi.
-MZIZI_WA_REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-if MZIZI_WA_REPO not in sys.path:
-    sys.path.insert(0, MZIZI_WA_REPO)
 
 import mhariri
 from cerebral_cortex import CerebralCortex
 
 st.set_page_config(page_title="Mhariri wa Moja kwa Moja", page_icon="\u270D\uFE0F", layout="wide")
+
+from live_editor_component import kijenzi  # noqa: E402  (lazima ije baada ya set_page_config)
 
 KIKOMO_CHA_HERUFI = 3000
 KIKOMO_CHA_MAOMBI = 60  # ukaguzi wa AI kwa kila session, kudhibiti gharama
@@ -45,11 +39,9 @@ def _ubongo():
     return CerebralCortex(OpenAI(api_key=funguo))
 
 
+@st.cache_data(ttl=3600, show_spinner=False)
 def _matatizo_ya_ai(maandishi):
-    # Bila @st.cache_data: cache ya Streamlit ni ya mchakato mzima na hushirikiwa na
-    # kila session, hivyo maandishi ya mtumiaji mmoja yangehifadhiwa na kuonekana kwa
-    # watumiaji wengine. Kila session hukagua maandishi yake yenyewe; ukaguzi huu
-    # huitwa mara moja tu kwa kila mabadiliko ya maandishi (tazama ulinzi hapa chini).
+    # Hitilafu hazihifadhiwi kwenye cache; ni mafanikio tu.
     return mhariri.ukaguzi_wa_ai(maandishi, _ubongo().piga_json)
 
 
@@ -63,12 +55,8 @@ s.setdefault("ai_text", "")
 s.setdefault("ai_error", "")
 s.setdefault("ai_calls", 0)
 
-# Kijenzi kinatanganzwa kwenye live_editor_component.py (module halisi); hapa tunakiingiza tu.
-from live_editor_component import kijenzi_cha_mhariri as _kijenzi_cha_mhariri
-
-thamani = _kijenzi_cha_mhariri(
-    ai_issues=s["ai_issues"], ai_text=s["ai_text"], ai_error=s["ai_error"], key="mhariri_live", default=None
-)
+thamani = kijenzi(ai_issues=s["ai_issues"], ai_text=s["ai_text"], ai_error=s["ai_error"],
+                  key="mhariri_live", default=None)
 
 if thamani and thamani.get("text") and thamani["text"] != s["ai_text"]:
     maandishi = thamani["text"]
