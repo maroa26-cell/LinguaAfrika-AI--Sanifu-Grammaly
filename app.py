@@ -69,9 +69,9 @@ def weka_seo_schema():
     try:
         # st.components.v1.html imeanza kuondolewa; tumia st.iframe kama ipo.
         if hasattr(str_platform, "iframe"):
-            str_platform.iframe(kodi_html, height=0)
+            str_platform.iframe(kodi_html, height=1)
         else:
-            components.html(kodi_html, height=0)
+            components.html(kodi_html, height=1)
     except Exception as e:
         print(f"[seo] imeshindwa kuweka JSON-LD: {type(e).__name__}: {e}")
 
