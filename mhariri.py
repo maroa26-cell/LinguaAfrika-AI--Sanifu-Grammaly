@@ -1,10 +1,10 @@
-
 """Mhariri wa Kiswahili (mtindo wa Grammarly).
 
 Hatua mbili:
   1. Ukaguzi wa kanuni (bure, wa haraka, hufanya kazi hata AI isipopatikana).
   2. Ukaguzi wa AI (sarufi, ngeli, viambishi, mtindo) kwa kutumia kazi ya `piga_ai` unayoipitisha.
 Kila tatizo ni dict: id, start, end, original, suggestion, category, explanation, source.
+Maandishi marefu kuliko KIKOMO_CHA_HERUFI_ZA_AI hukaguliwa kwa kanuni pekee (bila kuita AI).
 """
 import html
 import json
@@ -17,6 +17,8 @@ KATEGORIA = {
     "mtindo": ("Mtindo", "#E9D5FF"),
 }
 KIKOMO_CHA_MATATIZO_YA_AI = 40
+# Maandishi yenye herufi nyingi kuliko hii hayatumiwi kwa AI (gharama na muda); kanuni pekee.
+KIKOMO_CHA_HERUFI_ZA_AI = 6000
 
 # ---------------------------------------------------------------- kanuni ---
 _MAJINA_MAALUM = {
@@ -34,9 +36,11 @@ _TAHAJIA = {
     "kwahiyo": "kwa hiyo", "kwasababu": "kwa sababu", "kwamfano": "kwa mfano",
     "nakadhalika": "na kadhalika", "shukurani": "shukrani", "hatimae": "hatimaye",
 }
-_VIAMBATISHO = {"dkt", "mhe", "bw", "bi", "prof", "mf", "nk", "km", "sh", "tsh", "mh", "ndg", "eng", "mch"}
-_NENO_FUPI = ("na|kwa|ya|wa|la|za|cha|vya|katika|ni|kuwa|kwamba|lakini|pia|au|hii|hiyo|huu|huo|hizi|hizo|"
-              "yake|wake|yangu|wangu")
+# Viambishi na vifupisho: nukta yao si mwisho wa sentensi.
+_VIAMBATISHO = {"dkt", "mhe", "bw", "bi", "prof", "mf", "nk", "km", "sh", "tsh", "mh", "ndg", "eng", "mch",
+                "k.m", "n.k", "k.m.", "n.k."}
+# Maneno mafupi tu yanayokaguliwa yanaporudiwa ("hii hii", "hiyo hiyo" si makosa).
+_NENO_FUPI = "na|kwa|ya|wa|la|za|cha|vya|katika|ni|kuwa|kwamba|lakini|pia|au"
 
 
 def _tatizo(start, end, original, suggestion, category, explanation, source):
@@ -60,7 +64,7 @@ def ukaguzi_wa_kanuni(text):
         for m in re.finditer(r"(?<![A-Za-z'])" + kosa + r"(?![A-Za-z'])", text, flags=re.I):
             t.append(_tatizo(m.start(), m.end(), m.group(0), _kama_herufi_ya_mwanzo(m.group(0), sahihi),
                              "tahajia", "Tahajia sanifu ni '" + sahihi + "'.", "kanuni"))
-    # 3. neno fupi linalorudiwa
+    # 3. neno fupi linalorudiwa (orodha fupi tu: "hii hii", "hiyo hiyo" si makosa)
     for m in re.finditer(r"(?<![A-Za-z'])(" + _NENO_FUPI + r")[ \t]+\1(?![A-Za-z'])", text, flags=re.I):
         t.append(_tatizo(m.start(), m.end(), m.group(0), m.group(1), "sarufi",
                          "Neno limerudiwa bila sababu.", "kanuni"))
@@ -86,9 +90,19 @@ def ukaguzi_wa_kanuni(text):
         i = ya_kwanza.start(1)
         t.append(_tatizo(i, i + 1, text[i], text[i].upper(), "tahajia",
                          "Sentensi huanza kwa herufi kubwa.", "kanuni"))
-    for m in re.finditer(r"([.!?][\"')\]]*\s+)([a-z])", text):
-        kabla = re.search(r"([A-Za-z]+)[.!?][\"')\]]*\s+$", text[:m.end(1)])
-        if kabla and kabla.group(1).lower() in _VIAMBATISHO:
+    # "(?<!\\.)" inazuia "..." (nukta tatu) kuhesabiwa kuwa mwisho wa sentensi.
+    for m in re.finditer(r"(?<!\.)([.!?][\"')\]]*\s+)([a-z])", text):
+        # angalia neno lililopita kwenye dirisha dogo (herufi 30), si maandishi yote
+        dirisha = text[max(0, m.end(1) - 30):m.end(1)]
+        kabla = re.search(r"(\w+)[.!?][\"')\]]*\s+$", dirisha)
+        if kabla:
+            neno = kabla.group(1).lower()
+            # orodha ya namba ("1. kwanza") na vifupisho ("dkt.", "bw.") si mwisho wa sentensi
+            if neno.isdigit() or neno in _VIAMBATISHO:
+                continue
+        # vifupisho vyenye nukta ndani yake ("n.k.", "k.m.") navyo si mwisho wa sentensi
+        ufupisho = re.search(r"([A-Za-z](?:\.[A-Za-z])+\.)[\"')\]]*\s+$", dirisha)
+        if ufupisho and ufupisho.group(1).lower() in _VIAMBATISHO:
             continue
         i = m.start(2)
         t.append(_tatizo(i, i + 1, text[i], text[i].upper(), "tahajia", "Sentensi huanza kwa herufi kubwa.", "kanuni"))
@@ -120,6 +134,15 @@ def _toa_json(jibu):
     return json.loads(s[a:b + 1])
 
 
+def _mipaka(orig):
+    """Mipaka ya neno: 'orig' isilingane ndani ya neno lingine (mf. 'na' ndani ya 'nane')."""
+    if not orig:
+        return r"(?!)"  # muundo usiolingana na kitu: huzuia orig tupu
+    kabla = r"(?<!\w)" if orig[0].isalnum() else ""
+    baada = r"(?!\w)" if orig[-1].isalnum() else ""
+    return kabla + re.escape(orig) + baada
+
+
 def ukaguzi_wa_ai(text, piga_ai):
     """piga_ai(mfumo, mtumiaji) -> maandishi ya jibu. Hutupa hitilafu ikishindwa."""
     mtumiaji = "MAANDISHI YA KUKAGUA (kati ya alama za <<< >>>):\n<<<\n" + text + "\n>>>"
@@ -136,16 +159,12 @@ def ukaguzi_wa_ai(text, piga_ai):
             continue
         kat = str(it.get("category", "sarufi")).strip().lower()
         kat = kat if kat in KATEGORIA else "sarufi"
-        pos = 0
-        while True:  # tafuta mahali halisi ambapo hapajatumika
-            i = text.find(orig, pos)
-            if i == -1:
+        for m in re.finditer(_mipaka(orig), text):  # mahali halisi ambapo hapajatumika
+            i, j = m.span()
+            if all(j <= a or i >= b for a, b in imetumika):
+                imetumika.append((i, j))
+                t.append(_tatizo(i, j, orig, sug, kat, str(it.get("explanation", ""))[:300], "ai"))
                 break
-            if all(i + len(orig) <= a or i >= b for a, b in imetumika):
-                imetumika.append((i, i + len(orig)))
-                t.append(_tatizo(i, i + len(orig), orig, sug, kat, str(it.get("explanation", ""))[:300], "ai"))
-                break
-            pos = i + 1
     return t
 
 
@@ -167,12 +186,16 @@ def unganisha(*orodha):
 def kagua(text, piga_ai=None):
     kanuni = ukaguzi_wa_kanuni(text)
     ai, kosa, ai_imetumika = [], None, False
-    if piga_ai is not None:
+    if piga_ai is not None and len(text) <= KIKOMO_CHA_HERUFI_ZA_AI:
         try:
             ai = ukaguzi_wa_ai(text, piga_ai)
             ai_imetumika = True
         except Exception as e:  # AI isipopatikana, endelea na ukaguzi wa kanuni
-            kosa = f"{type(e).__name__}: {e}"
+            # jina la aina ya kosa pekee: ujumbe kamili waweza kuwa na data nyeti (mf. kipande cha API key)
+            kosa = type(e).__name__
+    elif piga_ai is not None:
+        # maandishi marefu: kanuni pekee, AI haikuitwa; UI inaweza kumweleza mtumiaji
+        kosa = "maandishi_marefu"
     return {"issues": unganisha(kanuni, ai), "ai_imetumika": ai_imetumika, "ai_kosa": kosa}
 
 
@@ -201,3 +224,4 @@ def html_ya_kuonyesha(text, issues):
         p = x["end"]
     sehemu.append(html.escape(text[p:]))
     return '<div style="white-space:pre-wrap;line-height:1.7">' + "".join(sehemu) + "</div>"
+
