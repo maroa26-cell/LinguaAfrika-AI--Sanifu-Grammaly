@@ -1,6 +1,15 @@
-chore(security): ongeza .gitignore kuzuia secrets na database kwenda GitHub
+# Siri
+.env
+.env.*
+.streamlit/secrets.toml
 
-- Puuza .streamlit/secrets.toml, .env, *.env
-- Puuza faili za SQLite (*.db, *.sqlite, *.sqlite3)
-- Puuza __pycache__, mazingira ya venv, na faili za mfumoauth_2fa.db, otp_phones.db,ourworthlinks_data.db 
+# Hifadhidata za ndani
+*.db
+*.sqlite3
 
+# Python
+__pycache__/
+*.pyc
+*.log
+venv/
+.venv/
