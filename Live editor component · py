@@ -1,0 +1,13 @@
+"""Tangaza kijenzi (component) cha mhariri wa moja kwa moja.
+
+MUHIMU: declare_component lazima iitwe kutoka kwenye moduli ya kawaida inayoagizwa (import), si ndani ya
+script ya pages/. Ndani ya pages/, Streamlit haipati jina la moduli na hutoa
+'RuntimeError: module is None. This should never happen.'
+"""
+import os
+
+import streamlit.components.v1 as components
+
+NJIA_YA_KIJENZI = os.path.join(os.path.dirname(os.path.abspath(__file__)), "components", "live_editor")
+
+kijenzi = components.declare_component("lingual_live_editor", path=NJIA_YA_KIJENZI)

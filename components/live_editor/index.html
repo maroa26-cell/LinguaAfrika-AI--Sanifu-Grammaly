@@ -27,8 +27,8 @@ html,body{margin:0;padding:0;background:transparent;color:var(--fg);font-family:
 //<RULES>
 const MAJINA={"tanzania":"Tanzania","kenya":"Kenya","uganda":"Uganda","rwanda":"Rwanda","burundi":"Burundi","zanzibar":"Zanzibar","dodoma":"Dodoma","arusha":"Arusha","mwanza":"Mwanza","afrika":"Afrika","dar es salaam":"Dar es Salaam","kiswahili":"Kiswahili","kiingereza":"Kiingereza","kifaransa":"Kifaransa","kiarabu":"Kiarabu","jumatatu":"Jumatatu","jumanne":"Jumanne","jumatano":"Jumatano","alhamisi":"Alhamisi","ijumaa":"Ijumaa","jumamosi":"Jumamosi","jumapili":"Jumapili","januari":"Januari","februari":"Februari","machi":"Machi","aprili":"Aprili","mei":"Mei","juni":"Juni","julai":"Julai","agosti":"Agosti","septemba":"Septemba","oktoba":"Oktoba","novemba":"Novemba","desemba":"Desemba"};
 const TAHAJIA={"kwahiyo":"kwa hiyo","kwasababu":"kwa sababu","kwamfano":"kwa mfano","nakadhalika":"na kadhalika","shukurani":"shukrani","hatimae":"hatimaye"};
-const VIAMBATISHO=new Set(["dkt","mhe","bw","bi","prof","mf","nk","km","sh","tsh","mh","ndg","eng","mch"]);
-const NENO_FUPI="na|kwa|ya|wa|la|za|cha|vya|katika|ni|kuwa|kwamba|lakini|pia|au|hii|hiyo|huu|huo|hizi|hizo|yake|wake|yangu|wangu";
+const VIAMBATISHO=new Set(["dkt","mhe","bw","bi","prof","mf","nk","km","sh","tsh","mh","ndg","eng","mch","k.m","n.k","k.m.","n.k."]);
+const NENO_FUPI="na|kwa|ya|wa|la|za|cha|vya|katika|ni|kuwa|kwamba|lakini|pia|au";
 function esc(s){return s.replace(/[.*+?^${}()|[\]\\]/g,"\\$&");}
 function tat(start,end,original,suggestion,category,explanation,source){return {start,end,original,suggestion,category,explanation,source};}
 function kamaHerufi(o,s){return o.charAt(0)!==o.charAt(0).toLowerCase()?s.charAt(0).toUpperCase()+s.slice(1):s;}
@@ -57,12 +57,20 @@ function kanuni(text){
   }
   m=/^[\s"'(\[]*([a-z])/.exec(text);
   if(m){const i=m[0].length-1;t.push(tat(i,i+1,text.charAt(i),text.charAt(i).toUpperCase(),"tahajia","Sentensi huanza kwa herufi kubwa.","kanuni"));}
-  re=/([.!?]["')\]]*\s+)([a-z])/g;
+  re=/(?<!\.)([.!?]["')\]]*\s+)([a-z])/g;
   while((m=re.exec(text))){
-    const upto=text.slice(0,m.index+m[1].length);
-    const k=/([A-Za-z]+)[.!?]["')\]]*\s+$/.exec(upto);
-    if(k&&VIAMBATISHO.has(k[1].toLowerCase()))continue;
-    const i=m.index+m[1].length;
+    const mwisho=m.index+m[1].length;
+    const dirisha=text.slice(Math.max(0,mwisho-30),mwisho);
+    const k=/(\w+)[.!?]["')\]]*\s+$/.exec(dirisha);
+    if(k){
+      const neno=k[1].toLowerCase();
+      // orodha ya namba ("1. kwanza") na vifupisho ("dkt.", "bw.") si mwisho wa sentensi
+      if(/^\d+$/.test(neno)||VIAMBATISHO.has(neno))continue;
+    }
+    // vifupisho vyenye nukta ndani yake ("n.k.", "k.m.") navyo si mwisho wa sentensi
+    const u=/([A-Za-z](?:\.[A-Za-z])+\.)["')\]]*\s+$/.exec(dirisha);
+    if(u&&VIAMBATISHO.has(u[1].toLowerCase()))continue;
+    const i=mwisho;
     t.push(tat(i,i+1,text.charAt(i),text.charAt(i).toUpperCase(),"tahajia","Sentensi huanza kwa herufi kubwa.","kanuni"));
   }
   return t;

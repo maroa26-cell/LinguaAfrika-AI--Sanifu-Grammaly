@@ -4,22 +4,16 @@ Kihariri kiko kwenye components/live_editor/index.html. Makosa ya kanuni huoneka
 kivinjari; ukiacha kuandika kwa sekunde ~1, maandishi hutumwa hapa kwa ukaguzi wa AI.
 """
 import os
-import sys
 
 import streamlit as st
-import streamlit.components.v1 as components
 from openai import OpenAI
-
-# Faili hili liko kwenye pages/, hivyo ongeza mzizi wa repo kwenye sys.path ili
-# `import mhariri` na `from cerebral_cortex import ...` vifanye kazi.
-MZIZI_WA_REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-if MZIZI_WA_REPO not in sys.path:
-    sys.path.insert(0, MZIZI_WA_REPO)
 
 import mhariri
 from cerebral_cortex import CerebralCortex
 
 st.set_page_config(page_title="Mhariri wa Moja kwa Moja", page_icon="\u270D\uFE0F", layout="wide")
+
+from live_editor_component import kijenzi  # noqa: E402  (lazima ije baada ya set_page_config)
 
 KIKOMO_CHA_HERUFI = 3000
 KIKOMO_CHA_MAOMBI = 60  # ukaguzi wa AI kwa kila session, kudhibiti gharama
@@ -61,15 +55,8 @@ s.setdefault("ai_text", "")
 s.setdefault("ai_error", "")
 s.setdefault("ai_calls", 0)
 
-# Njia ya component: components/live_editor iko kwenye mzizi wa repo.
-NJIA_YA_COMPONENT = os.path.join(MZIZI_WA_REPO, "components", "live_editor")
-
-# declare_component ni ngazi ya module: hutangazwa mara moja, si ndani ya mwito wa kila rerun.
-_kijenzi_cha_mhariri = components.declare_component("lingual_live_editor", path=NJIA_YA_COMPONENT)
-
-thamani = _kijenzi_cha_mhariri(
-    ai_issues=s["ai_issues"], ai_text=s["ai_text"], ai_error=s["ai_error"], key="mhariri_live", default=None
-)
+thamani = kijenzi(ai_issues=s["ai_issues"], ai_text=s["ai_text"], ai_error=s["ai_error"],
+                  key="mhariri_live", default=None)
 
 if thamani and thamani.get("text") and thamani["text"] != s["ai_text"]:
     maandishi = thamani["text"]
