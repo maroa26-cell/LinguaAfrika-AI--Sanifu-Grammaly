@@ -19,7 +19,7 @@ muda_mwanzo = time.time()
 self_healing_status = "\U0001F7E2 autonomous shield: active & healthy"
 str_platform.set_page_config(page_title="Lingual Africa Sanifu", page_icon="\U0001F9E0", layout="wide", initial_sidebar_state="expanded")
 
-# URL HALISI ya app yako (ilikuwa 'https://streamlit.app' - si sahihi)
+# URL HALISI ya app yako
 _APP_URL_MSINGI = "https://streamlit.app"
 
 # Kikomo cha herufi kwa kila ingizo (kuzuia matumizi mabaya / gharama kubwa)
