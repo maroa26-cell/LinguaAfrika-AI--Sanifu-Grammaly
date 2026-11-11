@@ -1,3 +1,4 @@
+python
 import streamlit as str_platform
 import os
 import time
@@ -19,19 +20,11 @@ muda_mwanzo = time.time()
 self_healing_status = "\U0001F7E2 autonomous shield: active & healthy"
 str_platform.set_page_config(page_title="Lingual Africa Sanifu", page_icon="\U0001F9E0", layout="wide", initial_sidebar_state="expanded")
 
-# URL HALISI ya app yako
 _APP_URL_MSINGI = "https://streamlit.app"
-
-# Kikomo cha herufi kwa kila ingizo (kuzuia matumizi mabaya / gharama kubwa)
 MAX_CHARS = 5000
-
-# Kikomo cha maneno ya bure kwa kipindi cha majaribio
 FREEMIUM_WORD_LIMIT = 1000
 
 
-# ------------------------------------------------------------------ #
-#  WASAIDIZI WA USALAMA / UIMARA
-# ------------------------------------------------------------------ #
 def _secret(jina):
     """Soma siri kwa usalama; haitaanguka kama hakuna faili la secrets."""
     try:
@@ -40,7 +33,6 @@ def _secret(jina):
         return None
 
 
-# Anwani ya app: inasomwa kutoka Secrets (APP_URL), sawa na pesapal_core.py.
 APP_URL = str(_secret("APP_URL") or _APP_URL_MSINGI).strip().rstrip("/")
 
 
@@ -138,7 +130,7 @@ def onyesha_matokeo_ya_mhariri():
 
 
 # ------------------------------------------------------------------ #
-#  KAMUSI YA DATA (CSV): chanzo cha kwanza cha ukweli kabla ya AI
+#  KAMUSI YA DATA (CSV)
 # ------------------------------------------------------------------ #
 KAMUSI_CSV_FILE = "kamusi.csv"
 KAMUSI_CSV_URL = str(_secret("KAMUSI_CSV_URL") or "").strip()
@@ -237,3 +229,11 @@ except Exception as exc:
 
 skin_appearance.inject_premium_glassmorphic_skin()
 
+api_key_source = os.environ.get("OPENAI_API_KEY") or _secret("OPENAI_API_KEY")
+
+if isinstance(api_key_source, str) and api_key_source.strip():
+    client = OpenAI(api_key=api_key_source.strip())
+    ubongo = CerebralCortex(client)
+else:
+    str_platform.error("\U0001F512 secrets error! Weka OPENAI_API_KEY kwenye Secrets.")
+    str_platform.stop()
