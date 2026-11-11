@@ -26,7 +26,6 @@ import database
 import skin_appearance
 import pesapal_core
 
-# Hakikisha jedwali la watumiaji na mengine yapo kabla ya hatua ya kuingia.
 try:
     database.anzisha_hifadhidata_ya_chuma()
 except Exception as exc:
@@ -40,17 +39,14 @@ skin_appearance.inject_premium_glassmorphic_skin()
 # ------------------------------------------------------------------ #
 #  VIGEZO VYA USALAMA
 # ------------------------------------------------------------------ #
-MAX_LOGIN_ATTEMPTS = 5          # majaribio kabla ya kufungiwa
-LOCKOUT_SECONDS = 300           # dakika 5 za kufungiwa
-SESSION_TIMEOUT_SECONDS = 900   # dakika 15 bila kazi -> toka
-OTP_TTL_SECONDS = 300           # OTP huisha baada ya dakika 5
-MAX_OTP_ATTEMPTS = 5              # jaribio la OTP kabla ya lockout
-MAX_CSV_BYTES = 5 * 1024 * 1024  # 5 MB
-MAX_CSV_ROWS = 20000            # kiwango cha juu cha mistari
+MAX_LOGIN_ATTEMPTS = 5
+LOCKOUT_SECONDS = 300
+SESSION_TIMEOUT_SECONDS = 900
+OTP_TTL_SECONDS = 300
+MAX_OTP_ATTEMPTS = 5
+MAX_CSV_BYTES = 5 * 1024 * 1024
+MAX_CSV_ROWS = 20000
 
-# ------------------------------------------------------------------ #
-#  HALI YA KIPINDI (session state)
-# ------------------------------------------------------------------ #
 for _k, _v in {
     "admin_authenticated": False,
     "otp_verified": False,
@@ -68,7 +64,7 @@ for _k, _v in {
 
 
 def tuma_otp_kwenda_email(otp_code, target_email):
-    """📧 Hutuma OTP ya 2FA kwa barua pepe (://gmail.com + TLS)."""
+    """Hutuma OTP ya 2FA kwa barua pepe."""
     sender_email = (str_platform.secrets.get("EMAIL_SENDER_USER", "") or "").strip()
     sender_password = (str_platform.secrets.get("EMAIL_SENDER_PASSWORD", "") or "").strip()
     smtp_server = (str_platform.secrets.get("SMTP_SERVER", "://gmail.com") or "://gmail.com").strip()
@@ -86,7 +82,7 @@ def tuma_otp_kwenda_email(otp_code, target_email):
     msg = MIMEMultipart()
     msg["From"] = f"Ourworthlinks Business Security <{sender_email}>"
     msg["To"] = target_email
-    msg["Subject"] = f"🔒 2FA Verification Code: {otp_code}"
+    msg["Subject"] = f"2FA Verification Code: {otp_code}"
     body = f"""
 Hello,
 
@@ -104,9 +100,7 @@ This code expires in 5 minutes. If you did not initiate this login, secure your 
     try:
         context = ssl.create_default_context()
         if smtp_port == 465:
-            with smtplib.SMTP_SSL(
-                smtp_server, smtp_port, timeout=20.0, context=context
-            ) as server:
+            with smtplib.SMTP_SSL(smtp_server, smtp_port, timeout=20.0, context=context) as server:
                 server.login(sender_email, sender_password)
                 server.send_message(msg)
         else:
@@ -138,7 +132,7 @@ def funga_kipindi():
 
 
 # ------------------------------------------------------------------ #
-#  HATUA YA 1: PASSWORD KUU (+ rate limiting / lockout)
+#  HATUA YA 1: PASSWORD KUU
 # ------------------------------------------------------------------ #
 if not str_platform.session_state["admin_authenticated"]:
     str_platform.markdown("<h2 style='text-align: center; color: #D97706;'>🔐 ADMIN CONTROL GATEWAY - PASSWORD STAGE</h2>", unsafe_allow_html=True)
@@ -186,7 +180,7 @@ if not str_platform.session_state["admin_authenticated"]:
     str_platform.stop()
 
 # ------------------------------------------------------------------ #
-#  HATUA YA 2: 2FA (OTP + muda wa kuisha)
+#  HATUA YA 2: 2FA (OTP)
 # ------------------------------------------------------------------ #
 if str_platform.session_state["admin_authenticated"] and not str_platform.session_state["otp_verified"]:
     str_platform.markdown("<h2 style='text-align: center; color: #3B82F6;'>🔐 TWO-FACTOR AUTHENTICATION (2FA SHIELD)</h2>", unsafe_allow_html=True)
@@ -205,17 +199,24 @@ if str_platform.session_state["admin_authenticated"] and not str_platform.sessio
         if not str_platform.session_state["otp_email_sent"]:
             sababu = str_platform.session_state.get("otp_email_reason", "smtp_error")
             if sababu == "no_secrets":
-                str_platform.error(
-                    "Mipangilio ya barua pepe haijakamilika. Weka EMAIL_SENDER_USER, "
-                    "EMAIL_SENDER_PASSWORD, na ADMIN_OTP_EMAIL kwenye Streamlit Secrets."
-                )
+                str_platform.error("Mipangilio ya barua pepe haijakamilika. Weka EMAIL_SENDER_USER, EMAIL_SENDER_PASSWORD, na ADMIN_OTP_EMAIL kwenye Streamlit Secrets.")
             elif sababu == "auth_failed":
-                str_platform.error(
-                    "Gmail imekataa kuingia. Hakikisha unatumia Google App Password, "
-                    "si nywila ya kawaida ya Gmail."
-                )
+                str_platform.error("Gmail imekataa kuingia. Hakikisha unatumia Google App Password, si nywila ya kawaida ya Gmail.")
             elif sababu == "bad_smtp_port":
-                str_platform.error("SMTP_PORT si namba halali. Tumia 587 (STARTTLS) au 465 (SSL), kulingana na mtoa huduma.")
+                str_platform.error("SMTP_PORT si namba halali. Tumia 587 (STARTTLS) au 465 (SSL).")
             else:
-                str_platform.error(
-                    "OTP haikutumwa. Angalia SMTP_SERVER, SMTP_PORT, credentials, na logs za hosting. "
+                str_platform.error("OTP haikutumwa. Angalia SMTP_SERVER, SMTP_PORT, credentials, na logs za hosting.")
+            if str_platform.button("Rudia kuingia baada ya kurekebisha email"):
+                funga_kipindi()
+                str_platform.rerun()
+            str_platform.stop()
+
+        str_platform.warning(f"OTP imetumwa kwenye barua pepe ya msimamizi: {barua_pepe}")
+
+        input_otp = str_platform.text_input("Ingiza Nambari ya Siri (6-Digit OTP Code):", max_chars=6, key="otp_input_box")
+        if str_platform.button("Thibitisha Utambulisho wa Utawala", use_container_width=True, type="primary"):
+            if input_otp.strip() == str_platform.session_state["generated_otp"]:
+                str_platform.session_state["otp_verified"] = True
+                str_platform.session_state["auth_time"] = time.time()
+                str_platform.success("🔓 Utambulisho Umethibitishwa! Karibu Kiongozi.")
+                time.sleep(1)
