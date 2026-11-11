@@ -1,6 +1,8 @@
 # Vifurushi vinavyohitajika na app.py, pesapal_core.py, admin.py, dashboard.py, database.py, risiti.py
 streamlit>=1.37.0
 openai>=1.40.0
+google-genai
+PyGithub
 requests>=2.31.0
 pandas>=2.2.0
 numpy>=1.26.0
