@@ -8,6 +8,13 @@ except Exception:  # ruhusu majaribio nje ya Streamlit
 
 MBAO_ZA_MAKOSA_YA_PARAMETA = ("temperature", "response_format", "unsupported", "unknown")
 KIKOMO_CHA_SAUTI_MB = 25
+# Maelekezo ya ziada kulingana na lugha lengwa (yanaongezwa kwenye prompt ya tafsiri)
+MAELEKEZO_YA_LUGHA = {
+    "Kichina": "Write in Simplified Chinese characters (Mandarin).",
+    "Kireno": "Use standard Portuguese as used in Mozambique and Angola (European norms).",
+    "Kizulu": "Write in standard isiZulu (South Africa), using correct noun-class concord.",
+    "Setswana": "Write in standard Setswana as used in Botswana (Tswana orthography).",
+}
 KIKOMO_CHA_HERUFI_ZA_SAUTI = 4000
 
 
@@ -64,6 +71,9 @@ class CerebralCortex:
     def chakata_tafsiri_pacha(self, maandishi, chanzo, lengo, muktadha):
         """Hatua mbili: tafsiri, kisha mapitio yanayolinganisha na maandishi ya asili."""
         ziada = ""
+        for jina, maelezo in MAELEKEZO_YA_LUGHA.items():
+            if jina in str(lengo):
+                ziada += " " + maelezo
         if str(muktadha) in ("Kisheria", "Kitiba"):
             ziada = (" Use precise, standard terminology. If a term has no established equivalent, "
                      "keep the original term in brackets after your translation.")
