@@ -1,11 +1,12 @@
-
 """
 cerebral_cortex.py — Ubongo Mkuu wa Kuchakata Lugha, Tafsiri, Sauti na Dataset.
 Kipaumbele: 1. Google Gemini (Bure / Gharama Nafuu) -> 2. OpenAI (Chaguo la Mwisho).
 """
 
+import io
 import os
 import json
+import wave
 import tempfile
 from typing import Dict, Any, Optional
 
@@ -222,3 +223,78 @@ class CerebralCortex:
     def chakata_sauti_na_imla(self, audio_file, lugha: str = "sw") -> str:
         data = audio_file.read()
         if len(data) > KIKOMO_CHA_SAUTI_MB * 1024 * 1024:
+            raise ValueError(f"Faili la sauti ni kubwa mno. Kikomo ni {KIKOMO_CHA_SAUTI_MB} MB.")
+        if not data:
+            raise ValueError("Faili la sauti ni tupu.")
+
+        jina = getattr(audio_file, "name", "sauti.mp3") or "sauti.mp3"
+        aina = getattr(audio_file, "type", None) or "audio/mpeg"
+
+        # Hatua ya 1: Gemini kwanza
+        if self.gemini_client:
+            try:
+                jibu = self.gemini_client.models.generate_content(
+                    model=self.gemini_modeli,
+                    contents=[
+                        types.Part.from_bytes(data=data, mime_type=aina),
+                        "Andika neno kwa neno kilichosemwa kwenye sauti hii (lugha: "
+                        f"{lugha}). Tumia tahajia na uakifishaji sahihi. Toa maandishi tu, bila maelezo.",
+                    ],
+                    config=types.GenerateContentConfig(temperature=0.0),
+                )
+                if jibu.text and jibu.text.strip():
+                    return jibu.text.strip()
+            except Exception:
+                pass  # Rudi kwenye OpenAI
+
+        # Hatua ya 2: OpenAI Whisper kama akiba
+        if not self.openai_client:
+            raise RuntimeError("Gemini imeshindwa na hakuna ufunguo wa OpenAI wa akiba.")
+        j = self.openai_client.audio.transcriptions.create(
+            model="whisper-1", file=(jina, data, aina), language=lugha,
+        )
+        return j.text.strip()
+
+    # ============================================================
+    # SEHEMU YA KUZALISHA SAUTI (TTS) - Inarudisha bytes za WAV
+    # ============================================================
+    def zindua_jifunze_lugha_audio(self, maandishi: str, lugha: str = "Kiswahili") -> Optional[bytes]:
+        maandishi = (maandishi or "").strip()
+        if not maandishi:
+            return None
+        maandishi = maandishi[:KIKOMO_CHA_HERUFI_ZA_SAUTI]
+
+        # Hatua ya 1: Gemini TTS
+        if self.gemini_client:
+            try:
+                jibu = self.gemini_client.models.generate_content(
+                    model="gemini-2.5-flash-preview-tts",
+                    contents=f"Soma kwa lugha ya {lugha}, kwa uwazi na polepole: {maandishi}",
+                    config=types.GenerateContentConfig(
+                        response_modalities=["AUDIO"],
+                        speech_config=types.SpeechConfig(
+                            voice_config=types.VoiceConfig(
+                                prebuilt_voice_config=types.PrebuiltVoiceConfig(voice_name="Kore")
+                            )
+                        ),
+                    ),
+                )
+                pcm = jibu.candidates[0].content.parts[0].inline_data.data
+                if pcm:
+                    buf = io.BytesIO()
+                    with wave.open(buf, "wb") as w:
+                        w.setnchannels(1)
+                        w.setsampwidth(2)
+                        w.setframerate(24000)
+                        w.writeframes(pcm)
+                    return buf.getvalue()
+            except Exception:
+                pass  # Rudi kwenye OpenAI
+
+        # Hatua ya 2: OpenAI TTS kama akiba
+        if not self.openai_client:
+            raise RuntimeError("Gemini imeshindwa na hakuna ufunguo wa OpenAI wa akiba.")
+        j = self.openai_client.audio.speech.create(
+            model="tts-1", voice="alloy", input=maandishi, response_format="wav",
+        )
+        return j.read() if hasattr(j, "read") else j.content
