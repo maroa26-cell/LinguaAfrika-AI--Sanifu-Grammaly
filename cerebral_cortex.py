@@ -166,7 +166,7 @@ class CerebralCortex:
         # Ukaguzi wa kisarufi wa rasimu
         ripoti_ya_ukaguzi = ""
         if "Kiswahili" in str(lengo):
-            ukaguzi = self.kanuni.kagua_sentensi_nzima(j1)
+            ukaguzi = self.kanuni.kagua_sentensi_nzima(j1, kagua_alama=False)
             if not ukaguzi.get("sahihi", True):
                 orodha = [f"{k['neno']} -> {k['ujumbe']}" for k in ukaguzi.get("makosa", [])]
                 if orodha:
@@ -202,11 +202,17 @@ class CerebralCortex:
     def zalisha_dataset_ya_kuuza(self, maandishi_chanzo: str, chanzo: str = "Kiingereza", lengo: str = "Kiswahili", muktadha: str = "Kawaida") -> Optional[Dict[str, Any]]:
         """Huzalisha rekodi ya dataset iliyohakikiwa kisarufi kwa kutumia Gemini kwanza."""
         tafsiri = self.chakata_tafsiri_pacha(maandishi_chanzo, chanzo, lengo, muktadha)
-        matini_sw = tafsiri if "Kiswahili" in lengo else maandishi_chanzo
+        if "Kiswahili" in lengo:
+            matini_sw = tafsiri
+        elif "Kiswahili" in chanzo:
+            matini_sw = maandishi_chanzo
+        else:
+            matini_sw = None  # hakuna Kiswahili kwenye jozi hii, hakuna cha kukagua
 
-        ukaguzi = self.kanuni.kagua_sentensi_nzima(matini_sw)
-        if not ukaguzi.get("sahihi", True):
-            return None
+        if matini_sw:
+            ukaguzi = self.kanuni.kagua_sentensi_nzima(matini_sw, kagua_alama=False)
+            if not ukaguzi.get("sahihi", True):
+                return None
 
         return {
             "source_text": maandishi_chanzo.strip(),
