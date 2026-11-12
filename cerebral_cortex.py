@@ -30,6 +30,19 @@ from kanuni_ya_sarufi import (
 
 MBAO_ZA_MAKOSA_YA_PARAMETA = ("temperature", "response_format", "unsupported", "unknown")
 
+# Maelekezo ya matamshi ya Kiswahili Sanifu kwa ajili ya TTS
+MAELEKEZO_YA_MATAMSHI_SW = (
+    "Pronounce this as Standard Swahili (Kiswahili Sanifu, Tanzanian accent), NOT as English. "
+    "Use the five pure vowels a, e, i, o, u (never diphthongs). "
+    "Stress the second-to-last syllable of every word. "
+    "Double vowels (e.g. 'oo' in 'njoo', 'aa' in 'jaa') must be held longer. "
+    "Prenasalised consonants mb, nd, ng, nj, nz are pronounced as ONE blended sound where BOTH the "
+    "nasal and the following consonant are clearly heard: 'nj' is a soft 'n' immediately followed by a "
+    "clear 'j' (as in 'njoo', 'njaa', 'njia', 'njema'); do NOT drop the 'j' and do NOT turn it into 'ny'. "
+    "'ny' (as in 'nyumba') is a separate single palatal nasal sound and is different from 'nj'. "
+    "'ng'' is a single velar nasal as in 'ng'ombe'. 'ch' as in 'chai', 'sh' as in 'shule', 'dh' as in 'dhahabu'."
+)
+
 # Maelekezo ya ziada kwa muktadha maalum wa tafsiri (Kidini, Kilimo)
 MAELEKEZO_YA_MUKTADHA = {
     "Kidini": (
@@ -298,7 +311,11 @@ class CerebralCortex:
             try:
                 jibu = self.gemini_client.models.generate_content(
                     model="gemini-2.5-flash-preview-tts",
-                    contents=f"Soma kwa lugha ya {lugha}, kwa uwazi na polepole: {maandishi}",
+                    contents=(
+                        f"Soma kwa lugha ya {lugha}, kwa uwazi na polepole. "
+                        + (MAELEKEZO_YA_MATAMSHI_SW + " " if "Kiswahili" in str(lugha) else "")
+                        + f"Maandishi ya kusoma:\n{maandishi}"
+                    ),
                     config=types.GenerateContentConfig(
                         response_modalities=["AUDIO"],
                         speech_config=types.SpeechConfig(
