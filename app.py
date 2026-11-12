@@ -19,7 +19,7 @@ muda_mwanzo = time.time()
 self_healing_status = "\U0001F7E2 autonomous shield: active & healthy"
 str_platform.set_page_config(page_title="Lingual Africa Sanifu", page_icon="\U0001F9E0", layout="wide", initial_sidebar_state="expanded")
 
-# URL HALISI ya app yako (ilikuwa 'https://streamlit.app' - si sahihi)
+# URL HALISI ya app yako
 _APP_URL_MSINGI = "https://linguaafrika-ai--sanifu-grammaly-m5xtj9pydnpe2qibp2jezc.streamlit.app"
 
 # Kikomo cha herufi kwa kila ingizo (kuzuia matumizi mabaya / gharama kubwa)
@@ -37,7 +37,6 @@ def _secret(jina):
         return None
 
 
-# Anwani ya app: inasomwa kutoka Secrets (APP_URL), sawa na pesapal_core.py.
 APP_URL = str(_secret("APP_URL") or _APP_URL_MSINGI).strip().rstrip("/")
 
 
@@ -91,18 +90,23 @@ def onyesha_hitilafu(muktadha, e):
         str_platform.error(str(e))
         return
     t = str(e).lower()
+    
+    # Onyesha kosa halisi ikiwa AI_DEBUG imewashwa (Kwa ajili ya debugging)
+    if _ai_debug_imewashwa():
+        str_platform.error(f"❌ Kosa la AI ({muktadha}): {type(e).__name__} - {str(e)}")
+        return
+
     if any(k in t for k in ("billing", "quota", "429", "rate limit", "insufficient")):
         str_platform.error("Huduma ya AI haipatikani kwa sasa. Tafadhali jaribu tena baadaye.")
     else:
         str_platform.error(f"Imeshindikana {muktadha}. Tafadhali jaribu tena.")
-    if _ai_debug_imewashwa():
-        str_platform.warning(f"[uchunguzi AI] {muktadha} | {type(e).__name__}: {str(e)[:300]}")
 
 
 _HERUFI_ZA_CJK = r"[\u3400-\u9fff\uf900-\ufaff\u3040-\u30ff\uac00-\ud7af]"
 
 
 def hesabu_maneno(t):
+    """Maneno ya kukata kwenye salio. Kichina hakina nafasi kati ya maneno, kwa hiyo herufi 2 za CJK = neno 1."""
     t = str(t or "")
     cjk = len(re.findall(_HERUFI_ZA_CJK, t))
     bila_cjk = re.sub(_HERUFI_ZA_CJK, " ", t)
@@ -110,10 +114,12 @@ def hesabu_maneno(t):
 
 
 def _ep_md(t):
+    """Epuka alama za markdown ndani ya maandishi ya mtumiaji."""
     return re.sub(r"([\\`*_{}\[\]()#+\-.!~|>$])", r"\\\1", str(t))
 
 
 def onyesha_matokeo_ya_mhariri():
+    """Onyesha matokeo ya ukaguzi (yamehifadhiwa kwenye session ili vitufe vya kuchagua vidumu)."""
     m = str_platform.session_state.get("mhariri_matokeo")
     if not m:
         return
@@ -152,6 +158,7 @@ KAMUSI_SAFU = ["swahili_term", "english_term", "category", "description_sw"]
 
 
 def _kiungo_cha_api_cha_github(url):
+    """raw.githubusercontent.com/OWNER/REPO/REF/PATH -> (api_url, ref), au None."""
     m = re.match(r"^https://raw\.githubusercontent\.com/([^/]+)/([^/]+)/([^/]+)/(.+?)(?:\?.*)?$", url)
     if not m:
         return None
@@ -160,6 +167,7 @@ def _kiungo_cha_api_cha_github(url):
 
 
 def pakia_kamusi_csv():
+    """Hurejesha (DataFrame, kosa). Makosa HAYAHIFADHIWI kwenye cache."""
     try:
         return _pakia_kamusi_iliyofanikiwa(), None
     except RuntimeError as e:
@@ -175,6 +183,7 @@ def _pakia_kamusi_iliyofanikiwa():
 
 
 def _soma_kamusi_csv():
+    """Husoma CSV (faili la repo au kiungo). Hurejesha (DataFrame, kosa)."""
     tupu = pd.DataFrame(columns=KAMUSI_SAFU)
     njia = os.path.join(os.path.dirname(os.path.abspath(__file__)), KAMUSI_CSV_FILE)
     chanzo = njia if os.path.exists(njia) else (KAMUSI_CSV_URL or None)
@@ -209,6 +218,7 @@ def _soma_kamusi_csv():
 
 
 def tafuta_kwenye_kamusi_csv(neno, kikomo=20):
+    """Hurejesha (matokeo, kosa). Maneno kamili hutangulia, kisha yanayolingana kwa sehemu."""
     df, kosa = pakia_kamusi_csv()
     if kosa:
         return None, kosa
@@ -241,26 +251,15 @@ skin_appearance.inject_premium_glassmorphic_skin()
 
 api_key_source = os.environ.get("OPENAI_API_KEY") or _secret("OPENAI_API_KEY")
 
-client = OpenAI(api_key=api_key_source.strip()) if isinstance(api_key_source, str) and api_key_source.strip() else None
-
-
-def _jenga_ubongo(mteja):
-    for hoja in ((mteja,), ()):
-        try:
-            return CerebralCortex(*hoja)
-        except TypeError as e:
-            print(f"[ubongo] CerebralCortex{'(client)' if hoja else '()'} imeshindwa: {e}")
-    return None
-
-
-ubongo = _jenga_ubongo(client)
-if ubongo is None or (client is None and getattr(ubongo, "client", object()) is None):
-    str_platform.error("\U0001F512 secrets error! Weka ufunguo wa AI (mf. OPENAI_API_KEY) kwenye Secrets, au hakikisha cerebral_cortex.py inalingana na app.py.")
+if isinstance(api_key_source, str) and api_key_source.strip():
+    client = OpenAI(api_key=api_key_source.strip())
+    ubongo = CerebralCortex(client)
+else:
+    str_platform.error("\U0001F512 secrets error! Weka OPENAI_API_KEY kwenye Secrets.")
     str_platform.stop()
 
 def _piga_ai(mfumo, mtumiaji):
-    if not hasattr(ubongo, "piga_json"):
-        raise RuntimeError("cerebral_cortex.py haina piga_json")
+    """Mhariri hutumia njia ile ile ya OpenAI ya CerebralCortex."""
     return ubongo.piga_json(mfumo, mtumiaji)
 
 
@@ -276,7 +275,9 @@ kasi_ya_radi = (time.time() - muda_mwanzo) * 1000
 if "freemium_words_used" not in str_platform.session_state:
     str_platform.session_state["freemium_words_used"] = 0
 
+# ==========================================
 # HAPA NDIPO TULIPOBADILISHA KUTOKA 50 KWENDA 600
+# ==========================================
 maneno_yaliyotumika = str_platform.session_state["freemium_words_used"]
 maneno_yaliyobaki = max(0, 600 - maneno_yaliyotumika)
 
