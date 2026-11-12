@@ -384,7 +384,7 @@ elif "mtafsiri" in chaguo_menyu:
     with col2: lugha_lengwa = str_platform.selectbox("Kwenda Lugha:", orodha_lugha, index=0, key="trg_v14_clean")
     if lugha_chanzo in lugha_za_majaribio or lugha_lengwa in lugha_za_majaribio:
         str_platform.caption("\u26A0\uFE0F Tafsiri ya lugha hii ni ya majaribio (Beta). Ihakikiwe na mzungumzaji wa lugha hiyo kabla ya kutumika kwa kazi muhimu.")
-    muktadha_chaguo = str_platform.selectbox("\U0001F3AF Chagua Muktadha:", ["Kawaida", "Kibiashara", "Kisheria", "Kitiba", "Kielimu"], key="context_v14_clean")
+    muktadha_chaguo = str_platform.selectbox("\U0001F3AF Chagua Muktadha:", ["Kawaida", "Kibiashara", "Kisheria", "Kitiba", "Kielimu", "Kidini", "Kilimo"], key="context_v14_clean")
     maandishi_t = str_platform.text_area("Ingiza maandishi ya kutafsiri hapa:", key="trans_v14_clean_box", height=150, max_chars=MAX_CHARS)
     heabu_maneno_t = hesabu_maneno(maandishi_t)
     if maneno_yaliyobaki <= 0:
