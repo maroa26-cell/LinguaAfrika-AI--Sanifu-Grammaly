@@ -1,41 +1,20 @@
 """
-cerebral_cortex.py — App kuu ya Streamlit kwa AI Lingual – Kiswahili Sanifu.
-
-Toleo 2.0 (lililorekebishwa):
-- Inatumia moduli ya kanuni_ya_sarufi.py (Toleo 2.0)
-- UI imerekebishwa kuonyesha makosa kama dicts (kosa['ujumbe'],
-  kosa['mapendekezo'], kosa['nafasi'])
-- Vipengele vipya: kurekebisha sentensi kwa kubonyeza kitufe kimoja,
-  kupakia faili, na kuchuja makosa kwa aina
+cerebral_cortex.py — Moduli ya ukurasa wa Kiswahili Sanifu.
+Inatumiwa na app.py kama sehemu ya mfumo wa kurasa nyingi (multi-page).
 """
 
-# ============================================================
-# IMPORTS
-# ============================================================
 import os
-import re
-import json
-import tempfile
-from typing import Dict, List, Any, Optional
-
+from typing import Dict, Any, Optional
 import streamlit as st
 
-# Moduli mpya ya sarufi
+# Moduli ya sarufi
 from kanuni_ya_sarufi import (
     KanuniZaSarufiKiswahili,
-    Kosa,
-    MatokeoYaNgeli,
-    KitambuziNgeli,
-    MkaguziSarufi,
-    MBAO_ZA_MAKOSA_YA_PARAMETA,
+    MAELEKEZO_YA_LUGHA,
     KIKOMO_CHA_SAUTI_MB,
     KIKOMO_CHA_HERUFI_ZA_SAUTI,
-    MAELEKEZO_YA_LUGHA,
 )
 
-# ============================================================
-# HELPERS
-# ============================================================
 def _siri(jina: str) -> Optional[str]:
     """Huchukua siri kutoka environment au st.secrets."""
     if os.environ.get(jina):
@@ -44,7 +23,6 @@ def _siri(jina: str) -> Optional[str]:
         return st.secrets.get(jina) if st else None
     except Exception:
         return None
-
 
 def onyesha_matokeo(matokeo: Dict[str, Any]) -> None:
     """Huonyesha matokeo ya ukaguzi kwa muundo mzuri."""
@@ -55,7 +33,7 @@ def onyesha_matokeo(matokeo: Dict[str, Any]) -> None:
     st.warning(f"⚠️ Makosa {matokeo['idadi_ya_makosa']} yamepatikana.")
 
     # Panga makosa kwa aina
-    kwa_aina: Dict[str, List[Dict]] = {}
+    kwa_aina: Dict[str, list] = {}
     for kosa in matokeo["makosa"]:
         kwa_aina.setdefault(kosa["aina"], []).append(kosa)
 
@@ -82,7 +60,6 @@ def onyesha_matokeo(matokeo: Dict[str, Any]) -> None:
                 if kosa.get("chanzo"):
                     st.caption(f"Chanzo: {kosa['chanzo']}")
 
-
 def onyesha_marekebisho(matokeo: Dict[str, Any]) -> None:
     """Huonyesha sentensi iliyorekebishwa na mabadiliko."""
     st.subheader("✏️ Sentensi iliyorekebishwa")
@@ -91,127 +68,120 @@ def onyesha_marekebisho(matokeo: Dict[str, Any]) -> None:
     if matokeo["mabadiliko"]:
         st.subheader(f"Mabadiliko {len(matokeo['mabadiliko'])}")
         for i, m in enumerate(matokeo["mabadiliko"], 1):
-            st.markdown(
-                f"{i}. ~~`{m['kutoka']}`~~ → **`{m['kwenda']}`**"
-            )
+            st.markdown(f"{i}. ~~`{m['kutoka']}`~~ → **`{m['kwenda']}`**")
     else:
         st.info("Hakuna mabadiliko yaliyohitajika.")
 
 
 # ============================================================
-# UI YA STREAMLIT
+# CLASS KUU (Inayotumiwa na app.py)
 # ============================================================
-def ukurasa_mkuu() -> None:
-    st.set_page_config(
-        page_title="AI Lingual – Kiswahili Sanifu",
-        page_icon="🗣️",
-        layout="wide",
-    )
+class CerebralCortex:
+    def __init__(self):
+        # Anzisha injini ya sarufi
+        self.kanuni = KanuniZaSarufiKiswahili()
 
-    st.title("🗣️ AI Lingual – Kiswahili Sanifu")
-    st.markdown(
-        "Ukaguzi wa sarufi ya **Kiswahili Sanifu cha Tanzania (BAKITA)** "
-        "kwa ajili ya kamusi ya mtandaoni na mafunzo ya AI."
-    )
+    def render(self) -> None:
+        """Hii ndiyo inayotengeneza UI ya ukurasa huu."""
+        
+        # Kumbuka: st.set_page_config() imeondolewa hapa kwa sababu
+        # app.py yako ina uwezekano mkubwa imeshaweka.
 
-    # ---- Sidebar ----
-    with st.sidebar:
-        st.header("⚙️ Mipangilio")
-        lugha = st.selectbox(
-            "Lugha ya maelekezo",
-            list(MAELEKEZO_YA_LUGHA.keys()),
-            index=0,
-        )
-        st.caption(MAELEKEZO_YA_LUGHA[lugha])
-
-        st.divider()
-        st.header("📊 Kuhusu")
+        st.title("🗣️ AI Lingual – Kiswahili Sanifu")
         st.markdown(
-            f"""
-            - **Kikomo cha sauti**: {KIKOMO_CHA_SAUTI_MB} MB
-            - **Kikomo cha herufi**: {KIKOMO_CHA_HERUFI_ZA_SAUTI}
-            - **Ngeli zinazotambulika**: A-WA, KI-VI, U-I, LI-YA, I-ZI
-            """
+            "Ukaguzi wa sarufi ya **Kiswahili Sanifu cha Tanzania (BAKITA)** "
+            "kwa ajili ya kamusi ya mtandaoni na mafunzo ya AI."
         )
 
-    # ---- Sehemu kuu ----
-    col1, col2 = st.columns([2, 1])
+        # ---- Sidebar ----
+        with st.sidebar:
+            st.header("⚙️ Mipangilio")
+            lugha = st.selectbox(
+                "Lugha ya maelekezo",
+                list(MAELEKEZO_YA_LUGHA.keys()),
+                index=0,
+                key="cerebral_lugha"
+            )
+            st.caption(MAELEKEZO_YA_LUGHA[lugha])
 
-    with col1:
-        st.subheader("📝 Maandishi ya kukagua")
-        sentensi = st.text_area(
-            "Weka au bandika sentensi ya Kiswahili:",
-            height=180,
-            placeholder="Mfano: Mtoto mdogo alikula chakula kitamu.",
-            key="sentensi_input",
-        )
+            st.divider()
+            st.header("📊 Kuhusu")
+            st.markdown(
+                f"""
+                - **Kikomo cha sauti**: {KIKOMO_CHA_SAUTI_MB} MB
+                - **Kikomo cha herufi**: {KIKOMO_CHA_HERUFI_ZA_SAUTI}
+                - **Ngeli zinazotambulika**: A-WA, KI-VI, U-I, LI-YA, I-ZI
+                """
+            )
 
-    with col2:
-        st.subheader("🎯 Vitendo")
-        kagua_btn = st.button(
-            "🔍 Kagua Sarufi",
-            type="primary",
-            use_container_width=True,
-        )
-        rekebisha_btn = st.button(
-            "✏️ Rekebisha",
-            use_container_width=True,
-        )
+        # ---- Sehemu kuu ----
+        col1, col2 = st.columns([2, 1])
 
-    # ---- Kupakia faili ----
-    with st.expander("📂 Au pakia faili (.txt)"):
-        faili = st.file_uploader(
-            "Chagua faili la maandishi",
-            type=["txt"],
-            help=f"Ukubwa usizidi {KIKOMO_CHA_SAUTI_MB} MB",
-        )
-        if faili is not None:
-            maudhui = faili.read().decode("utf-8", errors="replace")
-            if len(maudhui) > KIKOMO_CHA_HERUFI_ZA_SAUTI:
-                st.error(
-                    f"Faili ni kubwa mno. Kikomo ni {KIKOMO_CHA_HERUFI_ZA_SAUTI} "
-                    f"herufi; faili lako lina {len(maudhui)}."
-                )
-            else:
-                sentensi = maudhui
-                st.text_area(
-                    "Maudhui ya faili:",
-                    maudhui,
-                    height=150,
-                    disabled=True,
-                )
+        with col1:
+            st.subheader("📝 Maandishi ya kukagua")
+            sentensi = st.text_area(
+                "Weka au bandika sentensi ya Kiswahili:",
+                height=180,
+                placeholder="Mfano: Mtoto mdogo alikula chakula kitamu.",
+                key="cerebral_sentensi_input",
+            )
 
-    # ---- Ukaguzi ----
-    if sentensi and sentensi.strip():
-        kanuni = KanuniZaSarufiKiswahili()
+        with col2:
+            st.subheader("🎯 Vitendo")
+            kagua_btn = st.button(
+                "🔍 Kagua Sarufi",
+                type="primary",
+                use_container_width=True,
+            )
+            rekebisha_btn = st.button(
+                "✏️ Rekebisha",
+                use_container_width=True,
+            )
 
-        if kagua_btn:
-            with st.spinner("Inakagua..."):
-                matokeo = kanuni.kagua_sentensi_nzima(sentensi)
-            onyesha_matokeo(matokeo)
+        # ---- Kupakia faili ----
+        with st.expander("📂 Au pakia faili (.txt)"):
+            faili = st.file_uploader(
+                "Chagua faili la maandishi",
+                type=["txt"],
+                help=f"Ukubwa usizidi {KIKOMO_CHA_SAUTI_MB} MB",
+            )
+            if faili is not None:
+                maudhui = faili.read().decode("utf-8", errors="replace")
+                if len(maudhui) > KIKOMO_CHA_HERUFI_ZA_SAUTI:
+                    st.error(
+                        f"Faili ni kubwa mno. Kikomo ni {KIKOMO_CHA_HERUFI_ZA_SAUTI} "
+                        f"herufi; faili lako lina {len(maudhui)}."
+                    )
+                else:
+                    sentensi = maudhui
+                    st.text_area("Maudhui ya faili:", maudhui, height=150, disabled=True)
 
-        if rekebisha_btn:
-            with st.spinner("Inarekebisha..."):
-                matokeo = kanuni.kagua_na_kurekebisha(sentensi)
-            onyesha_marekebisho(matokeo)
+        # ---- Ukaguzi ----
+        if sentensi and sentensi.strip():
+            if kagua_btn:
+                with st.spinner("Inakagua..."):
+                    matokeo = self.kanuni.kagua_sentensi_nzima(sentensi)
+                onyesha_matokeo(matokeo)
 
-    # ---- Mfano wa haraka ----
-    with st.expander("💡 Mifano ya haraka"):
-        mifano = [
-            "Mtoto mdogo alikula chakula kitamu.",
-            "Vitabu vizuri viko mezani.",
-            "Mimi ni baridi leo asubuhi.",
-            "Shule yetu ni nzuri sana.",
-            "mtoto alikuja",
-        ]
-        for mfano in mifano:
-            if st.button(mfano, key=f"mfano_{hash(mfano)}"):
-                st.session_state["sentensi_input"] = mfano
-                st.rerun()
+            if rekebisha_btn:
+                with st.spinner("Inarekebisha..."):
+                    matokeo = self.kanuni.kagua_na_kurekebisha(sentensi)
+                onyesha_marekebisho(matokeo)
 
+        # ---- Mfano wa haraka ----
+        with st.expander("💡 Mifano ya haraka"):
+            mifano = [
+                "Mtoto mdogo alikula chakula kitamu.",
+                "Vitabu vizuri viko mezani.",
+                "Mimi ni baridi leo asubuhi.",
+                "Shule yetu ni nzuri sana.",
+                "mtoto alikuja",
+            ]
+            for mfano in mifano:
+                if st.button(mfano, key=f"cerebral_mfano_{hash(mfano)}"):
+                    st.session_state["cerebral_sentensi_input"] = mfano
+                    st.rerun()
 
-# ============================================================
-# ENTRY POINT
-# ============================================================
-if __name__ == "__main__":
-    ukurasa_mkuu()
+    def run(self) -> None:
+        """Alias ya render() ikiwa app.py inaita run() badala ya render()."""
+        self.render()
