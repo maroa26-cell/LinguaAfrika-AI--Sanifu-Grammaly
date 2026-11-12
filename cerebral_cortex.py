@@ -1,6 +1,6 @@
 """
 cerebral_cortex.py — Ubongo Mkuu wa Kuchakata Lugha, Tafsiri, Sauti na Dataset.
-Kipaumbele: 1. Google Gemini (Bure / Gharama Nafuu) -> 2. OpenAI (Chaguo la Mwisho).
+Kipaumbele: 1. Google Gemini -> 2. Groq -> 3. OpenAI (Chaguo la Mwisho).
 """
 
 import io
@@ -21,6 +21,11 @@ try:
 except Exception:
     genai = None
 
+try:
+    from openai import OpenAI
+except Exception:
+    OpenAI = None
+
 from kanuni_ya_sarufi import (
     KanuniZaSarufiKiswahili,
     MAELEKEZO_YA_LUGHA,
@@ -29,6 +34,9 @@ from kanuni_ya_sarufi import (
 )
 
 MBAO_ZA_MAKOSA_YA_PARAMETA = ("temperature", "response_format", "unsupported", "unknown")
+
+# Misimbo ya lugha inayoungwa mkono na OpenAI Whisper (ile isiyo humo haitumwi)
+LUGHA_ZA_WHISPER = {"sw", "en", "fr", "ar", "zh", "pt", "ln"}
 
 # Maelekezo ya matamshi ya Kiswahili Sanifu kwa ajili ya TTS
 MAELEKEZO_YA_MATAMSHI_SW = (
@@ -88,11 +96,22 @@ class CerebralCortex:
                 self.gemini_client = None
         self.gemini_modeli = str(_siri("GEMINI_MODEL") or "gemini-2.5-flash").strip()
 
-        # 2. Chaguo la Mwisho (Fallback): OpenAI
+        # 2. Chaguo la Pili: Groq (API yake inaendana na OpenAI)
+        self.groq_key = (_siri("GROQ_API_KEY") or _siri("CROQ_API_KEY") or "").strip()
+        self.groq_client = None
+        if OpenAI and self.groq_key:
+            try:
+                self.groq_client = OpenAI(api_key=self.groq_key, base_url="https://api.groq.com/openai/v1")
+            except Exception:
+                self.groq_client = None
+        self.groq_modeli = str(_siri("GROQ_MODEL") or "llama-3.3-70b-versatile").strip()
+        self.groq_whisper_modeli = str(_siri("GROQ_WHISPER_MODEL") or "whisper-large-v3-turbo").strip()
+
+        # 3. Chaguo la Mwisho (Fallback): OpenAI
         self.openai_client = client
         self.openai_modeli = str(_siri("OPENAI_MODEL") or "gpt-4o").strip()
 
-        # 3. Injini ya Sheria za Sarufi ya Kiswahili
+        # 4. Injini ya Sheria za Sarufi ya Kiswahili
         self.kanuni = KanuniZaSarufiKiswahili()
 
     def _piga_gemini(self, mfumo: str, mtumiaji: str, temperature: float = 0.2, json_mode: bool = False) -> Optional[str]:
@@ -116,47 +135,58 @@ class CerebralCortex:
         except Exception:
             return None  # Rudi kwenye OpenAI kama fallback
 
-    def piga_json(self, mfumo: str, mtumiaji: str) -> str:
-        # Hatua ya 1: Jaribu Gemini kwanza
-        jibu_gemini = self._piga_gemini(mfumo, mtumiaji, temperature=0.1, json_mode=True)
-        if jibu_gemini:
-            return jibu_gemini
-
-        # Hatua ya 2: Tumia OpenAI kama chaguo la mwisho
-        if not self.openai_client:
-            raise RuntimeError("Hakuna ufunguo wa Gemini wala OpenAI uliowekwa.")
-
-        ujumbe = [{"role": "system", "content": mfumo}, {"role": "user", "content": mtumiaji}]
-        majaribio = [
-            {"temperature": 0.1, "response_format": {"type": "json_object"}},
-            {"response_format": {"type": "json_object"}},
-            {},
-        ]
+    def _piga_oai(self, mteja, modeli: str, ujumbe: list, temperature: float, json_mode: bool = False) -> str:
+        """Hupiga API inayoendana na OpenAI (OpenAI yenyewe au Groq). Hujaribu tena bila parameta zisizoungwa mkono."""
+        if json_mode:
+            rf = {"response_format": {"type": "json_object"}}
+            majaribio = [{"temperature": temperature, **rf}, dict(rf), {}]
+        else:
+            majaribio = [{"temperature": temperature}, {}]
         for n, kw in enumerate(majaribio):
             try:
-                j = self.openai_client.chat.completions.create(model=self.openai_modeli, messages=ujumbe, timeout=40, **kw)
+                j = mteja.chat.completions.create(model=modeli, messages=ujumbe, timeout=60, **kw)
                 return j.choices[0].message.content
             except Exception as e:
                 if n < len(majaribio) - 1 and any(k in str(e).lower() for k in MBAO_ZA_MAKOSA_YA_PARAMETA):
                     continue
                 raise
 
-    def _jibu(self, ujumbe: list, temperature: float) -> str:
-        # Tenganisha system instruction na user content kwa ajili ya Gemini
+    def _piga_groq(self, ujumbe: list, temperature: float, json_mode: bool = False) -> Optional[str]:
+        """Hujaribu Groq. Ikishindwa (mfano limit imeisha), inarudisha None ili OpenAI ichukue nafasi."""
+        if not self.groq_client:
+            return None
+        try:
+            jibu = self._piga_oai(self.groq_client, self.groq_modeli, ujumbe, temperature, json_mode)
+            return jibu if jibu and jibu.strip() else None
+        except Exception:
+            return None
+
+    def _piga_mnyororo(self, ujumbe: list, temperature: float, json_mode: bool = False) -> str:
+        """Mnyororo wa AI: 1. Gemini -> 2. Groq -> 3. OpenAI."""
         mfumo = "\n".join(m["content"] for m in ujumbe if m["role"] == "system")
         mtumiaji = "\n".join(m["content"] for m in ujumbe if m["role"] == "user")
 
-        # Hatua ya 1: Jaribu Gemini kwanza
-        jibu_gemini = self._piga_gemini(mfumo, mtumiaji, temperature=temperature, json_mode=False)
-        if jibu_gemini:
-            return jibu_gemini
+        # Hatua ya 1: Gemini kwanza
+        jibu = self._piga_gemini(mfumo, mtumiaji, temperature=temperature, json_mode=json_mode)
+        if jibu:
+            return jibu
 
-        # Hatua ya 2: Tumia OpenAI kama chaguo la mwisho
+        # Hatua ya 2: Groq
+        jibu = self._piga_groq(ujumbe, temperature, json_mode)
+        if jibu:
+            return jibu
+
+        # Hatua ya 3: OpenAI kama chaguo la mwisho
         if not self.openai_client:
-            raise RuntimeError("Gemini imeshindwa na hakuna ufunguo wa OpenAI wa akiba.")
+            raise RuntimeError("Gemini na Groq zimeshindwa, na hakuna ufunguo wa OpenAI wa akiba.")
+        return self._piga_oai(self.openai_client, self.openai_modeli, ujumbe, temperature, json_mode)
 
-        j = self.openai_client.chat.completions.create(model=self.openai_modeli, messages=ujumbe, temperature=temperature)
-        return j.choices[0].message.content
+    def piga_json(self, mfumo: str, mtumiaji: str) -> str:
+        ujumbe = [{"role": "system", "content": mfumo}, {"role": "user", "content": mtumiaji}]
+        return self._piga_mnyororo(ujumbe, 0.1, json_mode=True)
+
+    def _jibu(self, ujumbe: list, temperature: float) -> str:
+        return self._piga_mnyororo(ujumbe, temperature, json_mode=False)
 
     def chakata_sarufi_pro(self, maandishi: str) -> str:
         ukaguzi = self.kanuni.kagua_sentensi_nzima(maandishi)
@@ -289,11 +319,24 @@ class CerebralCortex:
             except Exception:
                 pass  # Rudi kwenye OpenAI
 
-        # Hatua ya 2: OpenAI Whisper kama akiba
+        kw = {"language": lugha} if lugha in LUGHA_ZA_WHISPER else {}  # lugha isiyoungwa na Whisper: acha ijitambue yenyewe
+
+        # Hatua ya 2: Groq Whisper
+        if self.groq_client:
+            try:
+                jg = self.groq_client.audio.transcriptions.create(
+                    model=self.groq_whisper_modeli, file=(jina, data, aina), **kw,
+                )
+                if jg.text and jg.text.strip():
+                    return jg.text.strip()
+            except Exception:
+                pass  # Rudi kwenye OpenAI
+
+        # Hatua ya 3: OpenAI Whisper kama akiba ya mwisho
         if not self.openai_client:
-            raise RuntimeError("Gemini imeshindwa na hakuna ufunguo wa OpenAI wa akiba.")
+            raise RuntimeError("Gemini na Groq zimeshindwa, na hakuna ufunguo wa OpenAI wa akiba.")
         j = self.openai_client.audio.transcriptions.create(
-            model="whisper-1", file=(jina, data, aina), language=lugha,
+            model="whisper-1", file=(jina, data, aina), **kw,
         )
         return j.text.strip()
 
