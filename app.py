@@ -1,3 +1,4 @@
+
 import streamlit as str_platform
 import os
 import time
@@ -470,7 +471,7 @@ elif "sauti" in chaguo_menyu:
                     audio_bytes = None
                     onyesha_hitilafu("kuzalisha sauti", e)
             if audio_bytes:
-                str_platform.audio(audio_bytes, format="audio/mp3")
+                str_platform.audio(audio_bytes, format="audio/wav")
 
 str_platform.write("---")
 skin_appearance.render_bottom_revenue_banner()
