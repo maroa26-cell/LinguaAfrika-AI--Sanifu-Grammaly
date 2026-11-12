@@ -2,10 +2,10 @@
 kanuni_ya_sarufi.py — Injini Kuu ya Sheria na Kanuni za Sarufi ya Kiswahili Sanifu (BAKITA).
 Inatumiwa na cerebral_cortex.py na app.py kwa ajili ya tafsiri za AI Lingual na uhakiki wa maandishi.
 
-Toleo 2.3 (Kanuni Kamili 1-14 na Kanuni Maalum za Mtindo/Istilahi):
-- Imeboresha MAELEKEZO_YA_LUGHA (Kiswahili Sanifu) hadi kanuni 14
-- Imeunganisha GenericObjectConcordRule (Kanuni ya Yambiwa)
-- Imeongeza Kanuni L, M, N za mtindo, istilahi za kitiba, na ngeli I-ZI
+Toleo 2.4 (Kanuni Kamili 1-16, Yambiwa, na Kanuni Maalum):
+- Imeunganisha sheria zote 16 za lugha kwenye MAELEKEZO_YA_LUGHA
+- Imeboresha GenericObjectConcordRule (Kanuni ya Yambiwa) na kurekebisha bug ya stem[0]
+- Imeongeza Kanuni L, M, N za mtindo, istilahi za kitiba, na ngeli I-ZI kwenye MkaguziSarufi
 """
 
 from __future__ import annotations
@@ -35,28 +35,30 @@ MAELEKEZO_YA_LUGHA = {
         "3) AVOID ROOT REPETITION: Avoid adjacent words sharing the same root or sound (prefer 'hawakukata tamaa' or 'walikataa kusalimu amri' instead of 'walikataa kukata tamaa'). "
         "4) CONJUNCTIONS: Prefer single cohesive conjunctions like 'Ijapokuwa', 'Ingawa', or 'Licha ya kuwa' instead of redundant calques like 'Hata ingawa'. "
         "5) IDIOMS & FORMATTING: Translate idioms naturally (e.g., 'kuzaa matunda' for 'pay off', 'cheti cha dawa' for 'prescription') and strictly preserve exact paragraph breaks. "
-        "6) MANDATORY HUMAN OBJECT INFIX (YAMBIWA): Whenever an applicative or transitive verb is followed by a human recipient/beneficiary (e.g., mgonjwa, mtoto, watu), you MUST include '-m-', '-mw-', or '-wa-' before the verb root ('kumwandikia mgonjwa' instead of 'kuandikia mgonjwa'; 'nilimwambia mtoto' instead of 'niliambia mtoto'). "
+        "6) MANDATORY HUMAN OBJECT INFIX (YAMBIWA): Whenever an applicative or transitive verb is followed directly by a human recipient/beneficiary (e.g., mgonjwa, mtoto, watu), include '-m-', '-mw-', or '-wa-' before the verb root ('kumwandikia mgonjwa', 'nilimwambia mtoto'). EXCEPTION: When explaining a topic/guideline ('explain guidelines'), prefer 'aeleze kuhusu miongozo' instead of 'awaelezee miongozo'. "
         "7) ANIMACY & VERB MORPHOLOGY: "
-        "(a) All living beings (people, animals, birds, insects) take A-WA concord regardless of noun prefix ('simba amenguruma', 'madaktari wamefika', never 'simba imenguruma' or 'madaktari zimefika'). "
+        "(a) All living beings (people, animals, birds, insects) take A-WA concord regardless of noun prefix ('simba amenguruma', 'madaktari wamefika'). "
         "(b) Tense negation: '-na-' becomes 'ha-...-i' ('hasomi'), '-li-' becomes 'ha-ku-' ('hakusoma'), '-me-' becomes 'ha-ja-' ('hajasoma'). "
         "(c) Monosyllabic verbs retain '-ku-' in positive tenses ('anakula', 'alikunywa', 'angekuja') and drop it in negation ('hali', 'hakunywa'). "
-        "(d) Use 'amba-' for relative clauses in '-me-' tense or negation ('ambaye amefika', 'ambaye hakufika', never 'ameyefika'). "
+        "(d) Use 'amba-' for relative clauses in '-me-' tense or negation ('ambaye amefika', 'ambaye hakufika'). "
         "(e) Use 'na' for passive agents ('alipigwa na mwalimu') and 'kwa' for instruments or manner ('aliandika kwa kalamu'). "
         "8) ADVANCED EDITORIAL RULES: "
         "(a) LOCATIVE COPULA: Never use 'ni' for location; use '-po/-ko/-mo' ('Kitabu kipo mezani', 'Wageni wako nyumbani'). Use 'kuwa' for non-present copula ('alikuwa daktari'). "
         "(b) ASSOCIATIVE '-A': Match '-a' strictly to the possessed noun's class ('kitabu cha', 'majina ya', 'uhuru wa'). "
-        "(c) HABITUAL 'HU-': Never attach subject prefixes to 'hu-' ('mimi husoma', 'wao husoma', never 'ninahusoma'). "
-        "(d) PASSIVE BORROWED VERBS: Arabic-origin verbs ending in -e/-i/-u take '-ewa/-iwa' in passive ('samehewa', 'tafsiriwa', 'jaribiwa', never 'samehwa'). "
-        "(e) 'KILA' AGREEMENT: 'Kila' always takes singular nouns and singular verbs ('kila mwanafunzi ana', never 'kila wanafunzi'). "
+        "(c) HABITUAL 'HU-': Never attach subject prefixes to 'hu-' ('mimi husoma', 'wao husoma'). "
+        "(d) PASSIVE BORROWED VERBS: Arabic-origin verbs ending in -e/-i/-u take '-ewa/-iwa' in passive ('samehewa', 'tafsiriwa', 'jaribiwa'). "
+        "(e) 'KILA' AGREEMENT: 'Kila' always takes singular nouns and singular verbs ('kila mwanafunzi ana'). "
         "(f) NARRATIVE '-KA-': In sequential past actions, use '-li-' on the first verb and '-ka-' on subsequent verbs ('Aliamka, akanawa, akaenda'). "
         "(g) NEGATIVE INFINITIVE: Use 'kuto-' for multisyllabic verbs ('kutosoma', 'kutofika') and 'kutoku-' only for monosyllabic verbs ('kutokula', 'kutokuja'). "
-        "(h) MODAL 'LAZIMA': Follow 'lazima' or 'sharti' with the subjunctive '-e' ('Lazima afike', never 'Lazima atafika'). "
-        "9) KINSHIP & HONORIFIC PLURALS (SINGLE & COORDINATED 'AKINA'): Kinship and honorific nouns with zero plural prefixes (mama, baba, dada, kaka, bibi, babu, shangazi, mjomba) MUST take 'akina' in the plural. When two such nouns are coordinated with 'na', repeat 'akina' before EACH noun (write 'akina baba na akina mama wengi' instead of 'baba na mama wengi' or 'akina baba na mama wengi'). "
-        "10) COUNTERFACTUAL CONDITIONALS ('KAMA' vs 'IWAPO'): Never use 'Iwapo' or 'Ikiwa' with counterfactual/unreal conditional verbs containing '-nge-', '-ngali-', or '-ngeli-'. Always use 'Kama' (write 'Kama majukwaa yasingeanzishwa...' instead of 'Iwapo majukwaa yasingeanzishwa...'). Reserve 'Iwapo/Ikiwa' strictly for real future possibilities. "
-        "11) TEMPORAL CLAUSES ('PALE ... -PO-'): When translating English 'When [subject] [verb]...' using the Swahili '-po-' temporal infix (e.g., 'anapowaelezea'), NEVER start the sentence with a literal 'Wakati'. Use 'Pale' (e.g., 'Pale muuguzi anapowaelezea...') or start directly with the subject ('Muuguzi anapowaelezea...'). "
-        "12) MEDICAL & CLINICAL IDIOMATIC PRECISION: Translate 'expectant mothers' strictly as 'akina mama wajawazito' (NEVER 'akina mama wanaotarajia'). Translate 'complex infections' as 'maambukizi magumu kufahamika' or 'maambukizi tata' (NEVER 'maambukizi magumu'). "
-        "13) COUNTERFACTUAL MODAL VERBS ('WANGEWEZA KU-' vs 'WANGEKUWA WAME-'): When translating English 'would have [past participle]' (e.g., 'would have stolen', 'would have collapsed') in conditional sentences, NEVER use the calque 'wangekuwa wame-' / 'ungekuwa ume-'. Use the natural modal form 'wangeweza ku-' (e.g., 'wangeweza kuiba') or the direct conditional form ('wangeiba'). "
-        "14) DOUBLE-VOWEL VERB NEGATION ('-ZUI-I', '-TII-I', '-JUI-I'): For verb stems ending in '-ui' or '-ii' (such as '-zuia', '-tii', '-jua'), preserve the stem vowel before adding the negative present suffix '-i' (write 'hakuzuii' instead of 'hakuzii', 'hatii' instead of 'hati')."
+        "(h) MODAL 'LAZIMA': Follow 'lazima' or 'sharti' with the subjunctive '-e' ('Lazima afike'). "
+        "9) KINSHIP & HONORIFIC PLURALS (SINGLE & COORDINATED 'AKINA'): Kinship and honorific nouns with zero plural prefixes (mama, baba, dada, kaka, bibi, babu, shangazi, mjomba) MUST take 'akina' in the plural. When two such nouns are coordinated with 'na', repeat 'akina' before EACH noun ('akina baba na akina mama wengi'). "
+        "10) COUNTERFACTUAL CONDITIONALS ('KAMA' vs 'IWAPO'): Never use 'Iwapo' or 'Ikiwa' with counterfactual conditional verbs containing '-nge-', '-ngali-', or '-ngeli-'. Always use 'Kama' ('Kama majukwaa yasingeanzishwa...'). "
+        "11) TEMPORAL CLAUSES ('PALE ... -PO-'): When translating English 'When [subject] [verb]...' using the Swahili '-po-' temporal infix, NEVER start with a literal 'Wakati'. Use 'Pale' ('Pale muuguzi anapowaelezea...'). "
+        "12) MEDICAL & CLINICAL IDIOMATIC PRECISION: Translate 'expectant mothers' strictly as 'akina mama wajawazito' and 'complex infections' as 'maambukizi magumu kufahamika'. "
+        "13) COUNTERFACTUAL MODAL VERBS ('WANGEWEZA KU-'): Never use the calque 'wangekuwa wame-' for 'would have + verb'. Use 'wangeweza ku-' ('wangeweza kuiba') or direct conditional ('wangeiba'). "
+        "14) DOUBLE-VOWEL VERB NEGATION ('-ZUI-I'): Preserve stem vowels before adding negative '-i' ('hakuzuii', 'hauzuii', never 'hakuzii'). "
+        "15) I-ZI PLURAL CONDITIONAL NEGATION ('ZISINGE-'): Plural I-ZI nouns (such as 'mamlaka za...', 'taasisi za...', 'shule za...') take 'zisinge-' in negative conditionals ('mamlaka za eneo zisingejenga', NEVER 'hazingejenga'). "
+        "16) DIGITAL & INTERACTIVE EDUCATION TERMINOLOGY: Translate 'digital learning tools' as 'zana za kujifunza kupitia njia za kidijitali' (NEVER 'zana za kujifunza kidijitali'), and translate 'interactive lessons' as 'masomo kupitia njia shirikishi' (NEVER 'masomo ya mwingiliano')."
     ),
     "Kichina": "Write in Simplified Chinese characters (Mandarin).",
     "Kireno": "Use standard Portuguese as used in Mozambique and Angola (European norms).",
@@ -236,7 +238,7 @@ class KitambuziNgeli:
 
 
 # ============================================================
-# KANUNI YA YAMBIWA (KIAMBISHI CHA MTENDWA WA BINADAMU)
+# KANUNI YA YAMBIWA (GENERIC OBJECT CONCORD RULE)
 # ============================================================
 
 class GenericObjectConcordRule:
@@ -675,3 +677,28 @@ class KanuniZaSarufiKiswahili:
             "makosa_ya_awali": matokeo["idadi_ya_makosa"],
             "mabadiliko": mabadiliko,
         }
+
+# ============================================================
+# MAJARIBIO YA HARAKA
+# ============================================================
+if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO)
+    kanuni = KanuniZaSarufiKiswahili()
+
+    sentensi_za_majaribio = [
+        "Mtoto mdogo alikula chakula kitamu.",
+        "Wakati muuguzi anapowaelezea wagonjwa, ni muhimu kusikiliza.",
+        "Akina mama wanaotarajia wanahitaji huduma maalum.",
+        "Kliniki ya eneo hilo haingepokea wagonjwa wengi.",
+        "Mimi ni baridi leo asubuhi.",
+        "Aliandikia mgonjwa barua."
+    ]
+
+    for s in sentensi_za_majaribio:
+        matokeo = kanuni.kagua_sentensi_nzima(s)
+        print(f"\n➤ {s}")
+        print(f"   Sahihi: {matokeo['sahihi']}  |  Makosa: {matokeo['idadi_ya_makosa']}")
+        for k in matokeo["makosa"]:
+            print(f"   - [{k['aina']}] {k['ujumbe']}")
+            if k["mapendekezo"]:
+                print(f"     ↳ Mapendekezo: {k['mapendekezo'][:2]}")
