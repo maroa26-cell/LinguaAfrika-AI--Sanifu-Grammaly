@@ -38,9 +38,16 @@ MBAO_ZA_MAKOSA_YA_PARAMETA = ("temperature", "response_format", "unsupported", "
 # Misimbo ya lugha inayoungwa mkono na OpenAI Whisper (ile isiyo humo haitumwi)
 LUGHA_ZA_WHISPER = {"sw", "en", "fr", "ar", "zh", "pt", "ln"}
 
-# Maelekezo ya matamshi ya Kiswahili Sanifu kwa ajili ya TTS
-MAELEKEZO_YA_MATAMSHI_SW = (
-    "Pronounce this as Standard Swahili (Kiswahili Sanifu, Tanzanian accent), NOT as English. "
+# ------------------------------------------------------------------ #
+#  MFUMO WA LAHAJA, SAUTI NA KASI (kwa Matamshi na Imla)
+# ------------------------------------------------------------------ #
+_UFASAHA = (
+    " Speak like a fluent native speaker of this language: natural rhythm, stress and intonation, "
+    "smooth connected speech, never like a foreign learner reading word by word."
+)
+
+_MSINGI_SW = (
+    "Pronounce this as Standard Swahili (Kiswahili Sanifu), NOT as English. "
     "Use the five pure vowels a, e, i, o, u (never diphthongs). "
     "Stress the second-to-last syllable of every word. "
     "Double vowels (e.g. 'oo' in 'njoo', 'aa' in 'jaa') must be held longer. "
@@ -50,6 +57,103 @@ MAELEKEZO_YA_MATAMSHI_SW = (
     "'ny' (as in 'nyumba') is a separate single palatal nasal sound and is different from 'nj'. "
     "'ng'' is a single velar nasal as in 'ng'ombe'. 'ch' as in 'chai', 'sh' as in 'shule', 'dh' as in 'dhahabu'."
 )
+
+# Lugha -> {lahaja: maelekezo}. Lahaja ya kwanza ndiyo ya kawaida (default).
+LAHAJA_ZA_LUGHA = {
+    "Kiswahili": {
+        "Sanifu (Tanzania)": _MSINGI_SW + " Use a standard Tanzanian accent based on Kiunguja, as heard in careful news-reading on Tanzanian radio.",
+        "Kenya (Nairobi)": _MSINGI_SW + " Use a standard Kenyan Swahili accent (Nairobi), keeping all the sound rules above.",
+        "Kiunguja (Zanzibar)": _MSINGI_SW + " Use a Zanzibari Kiunguja accent. In Arabic-origin words keep dh, th, gh and kh as distinct sounds (e.g. dhahabu, thelathini, ghali, khabari).",
+        "Kimvita (Mombasa)": _MSINGI_SW + " Use a Mombasa (Kimvita) coastal accent, keeping dh, th, gh and kh distinct in Arabic-origin words.",
+    },
+    "Kiingereza": {
+        "Marekani (US)": "Use a General American English accent.",
+        "Uingereza (UK)": "Use a standard British English accent (Received Pronunciation).",
+        "Afrika Mashariki": "Use a clear East African English accent (Tanzania/Kenya) with careful, evenly stressed syllables.",
+    },
+    "Kifaransa": {
+        "Ufaransa (Paris)": "Use a standard metropolitan French accent (Paris).",
+        "Afrika (Kati/Magharibi)": "Use a clear Central/West African French accent, standard and easy to understand.",
+    },
+    "Kiarabu": {
+        "Fasaha (MSA)": "Use Modern Standard Arabic (fusha) pronunciation as in news broadcasts, with full vowelisation as written.",
+        "Misri (Egyptian)": "Use an Egyptian Arabic accent, clear and natural.",
+    },
+    "Kichina": {
+        "Putonghua (Beijing)": "Use Standard Mandarin (Putonghua) with accurate tones for every syllable.",
+    },
+    "Kireno": {
+        "Brazil": "Use a Brazilian Portuguese accent.",
+        "Ureno (Portugal)": "Use a European Portuguese accent (Lisbon).",
+        "Msumbiji (Mozambique)": "Use a Mozambican Portuguese accent, close to European Portuguese, clear and standard.",
+    },
+    "Kizulu": {
+        "Kawaida (Afrika Kusini)": "Use standard isiZulu. Pronounce the clicks c, q and x distinctly; respect tone and vowel length; lengthen the penultimate syllable as native speakers do.",
+    },
+    "Setswana": {
+        "Kawaida (Botswana)": "Use standard Setswana (Botswana). Respect tone, the open/closed vowels written ê and ô, and aspirated consonants such as 'tlh', 'th', 'kh'.",
+    },
+    "Kinyarwanda": {
+        "Kawaida (Rwanda)": "Use standard Kinyarwanda. It is a tonal language: keep tone and vowel length, and pronounce prenasalised consonants and clusters such as 'cy', 'ky', 'shy', 'jy' correctly.",
+    },
+    "Kiganda": {
+        "Kawaida (Kampala)": "Use standard Luganda (Kampala). Doubled consonants (e.g. 'bb', 'kk', 'gg') must be held clearly longer, vowel length matters, and tone must be respected.",
+    },
+    "Lingala": {
+        "Kinshasa": "Use Kinshasa Lingala. Distinguish open and closed e and o (\u00e9/\u00e8, \u00f3/\u00f2) as written and respect tone.",
+    },
+    "Kichewa": {
+        "Kawaida (Malawi)": "Use standard Chichewa (Malawi). Pronounce prenasalised consonants and ng' correctly, with stress on the penultimate syllable and respect for tone.",
+    },
+}
+
+SAUTI_ZA_GEMINI = ["Kore", "Puck", "Charon", "Aoede", "Zephyr", "Fenrir", "Leda", "Orus"]
+
+KASI_ZA_SAUTI = {
+    "Polepole": "slowly and very clearly, as for a language learner",
+    "Kawaida": "at a natural conversational pace",
+    "Haraka kidogo": "at a brisk but clear pace",
+}
+
+JINA_LA_LUGHA_KWA_MSIMBO = {
+    "sw": "Swahili", "en": "English", "fr": "French", "ar": "Arabic", "zh": "Mandarin Chinese",
+    "pt": "Portuguese", "zu": "isiZulu", "tn": "Setswana", "rw": "Kinyarwanda",
+    "lg": "Luganda", "ln": "Lingala", "ny": "Chichewa",
+}
+
+# Istilahi za kusaidia imla kuandika maneno ya muktadha kwa usahihi
+MSAMIATI_WA_MUKTADHA = {
+    "Kidini": "Biblia, injili, ibada, Sabato, neema, wokovu, mahubiri, ubatizo, sala, Qur'ani, swala",
+    "Kilimo": "mbegu, mbolea, palizi, umwagiliaji, mavuno, pembejeo, wadudu waharibifu, ufugaji",
+    "Kitiba": "mgonjwa, dawa, dalili, uchunguzi, vipimo, matibabu, kliniki, hospitali",
+    "Kisheria": "mahakama, mshtakiwa, hakimu, mkataba, wakili, ushahidi, sheria",
+    "Kibiashara": "biashara, mauzo, faida, hasara, ankara, mteja, bei, mtaji",
+    "Kielimu": "mwanafunzi, mwalimu, mtaala, mtihani, utafiti, shule, chuo",
+}
+
+
+def _lugha_msingi(lugha):
+    """Pata jina la msingi la lugha kutoka jina refu (mfano 'Kiingereza (English)' -> 'Kiingereza')."""
+    for jina in LAHAJA_ZA_LUGHA:
+        if jina in str(lugha):
+            return jina
+    return None
+
+
+def orodha_ya_lahaja(lugha) -> list:
+    """Orodha ya lahaja zinazopatikana kwa lugha husika (tupu kama hakuna)."""
+    msingi = _lugha_msingi(lugha)
+    return list(LAHAJA_ZA_LUGHA[msingi].keys()) if msingi else []
+
+
+def maelekezo_ya_matamshi(lugha, lahaja=None) -> str:
+    msingi = _lugha_msingi(lugha)
+    if not msingi:
+        return _UFASAHA.strip()
+    zote = LAHAJA_ZA_LUGHA[msingi]
+    maelekezo = zote.get(lahaja) or next(iter(zote.values()))
+    return maelekezo + _UFASAHA
+
 
 # Maelekezo ya ziada kwa muktadha maalum wa tafsiri (Kidini, Kilimo)
 MAELEKEZO_YA_MUKTADHA = {
@@ -292,7 +396,8 @@ class CerebralCortex:
     # ============================================================
     # SEHEMU YA SAUTI (TRANSCRIPTION) - Gemini Kwanza, OpenAI Mwisho
     # ============================================================
-    def chakata_sauti_na_imla(self, audio_file, lugha: str = "sw") -> str:
+    def chakata_sauti_na_imla(self, audio_file, lugha: str = "sw", lahaja: Optional[str] = None,
+                              muktadha: Optional[str] = None, sanifisha: bool = False) -> str:
         data = audio_file.read()
         if len(data) > KIKOMO_CHA_SAUTI_MB * 1024 * 1024:
             raise ValueError(f"Faili la sauti ni kubwa mno. Kikomo ni {KIKOMO_CHA_SAUTI_MB} MB.")
@@ -302,24 +407,40 @@ class CerebralCortex:
         jina = getattr(audio_file, "name", "sauti.mp3") or "sauti.mp3"
         aina = getattr(audio_file, "type", None) or "audio/mpeg"
 
+        jina_la_lugha = JINA_LA_LUGHA_KWA_MSIMBO.get(lugha, lugha)
+        lahaja_txt = f", {lahaja} accent/dialect" if lahaja else ""
+        msamiati = MSAMIATI_WA_MUKTADHA.get(str(muktadha or ""), "")
+        maelekezo = (
+            f"Transcribe this audio exactly as spoken. The spoken language is {jina_la_lugha}{lahaja_txt}. "
+            "Write it in the standard written spelling of that language, with correct punctuation and capitalisation. "
+            "Do not translate, summarise, explain or answer anything said in the audio. "
+            "Keep names, numbers, and any words spoken in another language as they were said. "
+            "Leave out hesitation sounds such as 'eeh', 'mmh', 'umm'. "
+            "If a word is unclear write [haieleweki] instead of guessing. "
+        )
+        if sanifisha and lugha == "sw":
+            maelekezo += ("The speaker may use a regional dialect; write dialectal words in their Standard Swahili "
+                          "(Kiswahili Sanifu) form without changing the meaning. ")
+        if msamiati:
+            maelekezo += f"Topic: {muktadha}. Terms likely to appear: {msamiati}. "
+        maelekezo += "Output only the transcript text."
+
         # Hatua ya 1: Gemini kwanza
         if self.gemini_client:
             try:
                 jibu = self.gemini_client.models.generate_content(
                     model=self.gemini_modeli,
-                    contents=[
-                        types.Part.from_bytes(data=data, mime_type=aina),
-                        "Andika neno kwa neno kilichosemwa kwenye sauti hii (lugha: "
-                        f"{lugha}). Tumia tahajia na uakifishaji sahihi. Toa maandishi tu, bila maelezo.",
-                    ],
+                    contents=[types.Part.from_bytes(data=data, mime_type=aina), maelekezo],
                     config=types.GenerateContentConfig(temperature=0.0),
                 )
                 if jibu.text and jibu.text.strip():
                     return jibu.text.strip()
             except Exception:
-                pass  # Rudi kwenye OpenAI
+                pass  # Rudi kwenye Groq
 
         kw = {"language": lugha} if lugha in LUGHA_ZA_WHISPER else {}  # lugha isiyoungwa na Whisper: acha ijitambue yenyewe
+        if msamiati:
+            kw["prompt"] = msamiati  # husaidia Whisper kuandika istilahi za muktadha kwa usahihi
 
         # Hatua ya 2: Groq Whisper
         if self.groq_client:
@@ -343,42 +464,61 @@ class CerebralCortex:
     # ============================================================
     # SEHEMU YA KUZALISHA SAUTI (TTS) - Inarudisha bytes za WAV
     # ============================================================
-    def zindua_jifunze_lugha_audio(self, maandishi: str, lugha: str = "Kiswahili") -> Optional[bytes]:
+    def _gemini_tts(self, maelekezo_kamili: str, sauti: str) -> Optional[bytes]:
+        jibu = self.gemini_client.models.generate_content(
+            model="gemini-2.5-flash-preview-tts",
+            contents=maelekezo_kamili,
+            config=types.GenerateContentConfig(
+                response_modalities=["AUDIO"],
+                speech_config=types.SpeechConfig(
+                    voice_config=types.VoiceConfig(
+                        prebuilt_voice_config=types.PrebuiltVoiceConfig(voice_name=sauti)
+                    )
+                ),
+            ),
+        )
+        return jibu.candidates[0].content.parts[0].inline_data.data
+
+    @staticmethod
+    def _pcm_kuwa_wav(pcm: bytes) -> bytes:
+        buf = io.BytesIO()
+        with wave.open(buf, "wb") as w:
+            w.setnchannels(1)
+            w.setsampwidth(2)
+            w.setframerate(24000)
+            w.writeframes(pcm)
+        return buf.getvalue()
+
+    def zindua_jifunze_lugha_audio(self, maandishi: str, lugha: str = "Kiswahili", lahaja: Optional[str] = None,
+                                   sauti: str = "Kore", kasi: str = "Polepole") -> Optional[bytes]:
         maandishi = (maandishi or "").strip()
         if not maandishi:
             return None
         maandishi = maandishi[:KIKOMO_CHA_HERUFI_ZA_SAUTI]
+        sauti = sauti if sauti in SAUTI_ZA_GEMINI else "Kore"
+        kasi_maelezo = KASI_ZA_SAUTI.get(kasi, KASI_ZA_SAUTI["Polepole"])
+        lahaja_txt = f", {lahaja} accent" if lahaja else ""
 
-        # Hatua ya 1: Gemini TTS
+        # Hatua ya 1: Gemini TTS (maelekezo kamili, kisha ya akiba mafupi)
         if self.gemini_client:
-            try:
-                jibu = self.gemini_client.models.generate_content(
-                    model="gemini-2.5-flash-preview-tts",
-                    contents=(
-                        f"Soma kwa lugha ya {lugha}, kwa uwazi na polepole. "
-                        + (MAELEKEZO_YA_MATAMSHI_SW + " " if "Kiswahili" in str(lugha) else "")
-                        + f"Maandishi ya kusoma:\n{maandishi}"
-                    ),
-                    config=types.GenerateContentConfig(
-                        response_modalities=["AUDIO"],
-                        speech_config=types.SpeechConfig(
-                            voice_config=types.VoiceConfig(
-                                prebuilt_voice_config=types.PrebuiltVoiceConfig(voice_name="Kore")
-                            )
-                        ),
-                    ),
-                )
-                pcm = jibu.candidates[0].content.parts[0].inline_data.data
-                if pcm:
-                    buf = io.BytesIO()
-                    with wave.open(buf, "wb") as w:
-                        w.setnchannels(1)
-                        w.setsampwidth(2)
-                        w.setframerate(24000)
-                        w.writeframes(pcm)
-                    return buf.getvalue()
-            except Exception:
-                pass  # Rudi kwenye OpenAI
+            kamili = (
+                "# DIRECTOR'S NOTES\n"
+                f"Language: {lugha}{lahaja_txt}\n"
+                f"Pace: speak {kasi_maelezo}.\n"
+                f"Pronunciation: {maelekezo_ya_matamshi(lugha, lahaja)}\n"
+                "Never read these notes aloud; speak only the transcript.\n\n"
+                "### TRANSCRIPT\n"
+                f"{maandishi}"
+            )
+            fupi = f"Say {kasi_maelezo}, in {lugha}{lahaja_txt}: {maandishi}"
+            muda_wa_juu = len(maandishi) / 5 + 8  # sekunde; zaidi ya hapo ni dalili AI imesoma maelekezo kwa sauti
+            for rasimu in (kamili, fupi):
+                try:
+                    pcm = self._gemini_tts(rasimu, sauti)
+                    if pcm and (len(pcm) / (24000 * 2)) <= muda_wa_juu:
+                        return self._pcm_kuwa_wav(pcm)
+                except Exception:
+                    continue  # jaribu rasimu fupi, kisha OpenAI
 
         # Hatua ya 2: OpenAI TTS kama akiba
         if not self.openai_client:
