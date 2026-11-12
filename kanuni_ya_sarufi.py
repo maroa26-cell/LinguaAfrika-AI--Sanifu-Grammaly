@@ -2,15 +2,10 @@
 kanuni_ya_sarufi.py — Injini Kuu ya Sheria na Kanuni za Sarufi ya Kiswahili Sanifu (BAKITA).
 Inatumiwa na cerebral_cortex.py na app.py kwa ajili ya tafsiri za AI Lingual na uhakiki wa maandishi.
 
-Toleo 2.1 (Yambiwa na kanuni kamili za tafsiri zimerudishwa):
-- Utambuzi wa ngeli uliosahihishwa kwa viambishi halali (hakuna tena 'ch' → KI-VI)
-- Upatanisho wa kivumishi hukaguliwa na nomino iliyo KARIBU, si ya kwanza
-- Nafasi na urefu wa kila kosa hurejeshwa (kwa ajili ya UI ya Streamlit)
-- Caching ya utambuzi wa ngeli
-- Madarasa ya data (dataclasses) kwa matokeo safi
-- Ukaguzi wa alama za uandishi na herufi kubwa
-- API ya nyuma (kagua_sentensi_nzima) inaendelea kufanya kazi
-- Kanuni ya Yambiwa (KanuniYaYambiwa) na kanuni 8 za tafsiri ya Kiswahili (MAELEKEZO_YA_LUGHA)
+Toleo 2.2 (Kanuni Maalum za Mtindo, Istilahi na Ngeli):
+- Imeongeza Kanuni L: 'Wakati...po-' -> 'Pale...po-'
+- Imeongeza Kanuni M: Istilahi za Kitiba (wajawazito, maambukizi magumu kufahamika)
+- Imeongeza Kanuni N: Upatanisho wa I-ZI kwenye ukanushi (isinge-)
 """
 
 from __future__ import annotations
@@ -70,13 +65,13 @@ MAELEKEZO_YA_LUGHA = {
 @dataclass
 class Kosa:
     """Kosa moja lililopatikana kwenye sentensi."""
-    aina: str                    # "NGELI" | "KIROBOTI" | "MOFOLOJIA" | "ALAMA"
+    aina: str                    # "NGELI" | "KIROBOTI" | "MOFOLOJIA" | "ALAMA" | "MTINDO" | "ISTILAHI"
     neno: str                    # Neno lenye kosa
     nafasi: int                  # Nafasi (index) kwenye sentensi asili
     urefu: int                   # Urefu wa neno
     ujumbe: str                  # Maelezo ya kosa
     mapendekezo: list[str] = field(default_factory=list)
-    chanzo: str = ""             # "exceptions" | "prefix" | "ubaguzi"
+    chanzo: str = ""             # "exceptions" | "prefix" | "ubaguzi" | "Kanuni Maalum"
 
     def to_dict(self) -> dict:
         return asdict(self)
@@ -404,6 +399,7 @@ class MkaguziSarufi:
       - Nahau/methali zilizokopwa vibaya (kiroboti)
       - Uandishi (herufi kubwa, alama ya kituo)
       - Umoja wa kisintaksia wa sentensi
+      - Kanuni maalum za mtindo, istilahi, na upatanisho wa I-ZI
     """
 
     VIVUMISHI_MIZIZI = {
@@ -423,6 +419,42 @@ class MkaguziSarufi:
         "walikataa kukata tamaa": "Epuka urudiaji wa mzizi; tumia 'hawakukata tamaa' au 'walikataa kusalimu amri'",
         "fanya maamuzi": "Tumia 'fanya uamuzi'",
     }
+
+    # Orodha ya Kanuni Maalum (Regex, Badala, Aina, Ujumbe, Chanzo)
+    KANUNI_MAALUM = [
+        # L. 'Wakati [nomino] ana-po-' -> 'Pale [nomino] ana-po-'
+        (
+            re.compile(r"\bWakati\s+([a-z]+)\s+([a-z]*(?:na|li|taka)po[a-z]+)\b", re.I),
+            r"Pale \1 \2",
+            "MTINDO",
+            "Kitenzi chenye '-po-' tayari kinaonyesha wakati. Tumia 'Pale' badala ya tafsiri sisisi 'Wakati'.",
+            "Mtindo wa Kiswahili Sanifu"
+        ),
+        # M1. Istilahi za Kitiba zilizotafsiriwa sisisi
+        (
+            re.compile(r"\b(akina\s+mama|mama)\s+wanaotarajia\b", re.I),
+            "akina mama wajawazito",
+            "ISTILAHI",
+            "Tafsiri sisisi ya 'expectant mothers'. Tumia msamiati wa kitiba 'akina mama wajawazito'.",
+            "Istilahi za Tiba"
+        ),
+        # M2. Maambukizi magumu
+        (
+            re.compile(r"\bmaambukizi\s+magumu\b(?!\s+kufahamika)", re.I),
+            "maambukizi magumu kufahamika",
+            "ISTILAHI",
+            "Kwa muktadha wa uchunguzi wa maabara ('complex infections'), tumia 'maambukizi magumu kufahamika'.",
+            "Istilahi za Tiba"
+        ),
+        # N. Upatanisho wa Ngeli ya I-ZI kwenye Ukanushi wa Masharti
+        (
+            re.compile(r"\b(kliniki|zahanati|hospitali|kampuni|serikali|taasisi|benki|shule)\s+ya\s+eneo\s+hilo\s+hainge([a-z]+)\b", re.I),
+            r"\1 ya eneo hilo isinge\2",
+            "NGELI",
+            "Nomino ya ngeli ya I-ZI inachukua ukanushi 'isinge-' badala ya 'hainge-'.",
+            "Upatanisho wa Ngeli I-ZI"
+        ),
+    ]
 
     NAHAU_NA_METHALI = {
         "kula chumvi nyingi": {"aina": "NAHAU", "maana": "kuishi miaka mingi", "en": "to live a long life"},
@@ -472,8 +504,36 @@ class MkaguziSarufi:
         # 5. Yambiwa (kiambishi cha mtendwa wa binadamu)
         makosa.extend(self.yambiwa.kagua(sentensi))
 
+        # 6. Kanuni Maalum za Mtindo/Istilahi/Ngeli (MPYA)
+        makosa.extend(self._kagua_kanuni_maalum(sentensi))
+
         # Panga kwa nafasi
         makosa.sort(key=lambda k: k.nafasi)
+        return makosa
+
+    # --------------------------------------------------------
+    # UKAGUZI WA KANUNI MAALUM
+    # --------------------------------------------------------
+
+    def _kagua_kanuni_maalum(self, sentensi: str) -> list[Kosa]:
+        """Hukagua kwa kutumia orodha ya KANUNI_MAALUM (Regex)."""
+        makosa: list[Kosa] = []
+        
+        for muundo, badala, aina, ujumbe, chanzo in self.KANUNI_MAALUM:
+            for m in muundo.finditer(sentensi):
+                neno_lililokosewa = m.group(0)
+                # Tengeneza pendekezo kwa kutumia muundo huo huo wa re.sub
+                pendekezo = muundo.sub(badala, neno_lililokosewa)
+                
+                makosa.append(Kosa(
+                    aina=aina,
+                    neno=neno_lililokosewa,
+                    nafasi=m.start(),
+                    urefu=len(neno_lililokosewa),
+                    ujumbe=ujumbe,
+                    mapendekezo=[pendekezo],
+                    chanzo=chanzo
+                ))
         return makosa
 
     # --------------------------------------------------------
@@ -748,7 +808,7 @@ class KanuniZaSarufiKiswahili:
     def kagua_na_kurekebisha(self, sentensi: str) -> dict:
         """
         Hurekebisha kiotomatiki makosa ya kuaminika tu:
-          - upatanisho wa ngeli (NGELI) na Yambiwa (MOFOLOJIA): hubadilisha neno lenye kosa
+          - upatanisho wa ngeli (NGELI), Yambiwa (MOFOLOJIA), na Kanuni Maalum: hubadilisha neno lenye kosa
             kwa pendekezo la kwanza
           - herufi kubwa mwanzoni na nukta mwishoni (ALAMA)
         Makosa ya KIROBOTI hayarekebishwi kiotomatiki (mapendekezo yake ni ushauri, si maneno).
@@ -757,13 +817,14 @@ class KanuniZaSarufiKiswahili:
         iliyorekebishwa = sentensi
         mabadiliko = []
 
-        ngeli = sorted(
-            [k for k in matokeo["makosa"] if k["aina"] in ("NGELI", "MOFOLOJIA") and k["mapendekezo"]],
+        # Tunajumuisha NGELI, MOFOLOJIA, MTINDO, na ISTILAHI hapa
+        makosa_ya_kurekebisha = sorted(
+            [k for k in matokeo["makosa"] if k["aina"] in ("NGELI", "MOFOLOJIA", "MTINDO", "ISTILAHI") and k["mapendekezo"]],
             key=lambda k: k["nafasi"],
             reverse=True,  # kuanzia mwisho ili nafasi zisibadilike
         )
         mwisho_wa_awali = len(sentensi) + 1
-        for k in ngeli:
+        for k in makosa_ya_kurekebisha:
             n, u = k["nafasi"], k["urefu"]
             if n + u > mwisho_wa_awali:
                 continue  # epuka makosa yanayopishana
