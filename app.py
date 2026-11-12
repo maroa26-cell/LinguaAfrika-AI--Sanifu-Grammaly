@@ -42,12 +42,7 @@ APP_URL = str(_secret("APP_URL") or _APP_URL_MSINGI).strip().rstrip("/")
 
 
 def weka_seo_schema():
-    """Weka alama za JSON-LD (schema.org) kwenye <head> ya ukurasa.
-
-    Inaitwa BAADA ya set_page_config. Maelezo yamo ndani ya kamusi ya Python (dict) na
-    json.dumps inahakikisha JSON ni sahihi. Kumbuka: Streamlit hujenga ukurasa kwa JavaScript,
-    kwa hiyo injini za utafutaji huenda zisiisome; hii ni juhudi ya ziada tu.
-    """
+    """Weka alama za JSON-LD (schema.org) kwenye <head> ya ukurasa."""
     data = {
         "@context": "https://schema.org",
         "@type": "DefinedTermSet",
@@ -67,9 +62,8 @@ def weka_seo_schema():
         f"s.text={js_literal};d.head.appendChild(s);}}catch(e){{}}}})();</script>"
     )
     try:
-        # st.components.v1.html imeanza kuondolewa; tumia st.iframe kama ipo.
         if hasattr(str_platform, "iframe"):
-            str_platform.iframe(kodi_html, height=1)  # urefu lazima uwe namba chanya
+            str_platform.iframe(kodi_html, height=1)
         else:
             components.html(kodi_html, height=0)
     except Exception as e:
@@ -94,14 +88,14 @@ def onyesha_hitilafu(muktadha, e):
     """Andika hitilafu halisi kwenye log ya server; mteja aone ujumbe wa kawaida tu."""
     print(f"[hitilafu] {muktadha}: {type(e).__name__}: {e}")
     if isinstance(e, ValueError):
-        str_platform.error(str(e))  # ujumbe wetu wenyewe (mf. faili kubwa mno)
+        str_platform.error(str(e))
         return
     t = str(e).lower()
     if any(k in t for k in ("billing", "quota", "429", "rate limit", "insufficient")):
         str_platform.error("Huduma ya AI haipatikani kwa sasa. Tafadhali jaribu tena baadaye.")
     else:
         str_platform.error(f"Imeshindikana {muktadha}. Tafadhali jaribu tena.")
-    if _ai_debug_imewashwa():  # kwa mmiliki tu: weka AI_DEBUG = "1" kwenye Secrets
+    if _ai_debug_imewashwa():
         str_platform.warning(f"[uchunguzi AI] {muktadha} | {type(e).__name__}: {str(e)[:300]}")
 
 
@@ -109,7 +103,6 @@ _HERUFI_ZA_CJK = r"[\u3400-\u9fff\uf900-\ufaff\u3040-\u30ff\uac00-\ud7af]"
 
 
 def hesabu_maneno(t):
-    """Maneno ya kukata kwenye salio. Kichina hakina nafasi kati ya maneno, kwa hiyo herufi 2 za CJK = neno 1."""
     t = str(t or "")
     cjk = len(re.findall(_HERUFI_ZA_CJK, t))
     bila_cjk = re.sub(_HERUFI_ZA_CJK, " ", t)
@@ -117,12 +110,10 @@ def hesabu_maneno(t):
 
 
 def _ep_md(t):
-    """Epuka alama za markdown ndani ya maandishi ya mtumiaji."""
     return re.sub(r"([\\`*_{}\[\]()#+\-.!~|>$])", r"\\\1", str(t))
 
 
 def onyesha_matokeo_ya_mhariri():
-    """Onyesha matokeo ya ukaguzi (yamehifadhiwa kwenye session ili vitufe vya kuchagua vidumu)."""
     m = str_platform.session_state.get("mhariri_matokeo")
     if not m:
         return
@@ -154,18 +145,13 @@ def onyesha_matokeo_ya_mhariri():
 # ------------------------------------------------------------------ #
 #  KAMUSI YA DATA (CSV): chanzo cha kwanza cha ukweli kabla ya AI
 # ------------------------------------------------------------------ #
-# Weka faili la CSV kwenye repo yako, folda moja na app.py, kisha andika jina lake hapa.
 KAMUSI_CSV_FILE = "kamusi.csv"
-# Mbadala: kiungo kamili cha RAW (https://raw.githubusercontent.com/USER/REPO/main/faili.csv)
-# kinaweza kuwekwa kwenye Streamlit Secrets kama KAMUSI_CSV_URL.
 KAMUSI_CSV_URL = str(_secret("KAMUSI_CSV_URL") or "").strip()
-# Kwa repo ya FARAGHA: weka token ya kusoma tu kwenye Secrets kama KAMUSI_GITHUB_TOKEN.
 KAMUSI_GITHUB_TOKEN = str(_secret("KAMUSI_GITHUB_TOKEN") or "").strip()
 KAMUSI_SAFU = ["swahili_term", "english_term", "category", "description_sw"]
 
 
 def _kiungo_cha_api_cha_github(url):
-    """raw.githubusercontent.com/OWNER/REPO/REF/PATH -> (api_url, ref), au None."""
     m = re.match(r"^https://raw\.githubusercontent\.com/([^/]+)/([^/]+)/([^/]+)/(.+?)(?:\?.*)?$", url)
     if not m:
         return None
@@ -174,8 +160,6 @@ def _kiungo_cha_api_cha_github(url):
 
 
 def pakia_kamusi_csv():
-    """Hurejesha (DataFrame, kosa). Makosa HAYAHIFADHIWI kwenye cache, ili ukirekebisha
-    Secrets au token, utafutaji unaofuata ujaribu tena mara moja."""
     try:
         return _pakia_kamusi_iliyofanikiwa(), None
     except RuntimeError as e:
@@ -186,12 +170,11 @@ def pakia_kamusi_csv():
 def _pakia_kamusi_iliyofanikiwa():
     df, kosa = _soma_kamusi_csv()
     if kosa:
-        raise RuntimeError(kosa)  # st.cache_data haihifadhi hitilafu
+        raise RuntimeError(kosa)
     return df
 
 
 def _soma_kamusi_csv():
-    """Husoma CSV (faili la repo au kiungo). Hurejesha (DataFrame, kosa)."""
     tupu = pd.DataFrame(columns=KAMUSI_SAFU)
     njia = os.path.join(os.path.dirname(os.path.abspath(__file__)), KAMUSI_CSV_FILE)
     chanzo = njia if os.path.exists(njia) else (KAMUSI_CSV_URL or None)
@@ -200,7 +183,6 @@ def _soma_kamusi_csv():
         return tupu, "no_source"
     try:
         if chanzo == KAMUSI_CSV_URL and KAMUSI_GITHUB_TOKEN:
-            # Repo ya faragha: tumia GitHub API (njia rasmi ya token ya fine-grained).
             vichwa = {"Authorization": f"Bearer {KAMUSI_GITHUB_TOKEN}"}
             api = _kiungo_cha_api_cha_github(chanzo)
             if api:
@@ -227,14 +209,12 @@ def _soma_kamusi_csv():
 
 
 def tafuta_kwenye_kamusi_csv(neno, kikomo=20):
-    """Hurejesha (matokeo, kosa). Maneno kamili hutangulia, kisha yanayolingana kwa sehemu."""
     df, kosa = pakia_kamusi_csv()
     if kosa:
         return None, kosa
     q = str(neno).strip().lower()
     istilahi = df["swahili_term"].str.lower().str.strip()
     kamili = df[istilahi == q]
-    # regex=False: mtumiaji akiandika alama kama "(" au "*" isilete hitilafu
     sehemu = df[istilahi.str.contains(q, regex=False) & (istilahi != q)]
     return pd.concat([kamili, sehemu]).head(kikomo), None
 
@@ -254,21 +234,17 @@ try:
     database.anzisha_hifadhidata_ya_chuma()
 except Exception as exc:
     str_platform.error("Imeshindikana kuanzisha hifadhidata. Kagua usanidi wa database kisha jaribu tena.")
-    # Maelezo ya kiufundi yanaonyeshwa kwenye log ya server, si kwa mtumiaji.
     print(f"Database initialization failed: {type(exc).__name__}: {exc}")
     str_platform.stop()
 
 skin_appearance.inject_premium_glassmorphic_skin()
 
-# DOSARI 3 IMEREKEBISHWA: soma secrets kwa usalama (haitaanguka ukiwa local)
 api_key_source = os.environ.get("OPENAI_API_KEY") or _secret("OPENAI_API_KEY")
 
 client = OpenAI(api_key=api_key_source.strip()) if isinstance(api_key_source, str) and api_key_source.strip() else None
 
 
 def _jenga_ubongo(mteja):
-    """Jenga CerebralCortex. Matoleo mengine ya cerebral_cortex.py (mf. ya Gemini) hayapokei 'client',
-    kwa hiyo jaribu pamoja na bila hiyo badala ya kuanguka kwa TypeError."""
     for hoja in ((mteja,), ()):
         try:
             return CerebralCortex(*hoja)
@@ -283,9 +259,7 @@ if ubongo is None or (client is None and getattr(ubongo, "client", object()) is 
     str_platform.stop()
 
 def _piga_ai(mfumo, mtumiaji):
-    """Mhariri hutumia njia ile ile ya OpenAI ya CerebralCortex (modeli: OPENAI_MODEL, chaguo-msingi gpt-4o)."""
     if not hasattr(ubongo, "piga_json"):
-        # cerebral_cortex.py ya mtu mwingine haina njia hii; mhariri utaendelea na ukaguzi wa kanuni tu.
         raise RuntimeError("cerebral_cortex.py haina piga_json")
     return ubongo.piga_json(mfumo, mtumiaji)
 
@@ -302,26 +276,27 @@ kasi_ya_radi = (time.time() - muda_mwanzo) * 1000
 if "freemium_words_used" not in str_platform.session_state:
     str_platform.session_state["freemium_words_used"] = 0
 
+# HAPA NDIPO TULIPOBADILISHA KUTOKA 50 KWENDA 600
 maneno_yaliyotumika = str_platform.session_state["freemium_words_used"]
-maneno_yaliyobaki = max(0, 50 - maneno_yaliyotumika)
+maneno_yaliyobaki = max(0, 600 - maneno_yaliyotumika)
 
 rada_nafasi = str_platform.sidebar.empty()
 
 
 def onyesha_rada():
     """Onyesha salio la sasa. Inaitwa tena baada ya maneno kukatwa, ili salio lisichelewe."""
-    baki = max(0, 50 - str_platform.session_state["freemium_words_used"])
+    # HAPA PIA TUMEBADILISHA KUTOKA 50 KWENDA 600
+    baki = max(0, 600 - str_platform.session_state["freemium_words_used"])
     kodi = f"""
     <div style='background: linear-gradient(135deg, #1E293B 0%, #0F172A 100%); border: 2px solid #D97706; padding: 18px; border-radius: 14px; margin-bottom: 20px; box-shadow: 0 10px 25px rgba(217,119,6,0.15);'>
         <p style='color: #D97706; font-size: 13px; margin: 0 0 10px 0; text-align: center; font-weight: 900; letter-spacing: 1px;'>\U0001F4CA RADA YA UBONGO (CNS METRICS)</p>
-        <p style='color: #F59E0B; font-size: 13px; margin: 0;'>\U0001F381 <b>Salio la Bure:</b> {baki}/50 Maneno</p>
+        <p style='color: #F59E0B; font-size: 13px; margin: 0;'>\U0001F381 <b>Salio la Bure:</b> {baki}/600 Maneno</p>
         <p style='color: #34D399; font-size: 13px; margin: 6px 0 0 0;'>\U0001F6E1\uFE0F <b>OWTHS Filter:</b> \U0001F7E2 100% Active</p>
         <p style='color: #34D399; font-size: 13px; margin: 6px 0;'>\u26A1 <b>Synapse Latency:</b> {kasi_ya_radi:.3f}ms</p>
         <hr style='border-color: rgba(255,255,255,0.05); margin: 8px 0;'>
         <p style='color: #94A3B8; font-size: 11px; margin: 0; text-align: center;'>Status: {self_healing_status}</p>
     </div>
     """
-    # Ondoa nafasi za mwanzo za kila mstari: markdown huchukulia mistari yenye nafasi 4 kama msimbo.
     rada_nafasi.markdown("".join(l.strip() for l in kodi.splitlines()), unsafe_allow_html=True)
 
 
@@ -336,7 +311,6 @@ menyu_kamili = {
     "sauti": "\U0001F399\uFE0F Roboti wa Sauti, Imla (Transcription) & TTS"
 }
 
-# DOSARI 4 IMEREKEBISHWA: label halisi + label_visibility badala ya label=""
 chaguo_display = str_platform.sidebar.radio(
     label="Chagua huduma",
     options=list(menyu_kamili.values()),
@@ -347,7 +321,6 @@ chaguo_menyu = [k for k, v in menyu_kamili.items() if v == chaguo_display]
 
 str_platform.sidebar.write("---")
 
-# IMEREKEBISHWA: viungo halisi (kama ni multipage app, hakikisha kurasa zipo kwenye pages/)
 str_platform.sidebar.link_button(
     label="\U0001F510 Lango la Malipo na Usajili Mteja \u2500\u2500\u25BA",
     url=f"{APP_URL}/dashboard",
@@ -385,7 +358,6 @@ if "mhariri" in chaguo_menyu:
             else:
                 with str_platform.spinner("Nakagua maandishi..."):
                     matokeo = mhariri.kagua(maandishi, piga_ai=_piga_ai)
-                # Maneno yanakatwa TU pale ukaguzi wa AI ulipofanikiwa
                 if matokeo["ai_imetumika"]:
                     str_platform.session_state["freemium_words_used"] += heabu_maneno
                     onyesha_rada()
@@ -405,7 +377,6 @@ elif "mtafsiri" in chaguo_menyu:
         "Kichina (Mandarin)", "Kireno (Portugu\u00eas)", "Kizulu (isiZulu)", "Setswana (Botswana)",
         "Kinyarwanda", "Kiganda (Luganda)", "Lingala", "Kichewa",
     ]
-    # Lugha zenye data chache za mafunzo: tafsiri yake ina uwezekano mkubwa wa makosa.
     lugha_za_majaribio = {"Kizulu (isiZulu)", "Setswana (Botswana)", "Kinyarwanda", "Kiganda (Luganda)", "Lingala", "Kichewa"}
     col1, col2 = str_platform.columns(2)
     with col1: lugha_chanzo = str_platform.selectbox("Kutoka Lugha:", orodha_lugha, index=1, key="src_v14_clean")
@@ -444,7 +415,6 @@ elif "kamusi" in chaguo_menyu:
     if str_platform.button("Tafuta Kwenye Kamusi Kuu", key="v14_btn_kam_clean"):
         if msamiati.strip() != "":
             matokeo_csv, kosa_csv = tafuta_kwenye_kamusi_csv(msamiati)
-            # Uchunguzi kwa mmiliki tu: weka KAMUSI_DEBUG = "1" kwenye Secrets (futa ukimaliza).
             if kosa_csv and str(_secret("KAMUSI_DEBUG") or "").strip().lower() in ("1", "true", "yes", "ndiyo"):
                 _njia = os.path.join(os.path.dirname(os.path.abspath(__file__)), KAMUSI_CSV_FILE)
                 str_platform.warning(
