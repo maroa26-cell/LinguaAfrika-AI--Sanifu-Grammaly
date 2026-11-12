@@ -251,15 +251,16 @@ skin_appearance.inject_premium_glassmorphic_skin()
 
 api_key_source = os.environ.get("OPENAI_API_KEY") or _secret("OPENAI_API_KEY")
 
+client = None
 if isinstance(api_key_source, str) and api_key_source.strip():
     client = OpenAI(api_key=api_key_source.strip())
-    ubongo = CerebralCortex(client)
-else:
-    str_platform.error("\U0001F512 secrets error! Weka OPENAI_API_KEY kwenye Secrets.")
+ubongo = CerebralCortex(client)  # Mnyororo: Gemini -> Groq -> OpenAI
+if not (ubongo.gemini_client or ubongo.groq_client or ubongo.openai_client):
+    str_platform.error("\U0001F512 secrets error! Weka angalau ufunguo mmoja kwenye Secrets: GEMINI_API_KEY, GROQ_API_KEY au OPENAI_API_KEY.")
     str_platform.stop()
 
 def _piga_ai(mfumo, mtumiaji):
-    """Mhariri hutumia njia ile ile ya OpenAI ya CerebralCortex."""
+    """Mhariri hutumia mnyororo ule ule wa CerebralCortex (Gemini -> Groq -> OpenAI)."""
     return ubongo.piga_json(mfumo, mtumiaji)
 
 
@@ -385,6 +386,29 @@ elif "mtafsiri" in chaguo_menyu:
     if lugha_chanzo in lugha_za_majaribio or lugha_lengwa in lugha_za_majaribio:
         str_platform.caption("\u26A0\uFE0F Tafsiri ya lugha hii ni ya majaribio (Beta). Ihakikiwe na mzungumzaji wa lugha hiyo kabla ya kutumika kwa kazi muhimu.")
     muktadha_chaguo = str_platform.selectbox("\U0001F3AF Chagua Muktadha:", ["Kawaida", "Kibiashara", "Kisheria", "Kitiba", "Kielimu", "Kidini", "Kilimo"], key="context_v14_clean")
+    # ---- Imla (Dictation): ongea badala ya kuandika ----
+    _misimbo_ya_imla = {
+        "Kiswahili": "sw", "Kiingereza (English)": "en", "Kifaransa": "fr", "Kiarabu": "ar",
+        "Kichina (Mandarin)": "zh", "Kireno (Portugu\u00eas)": "pt", "Kizulu (isiZulu)": "zu",
+        "Setswana (Botswana)": "tn", "Kinyarwanda": "rw", "Kiganda (Luganda)": "lg",
+        "Lingala": "ln", "Kichewa": "ny",
+    }
+    with str_platform.expander("\U0001F399\uFE0F Imla: Ongea badala ya kuandika (Dictation)"):
+        str_platform.caption(f"Ongea kwa {lugha_chanzo}. Maneno yataandikwa kwenye kisanduku cha maandishi hapa chini, uyapitie kisha utafsiri.")
+        if hasattr(str_platform, "audio_input"):
+            sauti_imla = str_platform.audio_input("Bonyeza kurekodi sauti yako:", key="imla_rekodi_v14")
+        else:
+            sauti_imla = str_platform.file_uploader("Pakia sauti (MP3, WAV, M4A):", type=["mp3", "wav", "m4a"], key="imla_pakia_v14")
+        if sauti_imla is not None and str_platform.button("Andika Imla na Weka Kwenye Kisanduku", key="imla_btn_v14"):
+            with str_platform.spinner("Inasikiliza sauti yako..."):
+                try:
+                    imla_matini = ubongo.chakata_sauti_na_imla(sauti_imla, _misimbo_ya_imla.get(lugha_chanzo, "sw"))
+                except Exception as e:
+                    imla_matini = None
+                    onyesha_hitilafu("kuandika imla", e)
+            if imla_matini:
+                str_platform.session_state["trans_v14_clean_box"] = imla_matini[:MAX_CHARS]
+                str_platform.success("\u2728 Imla imeandikwa. Pitia maandishi hapa chini kisha bonyeza Zindua Tafsiri Pro.")
     maandishi_t = str_platform.text_area("Ingiza maandishi ya kutafsiri hapa:", key="trans_v14_clean_box", height=150, max_chars=MAX_CHARS)
     heabu_maneno_t = hesabu_maneno(maandishi_t)
     if maneno_yaliyobaki <= 0:
@@ -407,8 +431,40 @@ elif "mtafsiri" in chaguo_menyu:
                         onyesha_hitilafu("kutafsiri", e)
                 if res:
                     str_platform.session_state["freemium_words_used"] += heabu_maneno_t
+                    str_platform.session_state["tafsiri_ya_mwisho"] = {
+                        "chanzo": lugha_chanzo, "lengo": lugha_lengwa,
+                        "asili": maandishi_t, "tafsiri": res,
+                    }
+                    str_platform.session_state.pop("tafsiri_sauti_lengo", None)
+                    str_platform.session_state.pop("tafsiri_sauti_asili", None)
                     onyesha_rada()
-                    onyesha_jibu(res, border_color="rgba(255,255,255,0.1)", bg="rgba(255,255,255,0.02)")
+
+    # ---- Onyesha tafsiri ya mwisho + kitufe cha matamshi (inabaki hata baada ya kubonyeza kitufe cha sauti) ----
+    _t_mwisho = str_platform.session_state.get("tafsiri_ya_mwisho")
+    if _t_mwisho:
+        onyesha_jibu(_t_mwisho["tafsiri"], border_color="rgba(255,255,255,0.1)", bg="rgba(255,255,255,0.02)")
+        str_platform.caption("\U0001F50A Sikiliza jinsi maandishi yanavyotamkwa:")
+        sc1, sc2 = str_platform.columns(2)
+        with sc1:
+            if str_platform.button(f"\U0001F50A Sikiliza Tafsiri ({_t_mwisho['lengo']})", key="sikiliza_tafsiri_btn"):
+                with str_platform.spinner("Inazalisha sauti..."):
+                    try:
+                        str_platform.session_state["tafsiri_sauti_lengo"] = ubongo.zindua_jifunze_lugha_audio(_t_mwisho["tafsiri"], _t_mwisho["lengo"])
+                    except Exception as e:
+                        onyesha_hitilafu("kuzalisha sauti ya tafsiri", e)
+        with sc2:
+            if str_platform.button(f"\U0001F50A Sikiliza Maandishi Asili ({_t_mwisho['chanzo']})", key="sikiliza_asili_btn"):
+                with str_platform.spinner("Inazalisha sauti..."):
+                    try:
+                        str_platform.session_state["tafsiri_sauti_asili"] = ubongo.zindua_jifunze_lugha_audio(_t_mwisho["asili"], _t_mwisho["chanzo"])
+                    except Exception as e:
+                        onyesha_hitilafu("kuzalisha sauti ya maandishi asili", e)
+        if str_platform.session_state.get("tafsiri_sauti_lengo"):
+            str_platform.caption(f"Matamshi ya tafsiri ({_t_mwisho['lengo']}):")
+            str_platform.audio(str_platform.session_state["tafsiri_sauti_lengo"], format="audio/wav")
+        if str_platform.session_state.get("tafsiri_sauti_asili"):
+            str_platform.caption(f"Matamshi ya maandishi asili ({_t_mwisho['chanzo']}):")
+            str_platform.audio(str_platform.session_state["tafsiri_sauti_asili"], format="audio/wav")
 
 elif "kamusi" in chaguo_menyu:
     str_platform.markdown("<h3 style='color: #D97706;'>\U0001F4DA Maktaba ya Msamiati na Kamusi Kuu</h3>", unsafe_allow_html=True)
