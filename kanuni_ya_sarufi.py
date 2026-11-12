@@ -1,5 +1,6 @@
 """
-Kanuni za Sarufi ya Kiswahili – Injini ya Uhakiki wa Lugha.
+kanuni_ya_sarufi.py — Injini Kuu ya Sheria na Kanuni za Sarufi ya Kiswahili Sanifu (BAKITA).
+Inatumiwa na cerebral_cortex.py na app.py kwa ajili ya tafsiri za AI Lingual na uhakiki wa maandishi.
 
 Toleo 2.1 (Yambiwa na kanuni kamili za tafsiri zimerudishwa):
 - Utambuzi wa ngeli uliosahihishwa kwa viambishi halali (hakuna tena 'ch' → KI-VI)
@@ -331,7 +332,6 @@ class KanuniYaYambiwa:
     }
 
     # Vitenzi vya -ea/-ia vinavyokubali nomino ya binadamu bila kiambishi cha mtendwa
-    # (mf. 'alipokea wageni', 'alitembelea wagonjwa' ni sahihi).
     MASHINA_YA_KUACHWA = {"pokea", "tembelea", "ngojea", "tazamia", "ingilia"}
     VITENZI_VYA_KUACHWA = {"kuwa", "kulia", "kushoto", "kwenda", "kuja", "kufika", "kukaa", "kutumia"}
 
@@ -788,33 +788,3 @@ class KanuniZaSarufiKiswahili:
             "makosa_ya_awali": matokeo["idadi_ya_makosa"],
             "mabadiliko": mabadiliko,
         }
-
-
-# ============================================================
-# MAJARIBIO YA HARAKA
-# ============================================================
-
-if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO)
-    kanuni = KanuniZaSarufiKiswahili()
-
-    sentensi_za_majaribio = [
-        "Mtoto mdogo alikula chakula kitamu.",
-        "Watoto wakubwa walisoma vitabu vizuri.",
-        "Mti mkubwa ulianguka baada ya dhoruba.",
-        "Shule yetu ni nzuri sana.",
-        "Mimi ni baridi leo asubuhi.",
-        "Chai ya moto inapendeza.",
-        "Mwalimu mzuri anafundisha kwa uvumilivu.",
-        "Vitabu vikubwa viko mezani.",
-        "hii sentensi haina herufi kubwa",
-    ]
-
-    for s in sentensi_za_majaribio:
-        matokeo = kanuni.kagua_sentensi_nzima(s)
-        print(f"\n➤ {s}")
-        print(f"   Sahihi: {matokeo['sahihi']}  |  Makosa: {matokeo['idadi_ya_makosa']}")
-        for k in matokeo["makosa"]:
-            print(f"   - [{k['aina']}] {k['ujumbe']}")
-            if k["mapendekezo"]:
-                print(f"     ↳ Mapendekezo: {k['mapendekezo'][:2]}")
