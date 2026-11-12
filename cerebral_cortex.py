@@ -30,6 +30,28 @@ from kanuni_ya_sarufi import (
 
 MBAO_ZA_MAKOSA_YA_PARAMETA = ("temperature", "response_format", "unsupported", "unknown")
 
+# Maelekezo ya ziada kwa muktadha maalum wa tafsiri (Kidini, Kilimo)
+MAELEKEZO_YA_MUKTADHA = {
+    "Kidini": (
+        " Religious context: use the established religious terminology of the relevant faith "
+        "(e.g. Christian: Biblia, injili, neema, wokovu, ubatizo, ibada, mahubiri, Sabato; "
+        "Islamic: Qur'ani, swala, sala, saumu, zaka, hijja, dua). "
+        "Respect the tone of scripture, prayer, sermon or liturgy and keep it dignified and reverent. "
+        "Never change doctrinal meaning. Keep names of God, prophets, books and saints in their "
+        "standard form in the target language. If a Bible or Qur'an verse is quoted, use the widely "
+        "accepted wording in the target language when known, and do not invent verse text."
+    ),
+    "Kilimo": (
+        " Agriculture context: use correct farming terminology (e.g. mbegu, mbolea, palizi, "
+        "umwagiliaji, mavuno, pembejeo, wadudu waharibifu, magonjwa ya mimea, ufugaji, msimu wa kilimo). "
+        "Use simple wording that ordinary farmers and extension officers understand. "
+        "Keep units (ekari, hekta, kilo, gunia, lita), quantities, dosages and crop or livestock "
+        "names exact; never change application rates or pesticide/fertilizer instructions. "
+        "Use the common local names of crops and pests, with the scientific name in brackets "
+        "if there is no clear equivalent."
+    ),
+}
+
 
 def _siri(jina: str) -> Optional[str]:
     """Huchukua siri kutoka environment au st.secrets."""
@@ -145,6 +167,7 @@ class CerebralCortex:
         for jina, maelezo in MAELEKEZO_YA_LUGHA.items():
             if jina in str(lengo):
                 ziada += " " + maelezo
+        ziada += MAELEKEZO_YA_MUKTADHA.get(str(muktadha), "")
         if str(muktadha) in ("Kisheria", "Kitiba"):
             ziada += (" Use precise, standard terminology. If a term has no established equivalent, "
                       "keep the original term in brackets after your translation.")
