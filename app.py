@@ -1,3 +1,4 @@
+
 import streamlit as str_platform
 import os
 import time
@@ -669,6 +670,9 @@ elif "sauti" in chaguo_menyu:
                     onyesha_hitilafu("kuzalisha sauti", e)
             if audio_bytes:
                 str_platform.audio(audio_bytes, format="audio/wav")
+                _injini = getattr(ubongo, "injini_ya_sauti", None)
+                if _injini:
+                    str_platform.caption(f"Injini ya sauti iliyotumika: {_injini}")
 
 str_platform.write("---")
 skin_appearance.render_bottom_revenue_banner()
