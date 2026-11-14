@@ -1,4 +1,3 @@
-
 import streamlit as str_platform
 import os
 import time
@@ -532,13 +531,23 @@ elif "sauti" in chaguo_menyu:
         sanifisha_imla_tab = False
         if _lugha_imla_tab == "Kiswahili":
             sanifisha_imla_tab = str_platform.checkbox("Andika kwa Kiswahili Sanifu (badilisha maneno ya lahaja)", key="sauti_imla_sanifisha")
-        audio_file = str_platform.file_uploader("Pakia Faili la Sauti (MP3, WAV, M4A):", type=["mp3", "wav", "m4a"], key="whisper_audio_uploader")
+        str_platform.markdown("**\U0001F399\uFE0F Rekodi moja kwa moja (bonyeza maikrofoni, ongea, kisha simamisha):**")
+        if hasattr(str_platform, "audio_input"):
+            sauti_iliyorekodiwa = str_platform.audio_input("Bonyeza kuanza kurekodi:", key="sauti_imla_rekodi_tab")
+        else:
+            sauti_iliyorekodiwa = None
+            str_platform.warning("Toleo la Streamlit ni la zamani. Weka streamlit>=1.40.0 kwenye requirements.txt ili kurekodi moja kwa moja.")
+        str_platform.markdown("**\U0001F4C1 Au pakia faili la sauti:**")
+        sauti_iliyopakiwa = str_platform.file_uploader("Pakia Faili la Sauti (MP3, WAV, M4A):", type=["mp3", "wav", "m4a"], key="whisper_audio_uploader")
+        # Rekodi ya moja kwa moja ina kipaumbele; vinginevyo tumia faili lililopakiwa
+        audio_file = sauti_iliyorekodiwa if sauti_iliyorekodiwa is not None else sauti_iliyopakiwa
         if audio_file is not None:
-            aina_sauti = audio_file.type or "audio/mpeg"
-            str_platform.audio(audio_file, format=aina_sauti)
+            aina_sauti = getattr(audio_file, "type", None) or "audio/wav"
+            str_platform.audio(audio_file.getvalue(), format=aina_sauti)
             if str_platform.button("Zindua Whisper-v3 Imla Pro", key="zindua_whisper_v3_btn"):
                 with str_platform.spinner("Auditory Cortex inasoma sauti..."):
                     try:
+                        audio_file.seek(0)
                         res_sauti = ubongo.chakata_sauti_na_imla(audio_file, MISIMBO_YA_IMLA.get(_lugha_imla_tab, "sw"), lahaja=lahaja_imla_tab, sanifisha=sanifisha_imla_tab)
                     except Exception as e:
                         res_sauti = None
@@ -546,6 +555,7 @@ elif "sauti" in chaguo_menyu:
                 if res_sauti:
                     str_platform.success("\u2728 Imla Imekamilika!")
                     onyesha_jibu(res_sauti)
+                    str_platform.download_button("Pakua Notes (.txt)", res_sauti, file_name="imla_notes.txt", key="pakua_imla_notes")
     with t_jifunze:
         maandishi_sauti = str_platform.text_area("Ingiza maandishi unayotaka kusikia:", value="Karibu kwenye chombo cha Ourworthlinks Business.", key="tts_input_box", max_chars=MAX_CHARS)
         lugha_tutorial = str_platform.selectbox("Lugha ya Matamshi:", ["Kiswahili", "Kiingereza", "Kifaransa", "Kiarabu", "Kireno", "Kichina"], key="tts_lang_select")
