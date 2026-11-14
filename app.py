@@ -2,6 +2,8 @@ import streamlit as str_platform
 import os
 import time
 import io
+import wave
+import numpy as np
 import re
 import collections
 import json
@@ -75,6 +77,78 @@ def weka_seo_schema():
             components.html(kodi_html, height=0)
     except Exception as e:
         print(f"[seo] imeshindwa kuweka JSON-LD: {type(e).__name__}: {e}")
+
+
+# ---------- Maboresho ya sauti: msemaji aliye mbali (semina) na rekodi ndefu ----------
+class _FailiLaSauti(io.BytesIO):
+    """Faili la kumbukumbu lenye jina na aina, linaloendana na chakata_sauti_na_imla."""
+    def __init__(self, data, name="sauti.wav", type_="audio/wav"):
+        super().__init__(data)
+        self.name = name
+        self.type = type_
+
+
+def boresha_sauti_wav(data, lengo_rms=0.12, kikomo_cha_kuongeza=40.0):
+    """Ongeza nguvu ya sauti hafifu (WAV 16-bit). Inarudisha (bytes, desibeli_zilizoongezwa)."""
+    try:
+        with wave.open(io.BytesIO(data), "rb") as w:
+            ch, sw, sr, n = w.getnchannels(), w.getsampwidth(), w.getframerate(), w.getnframes()
+            raw = w.readframes(n)
+        if sw != 2 or n == 0:
+            return data, 0.0
+        x = np.frombuffer(raw, dtype="<i2").astype(np.float32) / 32768.0
+        x = x - x.mean()
+        fr = max(int(sr * 0.05) * ch, 1)
+        k = len(x) // fr
+        if k == 0:
+            return data, 0.0
+        rms_fr = np.sqrt((x[:k * fr].reshape(k, fr) ** 2).mean(axis=1))
+        if rms_fr.max() < 0.002:      # kimya karibu kabisa: kuongeza kungekuza kelele tu
+            return data, 0.0
+        hai = rms_fr[rms_fr > rms_fr.max() * 0.1]   # sehemu zenye sauti ya mtu tu
+        rms_hai = float(np.sqrt((hai ** 2).mean()))
+        gain = min(max(lengo_rms / max(rms_hai, 1e-6), 1.0), kikomo_cha_kuongeza)
+        if gain < 1.1:
+            return data, 0.0
+        y = np.tanh(x * gain)         # tanh huzuia kukatika kwa sauti (clipping)
+        out = io.BytesIO()
+        with wave.open(out, "wb") as w:
+            w.setnchannels(ch); w.setsampwidth(2); w.setframerate(sr)
+            w.writeframes((y * 32767).astype("<i2").tobytes())
+        return out.getvalue(), float(20 * np.log10(gain))
+    except Exception:
+        return data, 0.0
+
+
+def gawa_wav_vipande(data, sekunde=300):
+    """Gawa WAV ndefu vipande vya ~dakika 5, ukikata penye ukimya ili maneno yasikatwe katikati."""
+    try:
+        with wave.open(io.BytesIO(data), "rb") as w:
+            ch, sw, sr, n = w.getnchannels(), w.getsampwidth(), w.getframerate(), w.getnframes()
+            raw = w.readframes(n)
+        if sw != 2 or n <= sr * sekunde * 1.2:
+            return [data]
+        x = np.frombuffer(raw, dtype="<i2").reshape(-1, ch)
+        blok = int(sr * 0.1)
+        mipaka, mwanzo = [], 0
+        while len(x) - mwanzo > sr * sekunde * 1.2:
+            lengo = mwanzo + sr * sekunde
+            dirisha = x[lengo - sr * 8: lengo].astype(np.float32)
+            kb = len(dirisha) // blok
+            nishati = np.abs(dirisha[:kb * blok]).reshape(kb, blok * ch).mean(axis=1)
+            kata = lengo - sr * 8 + int(nishati.argmin()) * blok
+            mipaka.append((mwanzo, kata)); mwanzo = kata
+        mipaka.append((mwanzo, len(x)))
+        vipande = []
+        for a, b in mipaka:
+            out = io.BytesIO()
+            with wave.open(out, "wb") as w:
+                w.setnchannels(ch); w.setsampwidth(2); w.setframerate(sr)
+                w.writeframes(x[a:b].tobytes())
+            vipande.append(out.getvalue())
+        return vipande
+    except Exception:
+        return [data]
 
 
 def onyesha_jibu(res, border_color="#10B981", bg="rgba(16,185,129,0.1)"):
@@ -531,6 +605,7 @@ elif "sauti" in chaguo_menyu:
         sanifisha_imla_tab = False
         if _lugha_imla_tab == "Kiswahili":
             sanifisha_imla_tab = str_platform.checkbox("Andika kwa Kiswahili Sanifu (badilisha maneno ya lahaja)", key="sauti_imla_sanifisha")
+        boresha_kwa_mbali = str_platform.checkbox("Ongeza nguvu ya sauti hafifu (msemaji aliye mbali, semina)", value=True, key="sauti_imla_boresha")
         str_platform.markdown("**\U0001F399\uFE0F Rekodi moja kwa moja (bonyeza maikrofoni, ongea, kisha simamisha):**")
         if hasattr(str_platform, "audio_input"):
             sauti_iliyorekodiwa = str_platform.audio_input("Bonyeza kuanza kurekodi:", key="sauti_imla_rekodi_tab")
@@ -539,19 +614,37 @@ elif "sauti" in chaguo_menyu:
             str_platform.warning("Toleo la Streamlit ni la zamani. Weka streamlit>=1.40.0 kwenye requirements.txt ili kurekodi moja kwa moja.")
         str_platform.markdown("**\U0001F4C1 Au pakia faili la sauti:**")
         sauti_iliyopakiwa = str_platform.file_uploader("Pakia Faili la Sauti (MP3, WAV, M4A):", type=["mp3", "wav", "m4a"], key="whisper_audio_uploader")
+        str_platform.caption("Kwa semina: weka simu au maikrofoni karibu na msemaji, rekodi kwa Voice Recorder (M4A/WAV), kisha ipakie hapa. Mbali na msemaji, sauti hupungua sana na programu haiwezi kurudisha maneno yaliyopotea.")
         # Rekodi ya moja kwa moja ina kipaumbele; vinginevyo tumia faili lililopakiwa
         audio_file = sauti_iliyorekodiwa if sauti_iliyorekodiwa is not None else sauti_iliyopakiwa
         if audio_file is not None:
             aina_sauti = getattr(audio_file, "type", None) or "audio/wav"
             str_platform.audio(audio_file.getvalue(), format=aina_sauti)
             if str_platform.button("Zindua Whisper-v3 Imla Pro", key="zindua_whisper_v3_btn"):
-                with str_platform.spinner("Auditory Cortex inasoma sauti..."):
-                    try:
-                        audio_file.seek(0)
-                        res_sauti = ubongo.chakata_sauti_na_imla(audio_file, MISIMBO_YA_IMLA.get(_lugha_imla_tab, "sw"), lahaja=lahaja_imla_tab, sanifisha=sanifisha_imla_tab)
-                    except Exception as e:
-                        res_sauti = None
-                        onyesha_hitilafu("kuandika imla", e)
+                res_sauti = None
+                try:
+                    data_sauti = audio_file.getvalue()
+                    jina_sauti = getattr(audio_file, "name", "sauti.wav") or "sauti.wav"
+                    ni_wav = jina_sauti.lower().endswith(".wav") or "wav" in aina_sauti.lower()
+                    if ni_wav:
+                        if boresha_kwa_mbali:
+                            data_sauti, db_zilizoongezwa = boresha_sauti_wav(data_sauti)
+                            if db_zilizoongezwa > 0:
+                                str_platform.info(f"Sauti hafifu imeongezwa nguvu kwa takriban {db_zilizoongezwa:.0f} dB.")
+                        vipande = gawa_wav_vipande(data_sauti)
+                    else:
+                        vipande = [data_sauti]  # MP3/M4A: hutumwa kama ilivyo (hakuna kuongeza nguvu)
+                    matini_zote = []
+                    upau = str_platform.progress(0.0, text="Auditory Cortex inasoma sauti...")
+                    for n, kipande in enumerate(vipande, start=1):
+                        faili_kipande = _FailiLaSauti(kipande, jina_sauti if len(vipande) == 1 else f"sauti_{n}.wav", aina_sauti if len(vipande) == 1 else "audio/wav")
+                        matini_zote.append(ubongo.chakata_sauti_na_imla(faili_kipande, MISIMBO_YA_IMLA.get(_lugha_imla_tab, "sw"), lahaja=lahaja_imla_tab, sanifisha=sanifisha_imla_tab))
+                        upau.progress(n / len(vipande), text=f"Kipande {n} kati ya {len(vipande)} kimekamilika")
+                    upau.empty()
+                    res_sauti = "\n\n".join(m for m in matini_zote if m)
+                except Exception as e:
+                    res_sauti = None
+                    onyesha_hitilafu("kuandika imla", e)
                 if res_sauti:
                     str_platform.success("\u2728 Imla Imekamilika!")
                     onyesha_jibu(res_sauti)
