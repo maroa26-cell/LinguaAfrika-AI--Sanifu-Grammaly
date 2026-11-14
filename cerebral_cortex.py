@@ -8,6 +8,8 @@ import os
 import json
 import wave
 import tempfile
+import requests
+from xml.sax.saxutils import escape as _xml_escape
 from typing import Dict, Any, Optional
 
 try:
@@ -132,6 +134,41 @@ MSAMIATI_WA_MUKTADHA = {
 }
 
 
+
+# ------------------------------------------------------------------ #
+#  SAUTI ZA ASILI (Azure AI Speech): lugha + lahaja -> (locale, sauti ya kike, sauti ya kiume)
+#  Hizi hufunga lugha na lafudhi (locale), kwa hiyo hazitamki kwa lafudhi ya Kizungu.
+#  Lugha zisizo humu (Kichewa, Kiganda, Kinyarwanda, Lingala, Setswana) hutumia Gemini.
+# ------------------------------------------------------------------ #
+SAUTI_ZA_AZURE = {
+    ("Kiswahili", "Sanifu (Tanzania)"): ("sw-TZ", "sw-TZ-RehemaNeural", "sw-TZ-DaudiNeural"),
+    ("Kiswahili", "Kiunguja (Zanzibar)"): ("sw-TZ", "sw-TZ-RehemaNeural", "sw-TZ-DaudiNeural"),
+    ("Kiswahili", "Kenya (Nairobi)"): ("sw-KE", "sw-KE-ZuriNeural", "sw-KE-RafikiNeural"),
+    ("Kiswahili", "Kimvita (Mombasa)"): ("sw-KE", "sw-KE-ZuriNeural", "sw-KE-RafikiNeural"),
+    ("Kiingereza", "Marekani (US)"): ("en-US", "en-US-JennyNeural", "en-US-GuyNeural"),
+    ("Kiingereza", "Uingereza (UK)"): ("en-GB", "en-GB-SoniaNeural", "en-GB-RyanNeural"),
+    ("Kiingereza", "Afrika Mashariki"): ("en-KE", "en-KE-AsiliaNeural", "en-TZ-ElimuNeural"),
+    ("Kifaransa", "Ufaransa (Paris)"): ("fr-FR", "fr-FR-DeniseNeural", "fr-FR-HenriNeural"),
+    ("Kiarabu", "Fasaha (MSA)"): ("ar-SA", "ar-SA-ZariyahNeural", "ar-SA-HamedNeural"),
+    ("Kiarabu", "Misri (Egyptian)"): ("ar-EG", "ar-EG-SalmaNeural", "ar-EG-ShakirNeural"),
+    ("Kichina", "Putonghua (Beijing)"): ("zh-CN", "zh-CN-XiaoxiaoNeural", "zh-CN-YunxiNeural"),
+    ("Kireno", "Brazil"): ("pt-BR", "pt-BR-FranciscaNeural", "pt-BR-AntonioNeural"),
+    ("Kireno", "Ureno (Portugal)"): ("pt-PT", "pt-PT-RaquelNeural", "pt-PT-DuarteNeural"),
+    ("Kizulu", "Kawaida (Afrika Kusini)"): ("zu-ZA", "zu-ZA-ThandoNeural", "zu-ZA-ThembaNeural"),
+}
+# k = kike, m = kiume (kwa kuchagua sauti ya Azure inayolingana na sauti ya Gemini aliyochagua mtumiaji)
+JINSIA_YA_SAUTI_ZA_GEMINI = {"Kore": "k", "Puck": "m", "Charon": "m", "Aoede": "k",
+                             "Zephyr": "k", "Fenrir": "m", "Leda": "k", "Orus": "m"}
+KASI_ZA_AZURE = {"Polepole": "-20%", "Kawaida": "0%", "Haraka kidogo": "+10%"}
+
+# Mtu wa kuigwa (persona) ili Gemini ichague lafudhi ya asili, si ya Kizungu
+PERSONA_YA_LAHAJA = {
+    ("Kiswahili", "Sanifu (Tanzania)"): "a Tanzanian Swahili newsreader from Dar es Salaam (Radio Tanzania style)",
+    ("Kiswahili", "Kenya (Nairobi)"): "a Kenyan Swahili newsreader from Nairobi",
+    ("Kiswahili", "Kiunguja (Zanzibar)"): "a native Swahili speaker from Zanzibar town",
+    ("Kiswahili", "Kimvita (Mombasa)"): "a native Swahili speaker from Mombasa",
+}
+
 def _lugha_msingi(lugha):
     """Pata jina la msingi la lugha kutoka jina refu (mfano 'Kiingereza (English)' -> 'Kiingereza')."""
     for jina in LAHAJA_ZA_LUGHA:
@@ -214,6 +251,11 @@ class CerebralCortex:
         # 3. Chaguo la Mwisho (Fallback): OpenAI
         self.openai_client = client
         self.openai_modeli = str(_siri("OPENAI_MODEL") or "gpt-4o").strip()
+
+        # Sauti za asili (hiari): Azure AI Speech
+        self.azure_key = (_siri("AZURE_SPEECH_KEY") or "").strip()
+        self.azure_region = (_siri("AZURE_SPEECH_REGION") or "").strip().lower()
+        self.injini_ya_sauti = None  # injini iliyotumika mara ya mwisho kuzalisha sauti
 
         # 4. Injini ya Sheria za Sarufi ya Kiswahili
         self.kanuni = KanuniZaSarufiKiswahili()
@@ -489,8 +531,45 @@ class CerebralCortex:
             w.writeframes(pcm)
         return buf.getvalue()
 
+    def _azure_tts(self, maandishi: str, lugha: str, lahaja: Optional[str], sauti: str, kasi: str) -> Optional[bytes]:
+        """Sauti ya asili ya lugha/lahaja husika (locale imefungwa). None kama haijawekwa au haipo kwa lugha hii."""
+        if not (self.azure_key and self.azure_region):
+            return None
+        msingi = _lugha_msingi(lugha)
+        zote = LAHAJA_ZA_LUGHA.get(msingi, {})
+        lj = lahaja if lahaja in zote else (next(iter(zote)) if zote else None)
+        ramani = SAUTI_ZA_AZURE.get((msingi, lj))
+        if not ramani:
+            return None
+        locale, kike, kiume = ramani
+        orodha = [kike, kiume] if JINSIA_YA_SAUTI_ZA_GEMINI.get(sauti, "k") == "k" else [kiume, kike]
+        rate = KASI_ZA_AZURE.get(kasi, "-10%")
+        for jina in orodha:  # sauti ya pili ni akiba kama jina la kwanza halikubaliki
+            ssml = (
+                f"<speak version='1.0' xmlns='http://www.w3.org/2001/10/synthesis' xml:lang='{locale}'>"
+                f"<voice name='{jina}'><prosody rate='{rate}'>{_xml_escape(maandishi)}</prosody></voice></speak>"
+            )
+            try:
+                r = requests.post(
+                    f"https://{self.azure_region}.tts.speech.microsoft.com/cognitiveservices/v1",
+                    headers={
+                        "Ocp-Apim-Subscription-Key": self.azure_key,
+                        "Content-Type": "application/ssml+xml",
+                        "X-Microsoft-OutputFormat": "riff-24khz-16bit-mono-pcm",
+                        "User-Agent": "linguaafrika-ai",
+                    },
+                    data=ssml.encode("utf-8"), timeout=60,
+                )
+                if r.status_code == 200 and r.content[:4] == b"RIFF":
+                    self.injini_ya_sauti = f"Azure ({locale}, lafudhi ya asili)"
+                    return r.content
+            except Exception:
+                continue
+        return None
+
     def zindua_jifunze_lugha_audio(self, maandishi: str, lugha: str = "Kiswahili", lahaja: Optional[str] = None,
                                    sauti: str = "Kore", kasi: str = "Polepole") -> Optional[bytes]:
+        self.injini_ya_sauti = None
         maandishi = (maandishi or "").strip()
         if not maandishi:
             return None
@@ -498,32 +577,55 @@ class CerebralCortex:
         sauti = sauti if sauti in SAUTI_ZA_GEMINI else "Kore"
         kasi_maelezo = KASI_ZA_SAUTI.get(kasi, KASI_ZA_SAUTI["Polepole"])
         lahaja_txt = f", {lahaja} accent" if lahaja else ""
+        msingi = _lugha_msingi(lugha)
+        lj = lahaja or (next(iter(LAHAJA_ZA_LUGHA.get(msingi, {})), None))
 
-        # Hatua ya 1: Gemini TTS (maelekezo kamili, kisha ya akiba mafupi)
+        # Hatua ya 0: sauti ya asili ya Azure (ikiwa imewekwa na inaunga mkono lugha/lahaja hii)
+        pcm_azure = self._azure_tts(maandishi, lugha, lahaja, sauti, kasi)
+        if pcm_azure:
+            return pcm_azure
+
+        # Hatua ya 1: Gemini TTS (maelekezo kamili, kisha ya akiba yenye lafudhi pia)
         if self.gemini_client:
+            persona = PERSONA_YA_LAHAJA.get((msingi, lj)) or f"a native {lugha} speaker" + (f" ({lahaja})" if lahaja else "")
             kamili = (
+                "# AUDIO PROFILE\n"
+                f"You are {persona}. {lugha} is your first language and you speak it with fully native phonology.\n\n"
                 "# DIRECTOR'S NOTES\n"
                 f"Language: {lugha}{lahaja_txt}\n"
+                f"Accent: {maelekezo_ya_matamshi(lugha, lahaja)}\n"
+                f"CRITICAL: Do NOT use an English, American or British accent on {lugha} words: no English vowel "
+                "diphthongs, no English 'r', no English stress or intonation patterns. Use only the native sound system.\n"
                 f"Pace: speak {kasi_maelezo}.\n"
-                f"Pronunciation: {maelekezo_ya_matamshi(lugha, lahaja)}\n"
                 "Never read these notes aloud; speak only the transcript.\n\n"
                 "### TRANSCRIPT\n"
                 f"{maandishi}"
             )
-            fupi = f"Say {kasi_maelezo}, in {lugha}{lahaja_txt}: {maandishi}"
+            fupi = (f"Say {kasi_maelezo}, as a native {lugha} speaker{lahaja_txt}, "
+                    f"with no English accent: {maandishi}")
             muda_wa_juu = len(maandishi) / 5 + 8  # sekunde; zaidi ya hapo ni dalili AI imesoma maelekezo kwa sauti
             for rasimu in (kamili, fupi):
                 try:
                     pcm = self._gemini_tts(rasimu, sauti)
                     if pcm and (len(pcm) / (24000 * 2)) <= muda_wa_juu:
+                        self.injini_ya_sauti = "Gemini (lafudhi huongozwa na maelekezo)"
                         return self._pcm_kuwa_wav(pcm)
                 except Exception:
                     continue  # jaribu rasimu fupi, kisha OpenAI
 
-        # Hatua ya 2: OpenAI TTS kama akiba
+        # Hatua ya 2: OpenAI TTS kama akiba ya mwisho (sauti zake hazijazoea lugha za Afrika)
         if not self.openai_client:
             raise RuntimeError("Gemini imeshindwa na hakuna ufunguo wa OpenAI wa akiba.")
-        j = self.openai_client.audio.speech.create(
-            model="tts-1", voice="alloy", input=maandishi, response_format="wav",
-        )
+        maelekezo_oai = (f"Speak {lugha} as a native speaker{lahaja_txt}. Do not use an English accent. "
+                         f"Speak {kasi_maelezo}.")
+        try:
+            j = self.openai_client.audio.speech.create(
+                model="gpt-4o-mini-tts", voice="alloy", input=maandishi,
+                instructions=maelekezo_oai, response_format="wav",
+            )
+        except Exception:
+            j = self.openai_client.audio.speech.create(
+                model="tts-1", voice="alloy", input=maandishi, response_format="wav",
+            )
+        self.injini_ya_sauti = "OpenAI (akiba ya mwisho: lafudhi inaweza kuwa ya Kizungu)"
         return j.read() if hasattr(j, "read") else j.content
