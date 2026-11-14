@@ -2,10 +2,20 @@
 kanuni_ya_sarufi.py — Injini Kuu ya Sheria na Kanuni za Sarufi ya Kiswahili Sanifu (BAKITA).
 Inatumiwa na cerebral_cortex.py na app.py kwa ajili ya tafsiri za AI Lingual na uhakiki wa maandishi.
 
-Toleo 2.4 (Kanuni Kamili 1-16, Yambiwa, na Kanuni Maalum):
+Toleo 2.5 (Kanuni Kamili 1-16, Yambiwa, na Kanuni Maalum):
 - Imeunganisha sheria zote 16 za lugha kwenye MAELEKEZO_YA_LUGHA
 - Imeboresha GenericObjectConcordRule (Kanuni ya Yambiwa) na kurekebisha bug ya stem[0]
 - Imeongeza Kanuni L, M, N za mtindo, istilahi za kitiba, na ngeli I-ZI kwenye MkaguziSarufi
+
+Marekebisho ya 2.5 (kutokana na ukaguzi):
+- Kivumishi: viambishi halali pekee (alisema/kusema/anasema hazichukuliwi tena kama kivumishi)
+- Yambiwa: jozi za maneno zinapishana sasa (kitenzi katikati ya sentensi kinakamatwa)
+- Kanuni M2 (maambukizi magumu) haibadilishi 'magumu kutibu'; ISTILAHI si ya kiotomatiki tena
+- I-ZI wingi (nyumba zimejengwa) na wanyama wa I-ZI (ndege wamefika) havikamatwi kimakosa
+- Kanuni L inahifadhi herufi ndogo katikati ya sentensi ('pale')
+- Kanuni N inafanya kazi kwa vifungu vingi, si kimoja tu
+- Kichujio cha mizizi ya vitenzi hakina tena maingizo ya herufi moja/mbili
+- Kanuni mpya: ngeli ya mahali ('darasani yenye') na urudiaji wa maneno ('kubwa kubwa')
 """
 
 from __future__ import annotations
@@ -74,13 +84,13 @@ MAELEKEZO_YA_LUGHA = {
 @dataclass
 class Kosa:
     """Kosa moja lililopatikana kwenye sentensi."""
-    aina: str                    
-    neno: str                    
-    nafasi: int                  
-    urefu: int                   
-    ujumbe: str                  
+    aina: str
+    neno: str
+    nafasi: int
+    urefu: int
+    ujumbe: str
     mapendekezo: list[str] = field(default_factory=list)
-    chanzo: str = ""             
+    chanzo: str = ""
 
     def to_dict(self) -> dict:
         return asdict(self)
@@ -90,8 +100,8 @@ class Kosa:
 class MatokeoYaNgeli:
     """Matokeo ya utambuzi wa ngeli."""
     ngeli: Optional[str]
-    uhakika: float               
-    chanzo: str                  
+    uhakika: float
+    chanzo: str
 
 
 # ============================================================
@@ -263,7 +273,7 @@ class GenericObjectConcordRule:
 
         self.generic_applicative_regex = re.compile(
             r"^(?P<prefix>ku|kw|hatu|hawa|ham|ha|hu|si|ni|u|a|tu|m|wa|ki|vi|li|ya|i|zi)"
-            r"(?P<tense>ngali|ngeli|nge|na|li|ta|me|ka|ki)?"
+            r"(?P<tense>singali|singeli|singe|ngali|ngeli|nge|na|li|ta|me|ka|ki)?"
             r"(?P<rel>ye|o|lo|yo|cho|vyo|wo|zo|ko|po|mo)?"
             r"(?P<obj>mw|m|wa|ni|ku|tu|ji)?"
             r"(?P<stem>[a-z]{2,}?(?:li|le|i|e)a)$"
@@ -273,7 +283,8 @@ class GenericObjectConcordRule:
 
     def kagua(self, sentensi: str) -> List[Kosa]:
         makosa = []
-        for match in re.finditer(r"\b([a-zA-Z]+)\s+([a-zA-Z]+)\b", sentensi):
+        # Lookahead: jozi zinapishana, kwa hiyo kitenzi popote kwenye sentensi kinakaguliwa
+        for match in re.finditer(r"\b([a-zA-Z]+)(?=\s+([a-zA-Z]+)\b)", sentensi):
             kitenzi_asili = match.group(1)
             nomino_asili = match.group(2)
             kitenzi = kitenzi_asili.lower()
@@ -297,30 +308,33 @@ class GenericObjectConcordRule:
             rel = p["rel"] or ""
             stem = p["stem"]
 
+            nafasi = match.start(1)
+            urefu = match.end(2) - match.start(1)
+            neno_asili = sentensi[nafasi: nafasi + urefu]
+
             if nomino in self.watu_umoja:
-                # BUG ILIYOREKEBISHWA: Kukagua herufi ya kwanza ya stem (stem[0])
                 kiambishi = "mw" if stem and stem[0] in "aeiou" else "m"
                 pendekezo = f"{prefix}{tense}{rel}{kiambishi}{stem}"
-                if kitenzi_asili.isupper():
+                if kitenzi_asili[0].isupper():
                     pendekezo = pendekezo.capitalize()
                 makosa.append(Kosa(
                     aina="MOFOLOJIA",
-                    neno=f"{kitenzi_asili} {nomino_asili}",
-                    nafasi=match.start(),
-                    urefu=len(match.group(0)),
+                    neno=neno_asili,
+                    nafasi=nafasi,
+                    urefu=urefu,
                     ujumbe=f"Kitenzi '{kitenzi_asili}' kinapofuatiwa na '{nomino_asili}' kinakosa kiambishi cha mtendwa '-{kiambishi}-'.",
                     mapendekezo=[f"{pendekezo} {nomino_asili}"],
                     chanzo="Kanuni ya Yambiwa (Human Object Concord)"
                 ))
             elif nomino in self.watu_wingi:
                 pendekezo = f"{prefix}{tense}{rel}wa{stem}"
-                if kitenzi_asili.isupper():
+                if kitenzi_asili[0].isupper():
                     pendekezo = pendekezo.capitalize()
                 makosa.append(Kosa(
                     aina="MOFOLOJIA",
-                    neno=f"{kitenzi_asili} {nomino_asili}",
-                    nafasi=match.start(),
-                    urefu=len(match.group(0)),
+                    neno=neno_asili,
+                    nafasi=nafasi,
+                    urefu=urefu,
                     ujumbe=f"Kitenzi '{kitenzi_asili}' kinapofuatiwa na '{nomino_asili}' (wingi) kinakosa kiambishi cha mtendwa '-wa-'.",
                     mapendekezo=[f"{pendekezo} {nomino_asili}"],
                     chanzo="Kanuni ya Yambiwa (Plural Object Concord)"
@@ -333,6 +347,20 @@ class GenericObjectConcordRule:
 # MKAGUZI WA SARUFI
 # ============================================================
 
+def _pale_kwa_herufi(m: "re.Match") -> str:
+    """Kanuni L: huhifadhi herufi kubwa/ndogo ya 'Wakati' -> 'Pale'/'pale'."""
+    pale = "Pale" if m.group(0)[0].isupper() else "pale"
+    return f"{pale} {m.group(1)} {m.group(2)}"
+
+
+def _isinge_kwa_nomino(m: "re.Match") -> str:
+    """Kanuni N: '<nomino> [ya/za ...] hainge-X' -> '<nomino> [ya/za ...] isinge-X' (zisinge- kwa 'za')."""
+    nomino, kishazi, shina = m.group(1), m.group(2), m.group(3)
+    kiambishi = "zisinge" if kishazi and kishazi.lower().startswith("za") else "isinge"
+    kati = f" {kishazi}" if kishazi else ""
+    return f"{nomino}{kati} {kiambishi}{shina}"
+
+
 class MkaguziSarufi:
     """
     Hukagua sentensi kwa:
@@ -341,6 +369,7 @@ class MkaguziSarufi:
       - Uandishi (herufi kubwa, alama ya kituo)
       - Umoja wa kisintaksia wa sentensi
       - Kanuni maalum za mtindo, istilahi, na upatanisho wa I-ZI
+      - Ngeli ya mahali ('darasani yenye') na urudiaji wa maneno ('kubwa kubwa')
     """
 
     VIVUMISHI_MIZIZI = {
@@ -351,6 +380,31 @@ class MkaguziSarufi:
 
     MANENO_YENYE_MAANA_MBILI = {"kali", "pole", "tamu", "chungu", "zito"}
 
+    # Viambishi halali vya kivumishi. Neno kama 'alisema' (kiambishi 'alis') si kivumishi.
+    VIAMBISHI_VYA_VIVUMISHI = {"m", "mw", "wa", "w", "mi", "my", "ki", "ch",
+                               "vi", "vy", "ma", "n", "ny", "u", "ji", "j"}
+    # Maneno yanayoishia kama kivumishi lakini ni nomino
+    MANENO_YA_KURUKA = {"ukubwa", "wazee", "mzee"}
+
+    # Ngeli ya mahali: 'darasani yenye' -> 'darasa lenye'
+    NGELI_YENYE = {
+        "darasa": "lenye", "soko": "lenye", "shamba": "lenye", "jiji": "lenye",
+        "shule": "yenye", "nyumba": "yenye", "barabara": "yenye",
+        "kitabu": "chenye", "kijiji": "chenye", "mji": "wenye", "mkoa": "wenye",
+    }
+    # Nomino zinazoishia -ni lakini si maneno ya mahali ('kampuni yenye' ni sahihi)
+    NOMINO_ZENYE_NI = {"kampuni", "leseni", "televisheni", "benki", "taasisi",
+                       "akaunti", "nini", "ini", "jini", "kuni", "kiini"}
+    MARUDIO_HALALI = {"polepole", "kidogo", "sana", "mbali", "pole", "haraka", "mara"}
+
+    # Nomino ya karibu pekee ndiyo inayoaminika: 'Kampuni yenye wafanyakazi wengi imefungua'
+    # ina kiima 'Kampuni', si 'wafanyakazi'. Umbali mdogo hupunguza tahadhari za uongo.
+    UMBALI_KIVUMISHI = 2
+    UMBALI_KITENZI = 1
+
+    # Wanyama wa umbo la I-ZI wanaochukua upatanisho wa A-WA (sheria 7a)
+    WANYAMA_WA_I_ZI = {"nyuki", "nyati", "ndege", "samaki", "simba", "paka", "mbwa"}
+
     MAKOSA_YA_KIROBOTI = {
         "mimi ni baridi": "Tumia 'Nasikia baridi' au 'Nahisi baridi'",
         "mimi ni njaa": "Tumia 'Nina njaa'",
@@ -360,12 +414,12 @@ class MkaguziSarufi:
         "fanya maamuzi": "Tumia 'fanya uamuzi'",
     }
 
-    # Orodha ya Kanuni Maalum (Regex, Badala, Aina, Ujumbe, Chanzo)
+    # Orodha ya Kanuni Maalum (Regex, Badala (kamba au kazi), Aina, Ujumbe, Chanzo)
     KANUNI_MAALUM = [
         # L. 'Wakati [nomino] ana-po-' -> 'Pale [nomino] ana-po-'
         (
             re.compile(r"\bWakati\s+([a-z]+)\s+([a-z]*(?:na|li|taka)po[a-z]+)\b", re.I),
-            r"Pale \1 \2",
+            _pale_kwa_herufi,
             "MTINDO",
             "Kitenzi chenye '-po-' tayari kinaonyesha wakati. Tumia 'Pale' badala ya tafsiri sisisi 'Wakati'.",
             "Mtindo wa Kiswahili Sanifu"
@@ -378,9 +432,9 @@ class MkaguziSarufi:
             "Tafsiri sisisi ya 'expectant mothers'. Tumia msamiati wa kitiba 'akina mama wajawazito'.",
             "Istilahi za Tiba"
         ),
-        # M2. Maambukizi magumu
+        # M2. Maambukizi magumu (haigusi 'magumu kutibu', 'magumu kudhibiti')
         (
-            re.compile(r"\bmaambukizi\s+magumu\b(?!\s+kufahamika)", re.I),
+            re.compile(r"\bmaambukizi\s+magumu\b(?!\s+(?:kufahamika|kutibu|kutibika|kudhibiti|kuzuia))", re.I),
             "maambukizi magumu kufahamika",
             "ISTILAHI",
             "Kwa muktadha wa uchunguzi wa maabara ('complex infections'), tumia 'maambukizi magumu kufahamika'.",
@@ -388,10 +442,14 @@ class MkaguziSarufi:
         ),
         # N. Upatanisho wa Ngeli ya I-ZI kwenye Ukanushi wa Masharti
         (
-            re.compile(r"\b(kliniki|zahanati|hospitali|kampuni|serikali|taasisi|benki|shule)\s+ya\s+eneo\s+hilo\s+hainge([a-z]+)\b", re.I),
-            r"\1 ya eneo hilo isinge\2",
+            re.compile(
+                r"\b(kliniki|zahanati|hospitali|kampuni|serikali|taasisi|benki|shule|mamlaka)"
+                r"(?:\s+((?:ya|za)\s+[a-z]+(?:\s+hilo)?))?\s+hainge([a-z]+)\b",
+                re.I,
+            ),
+            _isinge_kwa_nomino,
             "NGELI",
-            "Nomino ya ngeli ya I-ZI inachukua ukanushi 'isinge-' badala ya 'hainge-'.",
+            "Nomino ya ngeli ya I-ZI inachukua ukanushi 'isinge-' (wingi: 'zisinge-') badala ya 'hainge-'.",
             "Upatanisho wa Ngeli I-ZI"
         ),
     ]
@@ -427,6 +485,8 @@ class MkaguziSarufi:
         makosa.extend(self._kagua_upatanisho_kiima_kitenzi(sentensi))
         makosa.extend(self.yambiwa.kagua(sentensi))
         makosa.extend(self._kagua_kanuni_maalum(sentensi))
+        makosa.extend(self._kagua_ngeli_mahali(sentensi))
+        makosa.extend(self._kagua_marudio(sentensi))
 
         makosa.sort(key=lambda k: k.nafasi)
         return makosa
@@ -437,7 +497,7 @@ class MkaguziSarufi:
             for m in muundo.finditer(sentensi):
                 neno_lililokosewa = m.group(0)
                 pendekezo = muundo.sub(badala, neno_lililokosewa)
-                
+
                 makosa.append(Kosa(
                     aina=aina,
                     neno=neno_lililokosewa,
@@ -447,6 +507,45 @@ class MkaguziSarufi:
                     mapendekezo=[pendekezo],
                     chanzo=chanzo
                 ))
+        return makosa
+
+    def _kagua_ngeli_mahali(self, sentensi: str) -> list[Kosa]:
+        """'darasani yenye' -> 'darasa lenye' (neno la mahali halichukui yenye/lenye/zenye)."""
+        makosa: list[Kosa] = []
+        for m in re.finditer(r"\b(\w+?)ni\s+(yenye|zenye|lenye|wenye|chenye|vyenye)\b", sentensi, re.I):
+            msingi = m.group(1).lower()
+            if f"{msingi}ni" in self.NOMINO_ZENYE_NI:
+                continue
+            baada = f"{msingi} {self.NGELI_YENYE.get(msingi, 'lenye')}"
+            mbadala = f"{msingi}ni kwenye"
+            if m.group(0)[0].isupper():
+                baada, mbadala = baada.capitalize(), mbadala.capitalize()
+            makosa.append(Kosa(
+                aina="NGELI",
+                neno=m.group(0),
+                nafasi=m.start(),
+                urefu=len(m.group(0)),
+                ujumbe=f"'{msingi}ni' ni neno la mahali (PA-KU-MU); halichukui '{m.group(2)}'.",
+                mapendekezo=[baada, mbadala],
+                chanzo="Ngeli ya mahali",
+            ))
+        return makosa
+
+    def _kagua_marudio(self, sentensi: str) -> list[Kosa]:
+        """'kubwa kubwa' -> 'kubwa', isipokuwa marudio halali (polepole, kidogo kidogo)."""
+        makosa: list[Kosa] = []
+        for m in re.finditer(r"\b(\w+)(?:\s+\1\b)+", sentensi, re.I):
+            if m.group(1).lower() in self.MARUDIO_HALALI:
+                continue
+            makosa.append(Kosa(
+                aina="MTINDO",
+                neno=m.group(0),
+                nafasi=m.start(),
+                urefu=len(m.group(0)),
+                ujumbe=f"Neno '{m.group(1)}' limerudiwa bila sababu.",
+                mapendekezo=[m.group(1)],
+                chanzo="Urudiaji",
+            ))
         return makosa
 
     def _kagua_uandishi(self, sentensi: str) -> list[Kosa]:
@@ -460,7 +559,7 @@ class MkaguziSarufi:
                 nafasi=0,
                 urefu=1,
                 ujumbe="Sentensi lazima ianze na herufi kubwa.",
-                mapendekezo=[stripped[0].upper() + stripped[1:50]],
+                mapendekezo=[stripped[0].upper() + stripped[1:]],
             ))
 
         mwisho = stripped.rstrip("\"'\u201d\u2019\u00bb)]}")
@@ -510,8 +609,13 @@ class MkaguziSarufi:
                 continue
 
             kiambishi = t_lower[: -len(kivumishi_mzizi)]
+
+            # Kiambishi lazima kiwe halali cha kivumishi; vinginevyo ni kitenzi/nomino (alisema, ukubwa)
+            if kiambishi not in self.VIAMBISHI_VYA_VIVUMISHI or t_lower in self.MANENO_YA_KURUKA:
+                continue
+
             nomino, ngeli = None, None
-            for j in range(i - 1, -1, -1):
+            for j in range(i - 1, max(i - 1 - self.UMBALI_KIVUMISHI, -1), -1):
                 if self._kuna_mpaka(sentensi, tokens[j].end(), tokens[j + 1].start()):
                     break
                 ngeli_j = self._ni_nomino_ya_kuaminika(tokens[j].group(0), 0.5)
@@ -539,10 +643,14 @@ class MkaguziSarufi:
                 ))
         return makosa
 
+    # Mizizi ya vitenzi (maingizo ya herufi moja/mbili yameondolewa ili kupunguza tahadhari za uongo)
+    _MIZIZI_VITENZI = {"kuj", "fany", "pend", "sik", "end", "let", "sem", "nun", "fung", "kal",
+                       "chez", "imb", "andik", "soma", "nyw", "taka", "wez", "fik", "jeng"}
+
     def _kagua_upatanisho_kiima_kitenzi(self, sentensi: str) -> list[Kosa]:
         makosa: list[Kosa] = []
         tokens = list(re.finditer(r"\b[\w']+\b", sentensi))
-        mizizi_vitenzi = {"kuj", "fany", "pend", "sik", "end", "let", "it", "sem", "nun", "uz", "fung", "kal", "chez", "imb", "andik", "soma", "nyw", "la", "f", "w", "ja", "taka", "wez", "ju", "on", "sik"}
+        mizizi_vitenzi = self._MIZIZI_VITENZI
 
         for i, m in enumerate(tokens):
             t_lower = m.group(0).lower()
@@ -573,7 +681,7 @@ class MkaguziSarufi:
                 continue
 
             nomino, ngeli = None, None
-            for j in range(i - 1, -1, -1):
+            for j in range(i - 1, max(i - 1 - self.UMBALI_KITENZI, -1), -1):
                 if self._kuna_mpaka(sentensi, tokens[j].end(), tokens[j + 1].start()):
                     break
                 ngeli_j = self._ni_nomino_ya_kuaminika(tokens[j].group(0), 0.7)
@@ -586,7 +694,13 @@ class MkaguziSarufi:
                 continue
 
             sheria = self.kitambuzi.ngeli_matrix[ngeli]
-            if sc not in sheria["verb_pos"] and sc not in sheria["verb_neg"]:
+            sc_halali = set(sheria["verb_pos"]) | set(sheria["verb_neg"])
+            if ngeli.startswith("I-ZI"):
+                # Nomino za I-ZI zina umbo moja kwa umoja na wingi
+                sc_halali |= {"i", "zi", "hai", "hazi"}
+                if nomino.lower() in self.WANYAMA_WA_I_ZI:
+                    sc_halali |= {"a", "wa", "ha", "hawa", "yu", "hayu"}
+            if sc not in sc_halali:
                 makosa.append(Kosa(
                     aina="NGELI",
                     neno=m.group(0),
@@ -646,20 +760,31 @@ class KanuniZaSarufiKiswahili:
         iliyorekebishwa = sentensi
         mabadiliko = []
 
-        makosa_ya_kurekebisha = sorted(
-            [k for k in matokeo["makosa"] if k["aina"] in ("NGELI", "MOFOLOJIA", "MTINDO", "ISTILAHI") and k["mapendekezo"]],
-            key=lambda k: k["nafasi"],
-            reverse=True,
-        )
-        mwisho_wa_awali = len(sentensi) + 1
-        for k in makosa_ya_kurekebisha:
-            n, u = k["nafasi"], k["urefu"]
-            if n + u > mwisho_wa_awali:
-                continue
-            pendekezo = k["mapendekezo"][0]
-            iliyorekebishwa = iliyorekebishwa[:n] + pendekezo + iliyorekebishwa[n + u:]
-            mabadiliko.append({"kutoka": k["neno"], "kwenda": pendekezo})
-            mwisho_wa_awali = n
+        # ISTILAHI haijumuishwi: ni pendekezo tu, si la kiotomatiki (linaweza kubadilisha maana).
+        # Marekebisho yanayopishana: lile linaloanza mapema (na refu zaidi) hupewa kipaumbele;
+        # mengine hushughulikiwa awamu inayofuata, baada ya maandishi kubadilika.
+        aina_za_kurekebisha = ("NGELI", "MOFOLOJIA", "MTINDO")
+        for _awamu in range(3):
+            makosa_ya_awamu = self.kagua_sentensi_nzima(iliyorekebishwa)["makosa"]
+            kandidati = sorted(
+                [k for k in makosa_ya_awamu if k["aina"] in aina_za_kurekebisha and k["mapendekezo"]],
+                key=lambda k: (k["nafasi"], -k["urefu"]),
+            )
+            chaguo, mwisho_wa_awali = [], 0
+            for k in kandidati:
+                if k["nafasi"] >= mwisho_wa_awali:
+                    chaguo.append(k)
+                    mwisho_wa_awali = k["nafasi"] + k["urefu"]
+            if not chaguo:
+                break
+            kabla = iliyorekebishwa
+            for k in reversed(chaguo):
+                n, u = k["nafasi"], k["urefu"]
+                pendekezo = k["mapendekezo"][0]
+                iliyorekebishwa = iliyorekebishwa[:n] + pendekezo + iliyorekebishwa[n + u:]
+                mabadiliko.append({"kutoka": k["neno"], "kwenda": pendekezo})
+            if iliyorekebishwa == kabla:
+                break
 
         if any(k["aina"] == "ALAMA" for k in matokeo["makosa"]):
             t = iliyorekebishwa.strip()
