@@ -76,6 +76,49 @@ MAELEKEZO_YA_LUGHA = {
     "Setswana": "Write in standard Setswana as used in Botswana (Tswana orthography).",
 }
 
+# Kanuni zinazotumika kwa jozi maalum ya lugha (chanzo, lengwa), majina yakiwa herufi ndogo
+MAELEKEZO_YA_JOZI = {
+    ("kiingereza", "kiswahili"): (
+        "ENGLISH-TO-SWAHILI TRANSLATION RULES: "
+        "1) VERB PARALLELISM: Maintain consistent tense markers across lists of actions in a sentence. "
+        "If the first verb uses the habitual tense ('hu-'), all subsequent parallel verbs must also use 'hu-' "
+        "(e.g., 'hujenga uaminifu, huhamasisha ubunifu, na huhakikisha ukuaji', NOT 'hujenga... kuhamasisha...'). "
+        "2) NATURAL IDIOMS: Translate English idioms and legal/business expressions by their contextual meaning, "
+        "never word-for-word (e.g., 'sign on the dotted line' -> 'kutia saini mkataba rasmi', NOT 'mstari wa nukta'). "
+        "3) GERUND (KU- CLASS) AGREEMENT: When a sentence starts with a verbal noun (e.g., 'Kupuuza...'), ensure all "
+        "dependent verbs in the sentence retain the 'ku-' prefix ('kunaweza'), regardless of intermediate nouns. "
+        "4) DOMAIN-SPECIFIC VOCABULARY: Use precise professional Swahili terms: translate 'productivity' in workplaces "
+        "as 'tija', 'trust' as 'uaminifu', 'share goals' as 'shirikisha malengo', and 'advanced infections' as "
+        "'maambukizi yaliyokwisha komaa'. "
+        "5) SPELLING & PUNCTUATION: Ensure standard spelling ('mhimili', not 'muhimili') and always end the final "
+        "sentence with a proper period (.)."
+    ),
+}
+
+_MAJINA_MBADALA = {"english": "kiingereza", "swahili": "kiswahili"}
+
+
+def _jina_la_msingi(lugha: str) -> str:
+    """'Kiingereza (English)' -> 'kiingereza'; 'English' -> 'kiingereza'."""
+    j = re.sub(r"\s*\(.*?\)", "", lugha or "").strip().lower()
+    return _MAJINA_MBADALA.get(j, j)
+
+
+def ni_jozi_ya_kiingereza_kiswahili(lugha_chanzo: str, lugha_lengwa: str = "Kiswahili") -> bool:
+    return (_jina_la_msingi(lugha_chanzo), _jina_la_msingi(lugha_lengwa)) == ("kiingereza", "kiswahili")
+
+
+def maelekezo_ya_jozi(lugha_chanzo: str, lugha_lengwa: str) -> str:
+    """Kanuni za jozi hiyo pekee (mfano Kiingereza -> Kiswahili); tupu kama hakuna."""
+    return MAELEKEZO_YA_JOZI.get((_jina_la_msingi(lugha_chanzo), _jina_la_msingi(lugha_lengwa)), "")
+
+
+def maelekezo_ya_tafsiri(lugha_chanzo: str, lugha_lengwa: str) -> str:
+    """Kanuni za lugha lengwa (MAELEKEZO_YA_LUGHA) pamoja na kanuni za jozi. Itumie kwenye mtafsiri wako."""
+    msingi = next((v for k, v in MAELEKEZO_YA_LUGHA.items()
+                   if _jina_la_msingi(k) == _jina_la_msingi(lugha_lengwa)), "")
+    return (msingi + " " + maelekezo_ya_jozi(lugha_chanzo, lugha_lengwa)).strip()
+
 
 # ============================================================
 # DATA CLASSES
@@ -347,6 +390,44 @@ class GenericObjectConcordRule:
 # MKAGUZI WA SARUFI
 # ============================================================
 
+# Tahajia: makosa ya kawaida -> sahihi
+MAKOSA_YA_TAHAJIA = {"muhimili": "mhimili"}
+
+# Msamiati wa kitaaluma Kiingereza -> Kiswahili. Hukaguliwa tu kama maandishi ya Kiingereza yana 'chanzo'.
+# 'makosa': (muundo wa tafsiri isiyo sahihi, mbadala). Mbadala unaweza kutumia \g<0> kwa neno lililopatikana.
+MSAMIATI_WA_KIINGEREZA = [
+    {"jina": "productivity -> tija", "chanzo": r"\bproductivity\b",
+     "makosa": [(r"\buzalishaji\b", "tija")],
+     "ujumbe": "Kwa mahali pa kazi, 'productivity' hutafsiriwa 'tija', si 'uzalishaji'."},
+    {"jina": "trust -> uaminifu", "chanzo": r"\btrust\b",
+     "makosa": [(r"\bimani\b", "uaminifu")],
+     "ujumbe": "'Trust' hutafsiriwa 'uaminifu', si 'imani'."},
+    {"jina": "share goals -> shirikisha malengo", "chanzo": r"\bshar(?:e|es|ed|ing)\b[^.!?]{0,30}\bgoals?\b",
+     "makosa": [(r"\b(?:[a-z]{1,3}(?:na|li|ta|me|ki|ka)(?:po|o|ye|yo|lo|cho)?|ku|hu)shiriki"
+                 r"(?=\s+(?:\w+\s+)?malengo\b)", r"\g<0>sha")],
+     "ujumbe": "'Share goals' hutafsiriwa 'shirikisha malengo' ('shiriki' ni kujiunga, si kuwapa wengine)."},
+    {"jina": "advanced infections", "chanzo": r"\badvanced\s+infections?\b",
+     "makosa": [(r"\bmaambukizi\s+(?:ya\s+(?:hali|hatua)\s+ya\s+juu|ya\s+juu|yaliyoendelea|makali)\b",
+                 "maambukizi yaliyokwisha komaa")],
+     "ujumbe": "'Advanced infections' hutafsiriwa 'maambukizi yaliyokwisha komaa'."},
+]
+
+
+def _tumia_makosa(maandishi: str, makosa: list) -> tuple[str, list]:
+    """Hutumia pendekezo la kwanza la kila kosa lisilopishana na jingine. Hurudisha (maandishi, mabadiliko)."""
+    safi, mwisho = [], 0
+    for k in sorted(makosa, key=lambda x: (x.nafasi, -x.urefu)):
+        if k.mapendekezo and k.nafasi >= mwisho and maandishi[k.nafasi:k.nafasi + k.urefu] == k.neno:
+            safi.append(k)
+            mwisho = k.nafasi + k.urefu
+    mabadiliko = []
+    for k in reversed(safi):
+        maandishi = maandishi[:k.nafasi] + k.mapendekezo[0] + maandishi[k.nafasi + k.urefu:]
+        mabadiliko.append({"kabla": k.neno, "baada": k.mapendekezo[0], "aina": k.aina, "sababu": k.ujumbe})
+    mabadiliko.reverse()
+    return maandishi, mabadiliko
+
+
 def _pale_kwa_herufi(m: "re.Match") -> str:
     """Kanuni L: huhifadhi herufi kubwa/ndogo ya 'Wakati' -> 'Pale'/'pale'."""
     pale = "Pale" if m.group(0)[0].isupper() else "pale"
@@ -412,6 +493,7 @@ class MkaguziSarufi:
         "hata ingawa": "Tumia neno moja tu: 'Ingawa' au 'Ijapokuwa'",
         "walikataa kukata tamaa": "Epuka urudiaji wa mzizi; tumia 'hawakukata tamaa' au 'walikataa kusalimu amri'",
         "fanya maamuzi": "Tumia 'fanya uamuzi'",
+        "mstari wa nukta": "Tafsiri nahau kwa maana yake: 'kutia saini mkataba rasmi' (si neno kwa neno)",
     }
 
     # Orodha ya Kanuni Maalum (Regex, Badala (kamba au kazi), Aina, Ujumbe, Chanzo)
@@ -487,6 +569,9 @@ class MkaguziSarufi:
         makosa.extend(self._kagua_kanuni_maalum(sentensi))
         makosa.extend(self._kagua_ngeli_mahali(sentensi))
         makosa.extend(self._kagua_marudio(sentensi))
+        makosa.extend(self._kagua_usambamba_wa_vitenzi(sentensi))
+        makosa.extend(self._kagua_usawa_wa_ku(sentensi))
+        makosa.extend(self._kagua_tahajia(sentensi))
 
         makosa.sort(key=lambda k: k.nafasi)
         return makosa
@@ -546,6 +631,87 @@ class MkaguziSarufi:
                 mapendekezo=[m.group(1)],
                 chanzo="Urudiaji",
             ))
+        return makosa
+
+    # Maneno yanayoanza na hu-/ku- lakini si vitenzi vya hali ya kawaida au vya kuendelea
+    _SI_VITENZI_VYA_HU = {"huduma", "hukumu", "huzuni", "huruma", "huko", "huku", "huyu", "hujambo", "hudhuria"}
+    _SI_VITENZI_VYA_KU = {"kuhusu", "kutoka", "kutokana", "kulingana", "kuliko", "kupitia", "kuanzia",
+                          "kuelekea", "kufuatia", "kuhusiana"}
+    _VITENZI_VYA_KIIMA_CHA_KU = ("weza|leta|sababisha|changia|athiri|ongeza|punguza|hatarisha|zuia|"
+                                 "saidia|ruhusu|chelewesha")
+
+    def _kagua_usambamba_wa_vitenzi(self, s: str) -> list[Kosa]:
+        """Kanuni T1: 'hujenga imani, kuhamasisha ubunifu, na kuhakikisha ukuaji' -> 'huhamasisha', 'huhakikisha'."""
+        makosa: list[Kosa] = []
+        for sen in re.finditer(r"[^.!?\n]+", s):
+            t, msingi = sen.group(0), sen.start()
+            tokens = list(re.finditer(r"[^\W\d_]+", t))
+            for i, tok in enumerate(tokens):
+                w = tok.group(0).lower()
+                if not w.startswith("ku") or len(w) < 6 or w in self._SI_VITENZI_VYA_KU:
+                    continue
+                kabla_ya = t[:tok.start()].rstrip()
+                if not (kabla_ya.endswith(",") or re.search(r",\s*na$", kabla_ya)):
+                    continue                      # lazima aje baada ya mkato (au ', na') kwenye orodha
+                j = next((k for k in range(i - 1, -1, -1)
+                          if re.fullmatch(r"hu[a-z]{3,}", tokens[k].group(0).lower())
+                          and tokens[k].group(0).lower() not in self._SI_VITENZI_VYA_HU), None)
+                if j is None:
+                    continue
+                if j + 1 < i and tokens[j + 1].group(0).lower().startswith("ku"):
+                    continue                      # 'hupenda kusoma, kuandika': ku- ni shamirisho, si usambamba
+                makosa.append(Kosa(
+                    aina="USAMBAMBA", neno=tok.group(0), nafasi=msingi + tok.start(), urefu=len(tok.group(0)),
+                    ujumbe=f"Kitenzi '{tokens[j].group(0)}' kinatumia 'hu-', kwa hiyo vitenzi sambamba vinavyofuata "
+                           f"vitumie 'hu-' pia ('{tok.group(0)}' -> 'hu{tok.group(0)[2:]}').",
+                    mapendekezo=["hu" + tok.group(0)[2:]], chanzo="Usambamba wa vitenzi"))
+        return makosa
+
+    def _kagua_usawa_wa_ku(self, s: str) -> list[Kosa]:
+        """Kanuni T3: 'Kupuuza dalili inaweza kusababisha...' -> 'kunaweza' (kiima cha ku- kinabaki ku-)."""
+        makosa: list[Kosa] = []
+        for sen in re.finditer(r"[^.!?\n]+", s):
+            t, msingi = sen.group(0), sen.start()
+            m0 = re.match(r"\s*(Ku[a-z]{3,})\b", t)
+            if not m0 or m0.group(1).lower() in self._SI_VITENZI_VYA_KU:
+                continue
+            baada = t[m0.end():]
+            eneo = baada.split(",")[0]            # mkato huanza kishazi kipya
+            m = re.search(rf"\b(?:i|u|li|ya|a|zi|wa|ki|vi)(na|ta|me|li)({self._VITENZI_VYA_KIIMA_CHA_KU})\b", eneo)
+            if m:
+                makosa.append(Kosa(
+                    aina="USAMBAMBA", neno=m.group(0), nafasi=msingi + m0.end() + m.start(), urefu=len(m.group(0)),
+                    ujumbe=f"Sentensi inaanza na kitenzi jina '{m0.group(1)}', kwa hiyo kitenzi tegemezi kibaki na 'ku-'.",
+                    mapendekezo=["ku" + m.group(1) + m.group(2)], chanzo="Usawa wa ku-"))
+        return makosa
+
+    def _kagua_tahajia(self, s: str) -> list[Kosa]:
+        """Kanuni T5: 'muhimili' -> 'mhimili' n.k."""
+        makosa: list[Kosa] = []
+        for kosa_lake, sahihi in MAKOSA_YA_TAHAJIA.items():
+            for m in re.finditer(rf"\b{re.escape(kosa_lake)}\b", s, re.I):
+                badala = sahihi[0].upper() + sahihi[1:] if m.group(0)[0].isupper() else sahihi
+                makosa.append(Kosa(
+                    aina="TAHAJIA", neno=m.group(0), nafasi=m.start(), urefu=len(m.group(0)),
+                    ujumbe=f"Tahajia sahihi ni '{sahihi}', si '{kosa_lake}'.",
+                    mapendekezo=[badala], chanzo="Tahajia"))
+        return makosa
+
+    def kagua_msamiati(self, chanzo: str, tafsiri: str) -> list[Kosa]:
+        """Kanuni T4: msamiati wa kitaaluma. Unahitaji maandishi ya Kiingereza ya chanzo."""
+        makosa: list[Kosa] = []
+        for ingizo in MSAMIATI_WA_KIINGEREZA:
+            if not re.search(ingizo["chanzo"], chanzo or "", re.I):
+                continue
+            for muundo, sahihi in ingizo["makosa"]:
+                for m in re.finditer(muundo, tafsiri, re.I):
+                    badala = m.expand(sahihi)
+                    if m.group(0)[:1].isupper():
+                        badala = badala[:1].upper() + badala[1:]
+                    makosa.append(Kosa(
+                        aina="MSAMIATI", neno=m.group(0), nafasi=m.start(), urefu=len(m.group(0)),
+                        ujumbe=ingizo["ujumbe"], mapendekezo=[badala],
+                        chanzo=f"Msamiati wa kitaaluma ({ingizo['jina']})"))
         return makosa
 
     def _kagua_uandishi(self, sentensi: str) -> list[Kosa]:
@@ -755,6 +921,36 @@ class KanuniZaSarufiKiswahili:
             "mapendekezo": [m for k in makosa for m in k.mapendekezo],
         }
 
+    def kagua_tafsiri(self, lugha_chanzo: str, chanzo: str, tafsiri: str) -> list:
+        """Makosa ya msamiati wa kitaaluma kwenye tafsiri ya Kiingereza -> Kiswahili (inahitaji maandishi ya chanzo)."""
+        if not ni_jozi_ya_kiingereza_kiswahili(lugha_chanzo, "Kiswahili"):
+            return []
+        return [k.to_dict() for k in self._kaguzi.kagua_msamiati(chanzo, tafsiri)]
+
+    def rekebisha_tafsiri(self, lugha_chanzo: str, chanzo: str, tafsiri: str, kituo_cha_mwisho: bool = True) -> dict:
+        """
+        Marekebisho ya kuaminika ya kanuni za tafsiri: tahajia, usambamba wa vitenzi (hu-), usawa wa ku-,
+        msamiati wa kitaaluma (Kiingereza -> Kiswahili) na nukta ya mwisho. Hurudisha {'maandishi', 'mabadiliko'}.
+        """
+        jozi = ni_jozi_ya_kiingereza_kiswahili(lugha_chanzo, "Kiswahili")
+        maandishi, mabadiliko = tafsiri, []
+        for _ in range(3):
+            makosa = [k for k in self._kaguzi.kagua(maandishi, kagua_alama=False)
+                      if k.aina in ("TAHAJIA", "USAMBAMBA")]
+            if jozi and chanzo:
+                makosa += self._kaguzi.kagua_msamiati(chanzo, maandishi)
+            mpya, badiliko = _tumia_makosa(maandishi, makosa)
+            if mpya == maandishi:
+                break
+            maandishi, mabadiliko = mpya, mabadiliko + badiliko
+        if jozi and kituo_cha_mwisho and len(maandishi.split()) >= 2:
+            t = maandishi.rstrip()
+            if t and t[-1].isalnum():
+                maandishi = t + "." + maandishi[len(t):]
+                mabadiliko.append({"kabla": t[-1], "baada": t[-1] + ".", "aina": "ALAMA",
+                                   "sababu": "Sentensi ya mwisho lazima iishie na nukta (.)."})
+        return {"maandishi": maandishi, "mabadiliko": mabadiliko}
+
     def kagua_na_kurekebisha(self, sentensi: str) -> dict:
         matokeo = self.kagua_sentensi_nzima(sentensi)
         iliyorekebishwa = sentensi
@@ -763,7 +959,7 @@ class KanuniZaSarufiKiswahili:
         # ISTILAHI haijumuishwi: ni pendekezo tu, si la kiotomatiki (linaweza kubadilisha maana).
         # Marekebisho yanayopishana: lile linaloanza mapema (na refu zaidi) hupewa kipaumbele;
         # mengine hushughulikiwa awamu inayofuata, baada ya maandishi kubadilika.
-        aina_za_kurekebisha = ("NGELI", "MOFOLOJIA", "MTINDO")
+        aina_za_kurekebisha = ("NGELI", "MOFOLOJIA", "MTINDO", "TAHAJIA", "USAMBAMBA")
         for _awamu in range(3):
             makosa_ya_awamu = self.kagua_sentensi_nzima(iliyorekebishwa)["makosa"]
             kandidati = sorted(
