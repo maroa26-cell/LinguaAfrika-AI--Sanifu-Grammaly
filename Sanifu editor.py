@@ -1,3 +1,4 @@
+
 """
 sanifu_editor.py - Mhariri wa AI Lingual Africa: lugha yoyote -> lugha yoyote
 
@@ -101,6 +102,11 @@ try:
     )
 except Exception:  # ImportError au hitilafu nyingine ya kupakia
     _KANUNI = None
+
+try:  # kanuni za jozi ya lugha (mf. Kiingereza -> Kiswahili)
+    from kanuni_ya_sarufi import maelekezo_ya_jozi as _maelekezo_ya_jozi
+except Exception:
+    _maelekezo_ya_jozi = None
 
 
 # ----------------------------------------------------------------------------
@@ -380,7 +386,9 @@ def jenga_mfumo(lugha_chanzo=KISWAHILI, lugha_lengwa=KISWAHILI, lugha_ya_maelezo
             "kisha tumia kanuni zote zilizo hapa chini kwenye tafsiri hiyo. "
             "Kwenye 'marekebisho' taja maamuzi muhimu ya tafsiri na istilahi.\n"
         )
-        return utangulizi + SANIFU_SYSTEM_PROMPT
+        jozi = _maelekezo_ya_jozi(chanzo["jina"], lengwa["jina"]) if _maelekezo_ya_jozi else ""
+        ziada = ("\n\nKANUNI ZA TAFSIRI ZA JOZI HII (ZINALAZIMA):\n" + jozi) if jozi else ""
+        return utangulizi + SANIFU_SYSTEM_PROMPT + ziada
     return _jaza(MFUMO_WA_JUMLA, chanzo["kiingereza"], lengwa["kiingereza"],
                  lengwa["mwongozo"], pata_lugha(lugha_ya_maelezo)["kiingereza"])
 
@@ -510,6 +518,13 @@ def _makosa_yaliyobaki(maandishi, asili=None, lugha_chanzo=KISWAHILI, lugha_leng
                  + kagua_kwa_kanuni_za_bakita(maandishi))
     if asili is not None:
         baki += _makosa_ya_jumla(asili, maandishi, lugha_chanzo, lugha_lengwa)
+        if ni_kiswahili(lugha_lengwa) and _KANUNI is not None and hasattr(_KANUNI, "kagua_tafsiri"):
+            try:
+                baki += [{"kabla": k["neno"], "baada": (k["mapendekezo"] or [""])[0],
+                          "aina": k["aina"], "sababu": k["ujumbe"]}
+                         for k in _KANUNI.kagua_tafsiri(lugha_chanzo, asili, maandishi)]
+            except Exception:
+                pass
     return baki + list(makosa_ya_ai or [])
 
 
@@ -577,6 +592,14 @@ def _hariri_mara_moja(maandishi, asili, mfumo, maoni="", lugha_chanzo=KISWAHILI,
         sahihi = ondoa_mkato_kabla_ya_ili(
             ondoa_marudio(tumia_marekebisho_ya_ngeli(tumia_marekebisho_ya_nukta_mkato(sahihi)))
         )
+        # Kanuni za tafsiri: tahajia, usambamba wa hu-, usawa wa ku-, msamiati (Kiingereza), nukta ya mwisho
+        if _KANUNI is not None and hasattr(_KANUNI, "rekebisha_tafsiri"):
+            try:
+                r = _KANUNI.rekebisha_tafsiri(lugha_chanzo, asili, sahihi)
+                sahihi = r["maandishi"]
+                marekebisho += r["mabadiliko"]
+            except Exception:
+                pass
     return {"maandishi_sahihi": sahihi, "marekebisho": marekebisho,
             "mtoa_huduma": mtoa_aliyetumika, "tahadhari": tahadhari}
 
