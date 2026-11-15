@@ -1,4 +1,3 @@
-
 """
 mhariri_pro.py - Kanuni zako za Kiswahili kwenye njia tatu:
 
@@ -298,6 +297,21 @@ def tafsiri_kutoka_kiswahili(maandishi, lugha_lengwa, kamusi=None, **vigezo):
     """Kiswahili -> lugha nyingine. Chanzo kinasafishwa kwanza kwa kanuni zako kabla ya kutafsiriwa."""
     return se.hariri_kwa_ubora(maandishi, kamusi=kamusi, lugha_chanzo="Kiswahili",
                                lugha_lengwa=lugha_lengwa, **vigezo)
+
+
+def tafsiri_na_hariri_bure(maandishi, lugha_chanzo="Kiingereza", lugha_lengwa="Kiswahili", kamusi=None, **vigezo):
+    """
+    Mpangilio wa bure: Groq anatafsiri (rasimu ya haraka), Gemini anahariri kwa kanuni kali; hakuna OpenAI.
+    Kwa api_server.py: `tafsiri_na_hariri_bure(maandishi)["maandishi_sahihi"]`.
+    """
+    return se.hariri_kwa_ubora(maandishi, kamusi=kamusi, lugha_chanzo=lugha_chanzo,
+                               lugha_lengwa=lugha_lengwa, hali="bure", **vigezo)
+
+
+def hariri_kwa_gemini_pekee(maandishi, lugha_chanzo="Kiswahili", lugha_lengwa="Kiswahili", kamusi=None, **vigezo):
+    """Gemini pekee, kwa ukaguzi wa pili wa lazima (Two-Pass Verification). Hakuna Groq wala OpenAI."""
+    return se.hariri_kwa_ubora(maandishi, kamusi=kamusi, lugha_chanzo=lugha_chanzo,
+                               lugha_lengwa=lugha_lengwa, hali="gemini_pekee", **vigezo)
 
 
 def rekebisha_tafsiri_ya_kiswahili(tafsiri, kamusi=None, lugha_chanzo=None, chanzo=None):
