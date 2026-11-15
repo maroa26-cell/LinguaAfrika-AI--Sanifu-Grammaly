@@ -432,6 +432,85 @@ str_platform.sidebar.link_button(
     key="admin_dashboard_btn_v4"
 )
 
+# ------------------------------------------------------------------ #
+#  TAFSIRI: ukaguzi wa makosa KABLA ya kutafsiri
+# ------------------------------------------------------------------ #
+def _futa_pc():
+    for k in [k for k in list(str_platform.session_state.keys()) if str(k).startswith("pc_")]:
+        del str_platform.session_state[k]
+
+
+def _fanya_tafsiri(maandishi_t, lugha_chanzo, lugha_lengwa, muktadha_chaguo):
+    """Tafsiri halisi: hukata maneno kwenye salio na kuhifadhi matokeo kwa ajili ya kuonyeshwa."""
+    maneno = hesabu_maneno(maandishi_t)
+    baki = max(0, 600 - str_platform.session_state["freemium_words_used"])
+    if maneno > baki:
+        str_platform.warning(
+            f"Maandishi yana maneno {maneno}, lakini salio lako ni {baki}. "
+            "Punguza maandishi au fungua Lango la Mteja."
+        )
+        return
+    with str_platform.spinner("Processing..."):
+        try:
+            res = ubongo.chakata_tafsiri_pacha(maandishi_t, lugha_chanzo, lugha_lengwa, muktadha_chaguo)
+        except Exception as e:
+            res = None
+            onyesha_hitilafu("kutafsiri", e)
+    if res:
+        str_platform.session_state["freemium_words_used"] += maneno
+        str_platform.session_state["tafsiri_ya_mwisho"] = {
+            "chanzo": lugha_chanzo, "lengo": lugha_lengwa,
+            "asili": maandishi_t, "tafsiri": res,
+        }
+        str_platform.session_state.pop("tafsiri_sauti_lengo", None)
+        str_platform.session_state.pop("tafsiri_sauti_asili", None)
+        onyesha_rada()
+
+
+def _pc_endelea(sahihisha):
+    """Kitufe cha ukaguzi wa awali (callback): endelea kutafsiri, kwa marekebisho au bila."""
+    pc = str_platform.session_state.pop("tafsiri_precheck", None)
+    if not pc:
+        return
+    text = pc["text"]
+    if sahihisha:
+        chaguliwa = {x["id"] for x in pc["issues"] if str_platform.session_state.get(f"pc_{x['id']}", True)}
+        text = mhariri.tumia_marekebisho(text, pc["issues"], chaguliwa)[:MAX_CHARS]
+        str_platform.session_state["trans_v14_clean_box"] = text
+    str_platform.session_state["tafsiri_inasubiri"] = {
+        "text": text, "chanzo": pc["chanzo"], "lengo": pc["lengo"], "muktadha": pc["muktadha"]}
+    _futa_pc()
+
+
+def _pc_ghairi():
+    str_platform.session_state.pop("tafsiri_precheck", None)
+    _futa_pc()
+
+
+def _onyesha_precheck(pc):
+    """Makosa yaliyopatikana kabla ya kutafsiri: mtumiaji achague kusahihisha au kuendelea hivyo hivyo."""
+    str_platform.markdown("---")
+    str_platform.warning(
+        f"Nimeona makosa {len(pc['issues'])} kwenye maandishi yako ya {pc['chanzo']} kabla ya kutafsiri. "
+        "Tafsiri haijaanza, na hakuna maneno yaliyokatwa bado."
+    )
+    if pc.get("onyo"):
+        str_platform.caption(f"\u26A0\uFE0F {pc['onyo']}")
+    if not pc["ai"]:
+        str_platform.info("Ukaguzi wa msingi tu (AI haikupatikana kwa sasa).")
+    str_platform.markdown(mhariri.html_ya_kuonyesha(pc["text"], pc["issues"], rtl=(pc.get("mwelekeo") == "rtl")),
+                          unsafe_allow_html=True)
+    str_platform.markdown("**Chagua marekebisho ya kutumia kabla ya kutafsiri:**")
+    for x in pc["issues"]:
+        jina = mhariri.KATEGORIA.get(x["category"], ("Mengineyo", ""))[0]
+        lebo = f'{jina}: "{_ep_md(x["original"])}" \u2192 "{_ep_md(x["suggestion"])}". {_ep_md(x["explanation"])}'
+        str_platform.checkbox(lebo, value=True, key=f"pc_{x['id']}")
+    c1, c2, c3 = str_platform.columns(3)
+    c1.button("Sahihisha kisha utafsiri", type="primary", on_click=_pc_endelea, args=(True,), key="pc_btn_sahihisha")
+    c2.button("Tafsiri bila kusahihisha", on_click=_pc_endelea, args=(False,), key="pc_btn_bila")
+    c3.button("Ghairi (nitahariri mwenyewe)", on_click=_pc_ghairi, key="pc_btn_ghairi")
+
+
 if "mhariri" in chaguo_menyu:
     str_platform.markdown("<h3 style='color: #D97706;'>\U0001F4DD Mhariri wa Kiswahili Sanifu Pro (Grammarly Mode)</h3>", unsafe_allow_html=True)
     maandishi = str_platform.text_area("Andika au bandika maandishi ya Kiswahili hapa:", key="editor_v14_clean_box", height=150, max_chars=MAX_CHARS)
@@ -449,7 +528,7 @@ if "mhariri" in chaguo_menyu:
                 )
             else:
                 with str_platform.spinner("Nakagua maandishi..."):
-                    matokeo = mhariri.kagua(maandishi, piga_ai=_piga_ai, piga_ai_kina=_piga_ai_kina if _UTHIBITISHO_WA_PRO else None)
+                    matokeo = mhariri.kagua(maandishi, piga_ai=_piga_ai, piga_ai_kina=_piga_ai_kina if _UTHIBITISHO_WA_PRO else None, lugha="Kiswahili")  # Pro: Kiswahili pekee
                 if matokeo["ai_imetumika"]:
                     str_platform.session_state["freemium_words_used"] += heabu_maneno
                     onyesha_rada()
@@ -508,7 +587,12 @@ elif "mtafsiri" in chaguo_menyu:
     if maneno_yaliyobaki <= 0:
         str_platform.error("\U0001F512 Salio LIMEISHA! Tafadhali fungua Lango la Mteja kulipia.")
     else:
+        kagua_kwanza = str_platform.checkbox(
+            "Kagua makosa kwenye maandishi kabla ya kutafsiri", value=True, key="tr_precheck_v15",
+            help="Mfumo hukagua maandishi ya lugha ya chanzo kwanza. Ukipata makosa, utachagua kuyasahihisha kabla ya tafsiri kuanza.")
         if str_platform.button("Zindua Tafsiri Pro", key="v14_btn_tr_clean"):
+            str_platform.session_state.pop("tafsiri_precheck", None)
+            _futa_pc()
             if not maandishi_t.strip():
                 str_platform.warning("Tafadhali ingiza maandishi ya kutafsiri kwanza.")
             elif heabu_maneno_t > maneno_yaliyobaki:
@@ -516,22 +600,37 @@ elif "mtafsiri" in chaguo_menyu:
                     f"Maandishi yana maneno {heabu_maneno_t}, lakini salio lako ni {maneno_yaliyobaki}. "
                     "Punguza maandishi au fungua Lango la Mteja."
                 )
+            elif not kagua_kwanza:
+                _fanya_tafsiri(maandishi_t, lugha_chanzo, lugha_lengwa, muktadha_chaguo)
             else:
-                with str_platform.spinner("Processing..."):
+                pk = None
+                with str_platform.spinner("Nakagua makosa kwenye maandishi kabla ya kutafsiri..."):
                     try:
-                        res = ubongo.chakata_tafsiri_pacha(maandishi_t, lugha_chanzo, lugha_lengwa, muktadha_chaguo)
-                    except Exception as e:
-                        res = None
-                        onyesha_hitilafu("kutafsiri", e)
-                if res:
-                    str_platform.session_state["freemium_words_used"] += heabu_maneno_t
-                    str_platform.session_state["tafsiri_ya_mwisho"] = {
-                        "chanzo": lugha_chanzo, "lengo": lugha_lengwa,
-                        "asili": maandishi_t, "tafsiri": res,
+                        pk = mhariri.kagua(maandishi_t, piga_ai=_piga_ai,
+                                           piga_ai_kina=_piga_ai_kina if _UTHIBITISHO_WA_PRO else None,
+                                           lugha=lugha_chanzo)
+                    except Exception as e:  # ukaguzi usizuie tafsiri
+                        print(f"[tafsiri] ukaguzi wa awali umeshindwa: {type(e).__name__}")
+                if pk and pk["issues"]:
+                    str_platform.session_state["tafsiri_precheck"] = {
+                        "text": maandishi_t, "chanzo": lugha_chanzo, "lengo": lugha_lengwa, "muktadha": muktadha_chaguo,
+                        "issues": pk["issues"], "ai": pk["ai_imetumika"],
+                        "mwelekeo": pk.get("mwelekeo", "ltr"), "onyo": pk.get("onyo_la_lugha"),
                     }
-                    str_platform.session_state.pop("tafsiri_sauti_lengo", None)
-                    str_platform.session_state.pop("tafsiri_sauti_asili", None)
-                    onyesha_rada()
+                else:
+                    _fanya_tafsiri(maandishi_t, lugha_chanzo, lugha_lengwa, muktadha_chaguo)
+
+    # Tafsiri iliyosubiri uamuzi wa mtumiaji (baada ya kubonyeza kitufe cha ukaguzi wa awali)
+    _inasubiri = str_platform.session_state.pop("tafsiri_inasubiri", None)
+    if _inasubiri:
+        _fanya_tafsiri(_inasubiri["text"], _inasubiri["chanzo"], _inasubiri["lengo"], _inasubiri["muktadha"])
+    _pc = str_platform.session_state.get("tafsiri_precheck")
+    if _pc:
+        if (_pc["text"], _pc["chanzo"], _pc["lengo"]) != (maandishi_t, lugha_chanzo, lugha_lengwa):
+            str_platform.session_state.pop("tafsiri_precheck", None)   # maandishi au lugha zimebadilika
+            _futa_pc()
+        else:
+            _onyesha_precheck(_pc)
 
     # ---- Onyesha tafsiri ya mwisho + kitufe cha matamshi (inabaki hata baada ya kubonyeza kitufe cha sauti) ----
     _t_mwisho = str_platform.session_state.get("tafsiri_ya_mwisho")
