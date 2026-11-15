@@ -82,6 +82,21 @@ function unganisha(list){
   out.forEach((x,i)=>x.id=i);return out;
 }
 //</RULES>
+// ---- Lugha: kanuni za Kiswahili (hapo juu) hutumika kwa Kiswahili pekee; lugha nyingine hupata ukaguzi wa jumla + AI ----
+let lugha="Kiswahili",msimbo="sw",swahili=true,aiLugha="Kiswahili";
+function kanuniJumla(text){
+  const t=[];if(msimbo==="zh"||msimbo==="ja")return t;
+  const re=/(?<=\S)( {2,})(?=\S)/g;let m;
+  while((m=re.exec(text)))t.push(tat(m.index,m.index+m[0].length,m[0]," ","uakifishaji","Nafasi ni nyingi kupita kiasi.","kanuni"));
+  return t;
+}
+const HERUFI=/[\p{L}\p{N}]/u;
+function nenoKamili(t,s,e){
+  if(msimbo==="zh"||msimbo==="ja")return true;      // hazitenganishi maneno kwa nafasi
+  if(HERUFI.test(t.charAt(s))&&s>0&&HERUFI.test(t.charAt(s-1)))return false;
+  if(HERUFI.test(t.charAt(e-1))&&e<t.length&&HERUFI.test(t.charAt(e)))return false;
+  return true;
+}
 const RANGI={tahajia:["Tahajia","#ef4444"],sarufi:["Sarufi","#3b82f6"],uakifishaji:["Uakifishaji","#f59e0b"],mtindo:["Mtindo","#a855f7"]};
 const $=id=>document.getElementById(id);
 const ta=$("ta"),back=$("back"),pop=$("pop");
@@ -92,7 +107,7 @@ function relocate(issues,t){
   const out=[];
   for(const x of issues){
     let best=-1,bd=1e9,from=0;
-    for(;;){const i=t.indexOf(x.original,from);if(i<0)break;const d=Math.abs(i-x.start);if(d<bd){bd=d;best=i;}from=i+1;}
+    for(;;){const i=t.indexOf(x.original,from);if(i<0)break;const d=Math.abs(i-x.start);if(d<bd&&nenoKamili(t,i,i+x.original.length)){bd=d;best=i;}from=i+1;}
     if(best>=0&&bd<=400)out.push(Object.assign({},x,{start:best,end:best+x.original.length,source:"ai"}));
   }
   return out;
@@ -100,7 +115,9 @@ function relocate(issues,t){
 function recompute(){
   const t=ta.value;
   const ok=x=>!ignored.has(x.original+"|"+x.suggestion);
-  current=unganisha(kanuni(t).filter(ok).concat(relocate(aiIssues,t).filter(ok)));
+  const msingi=swahili?kanuni(t):kanuniJumla(t);
+  const yaAi=aiLugha===lugha?relocate(aiIssues,t):[];
+  current=unganisha(msingi.filter(ok).concat(yaAi.filter(ok)));
   render();
 }
 function render(){
@@ -118,7 +135,8 @@ function render(){
   const vc=$("vichipu");vc.textContent="";
   Object.keys(RANGI).forEach(k=>{if(n[k]){const s=document.createElement("span");s.className="chip";s.style.background=RANGI[k][1];s.textContent=RANGI[k][0]+" "+n[k];vc.appendChild(s);}});
   const sw=t.trim().length>=8;
-  $("hali").textContent=aiError?aiError:(sw&&aiText!==t&&lastSent===t?"AI inakagua...":(aiText===t&&sw?"AI imekagua":""));
+  const imekaguliwa=aiText===t&&aiLugha===lugha;
+  $("hali").textContent=aiError?aiError:(sw&&!imekaguliwa&&lastSent===lugha+"\u0001"+t?"AI inakagua...":(imekaguliwa&&sw?"AI imekagua":""));
 }
 function showPop(id){
   const x=current.find(i=>i.id===id);if(!x){pop.style.display="none";return;}
@@ -140,9 +158,13 @@ $("tumia").onclick=()=>{
   const c=x.start+x.suggestion.length;ta.setSelectionRange(c,c);pop.style.display="none";onInput();
 };
 $("puuza").onclick=()=>{const x=current.find(i=>i.id===popId);if(x)ignored.add(x.original+"|"+x.suggestion);pop.style.display="none";recompute();};
+function tuma(){
+  const t=ta.value,k=lugha+"\u0001"+t;
+  if(t.trim().length>=8&&k!==lastSent){lastSent=k;aiError="";Streamlit_send("streamlit:setComponentValue",{value:{text:t,lugha:lugha,ts:Date.now()},dataType:"json"});render();}
+}
+function panga(){clearTimeout(timer);timer=setTimeout(tuma,900);}
 function onInput(){
-  recompute();pop.style.display="none";clearTimeout(timer);
-  timer=setTimeout(()=>{const t=ta.value;if(t.trim().length>=8&&t!==lastSent){lastSent=t;aiError="";Streamlit_send("streamlit:setComponentValue",{value:{text:t,ts:Date.now()},dataType:"json"});render();}},900);
+  recompute();pop.style.display="none";panga();
 }
 ta.addEventListener("input",onInput);
 ta.addEventListener("scroll",()=>{back.scrollTop=ta.scrollTop;});
@@ -150,6 +172,12 @@ ta.addEventListener("click",hit);ta.addEventListener("keyup",e=>{if(!["Shift","C
 window.addEventListener("message",e=>{
   const d=e.data||{};if(d.type!=="streamlit:render")return;
   const a=d.args||{};aiIssues=a.ai_issues||[];aiText=a.ai_text||"";aiError=a.ai_error||"";
+  aiLugha=a.ai_lugha||"Kiswahili";
+  const mpya=a.lugha||"Kiswahili";
+  msimbo=a.msimbo||(mpya==="Kiswahili"?"sw":"");swahili=a.kanuni_sw!==false&&mpya==="Kiswahili";
+  const rtl=a.mwelekeo==="rtl";ta.dir=back.dir=rtl?"rtl":"ltr";
+  ta.placeholder="Andika au bandika maandishi ya "+mpya+" hapa...";
+  if(mpya!==lugha){lugha=mpya;ignored.clear();lastSent="";pop.style.display="none";if(ta.value.trim().length>=8)panga();}
   if(a.initial_text&&!ta.value&&!ta.dataset.init){ta.value=a.initial_text;ta.dataset.init="1";}
   const th=d.theme||{};
   if(th.textColor)document.documentElement.style.setProperty("--fg",th.textColor);
