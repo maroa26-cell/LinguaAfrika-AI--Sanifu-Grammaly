@@ -1,4 +1,3 @@
-
 import streamlit as str_platform
 import os
 import time
@@ -347,6 +346,14 @@ def _piga_ai(mfumo, mtumiaji):
     return ubongo.piga_json(mfumo, mtumiaji)
 
 
+def _piga_ai_kina(mfumo, mtumiaji):
+    """Uthibitisho wa pili kwa Gemini Pro (huwashwa kwa siri GEMINI_PRO_MODEL)."""
+    return ubongo.piga_json_kina(mfumo, mtumiaji)
+
+
+_UTHIBITISHO_WA_PRO = bool(getattr(ubongo, "gemini_pro_modeli", ""))
+
+
 weka_seo_schema()
 skin_appearance.render_top_revenue_banner()
 
@@ -442,7 +449,7 @@ if "mhariri" in chaguo_menyu:
                 )
             else:
                 with str_platform.spinner("Nakagua maandishi..."):
-                    matokeo = mhariri.kagua(maandishi, piga_ai=_piga_ai)
+                    matokeo = mhariri.kagua(maandishi, piga_ai=_piga_ai, piga_ai_kina=_piga_ai_kina if _UTHIBITISHO_WA_PRO else None)
                 if matokeo["ai_imetumika"]:
                     str_platform.session_state["freemium_words_used"] += heabu_maneno
                     onyesha_rada()
