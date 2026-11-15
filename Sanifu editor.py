@@ -1,4 +1,3 @@
-
 """
 sanifu_editor.py - Mhariri wa AI Lingual Africa: lugha yoyote -> lugha yoyote
 
@@ -31,6 +30,7 @@ Funguo (st.secrets au environment variables):
 import json
 import os
 import re
+import time
 import unicodedata
 from collections import Counter
 
@@ -41,6 +41,17 @@ from lugha_za_afrika import KISWAHILI, ni_kiswahili, onyo_la_lugha, pata_lugha
 # ----------------------------------------------------------------------------
 
 MPANGILIO_WA_WATOA_HUDUMA = ["gemini", "groq", "openai"]   # Gemini -> Groq -> OpenAI
+
+# Hali za AI:
+#   kawaida      - mhariri mmoja kwa mpangilio wa watoa huduma hapo juu (OpenAI akiba)
+#   bure         - Groq anatafsiri (rasimu ya haraka), Gemini anahariri kwa kanuni kali; hakuna OpenAI
+#   gemini_pekee - Gemini pekee, na ukaguzi wa pili wa lazima; hakuna Groq wala OpenAI
+HALI_ZA_AI = ("kawaida", "bure", "gemini_pekee")
+WATOA_WA_HALI = {"kawaida": None, "bure": ["gemini", "groq"], "gemini_pekee": ["gemini"]}
+
+# Viwango vya bure vina mipaka mikali ya tokeni kwa dakika; maandishi marefu yagawanywe kwa aya
+KIKOMO_CHA_HERUFI_KWA_BURE = 12000
+KUSUBIRI_BAADA_YA_KIKOMO = (2.0, 5.0)   # sekunde za kusubiri kabla ya kujaribu tena kosa la 429/503
 
 MODELI = {
     "gemini": "gemini-2.5-flash",
@@ -322,12 +333,30 @@ def _openai(mfumo, maandishi, temperature):
 _WATOA = {"gemini": _gemini, "groq": _groq, "openai": _openai}
 
 
+def _ni_kosa_la_kikomo(e):
+    """429 (kikomo cha matumizi) au 503 (seva imejaa): inafaa kusubiri kidogo na kujaribu tena."""
+    t = str(e).lower()
+    return any(x in t for x in ("429", "rate limit", "rate_limit", "resource_exhausted", "quota",
+                                "too many requests", "503", "overloaded", "unavailable"))
+
+
+def _piga_na_kusubiri(kitendakazi, *hoja):
+    for jaribio in range(len(KUSUBIRI_BAADA_YA_KIKOMO) + 1):
+        try:
+            return kitendakazi(*hoja)
+        except Exception as e:
+            if jaribio < len(KUSUBIRI_BAADA_YA_KIKOMO) and _ni_kosa_la_kikomo(e):
+                time.sleep(KUSUBIRI_BAADA_YA_KIKOMO[jaribio])
+                continue
+            raise
+
+
 def piga_ai(mfumo, maandishi, temperature=0.1, mtoa=None):
     """Hujaribu watoa huduma kwa mpangilio hadi mmoja afanikiwe."""
     kosa_la_mwisho = None
     for m in ([mtoa] if mtoa else MPANGILIO_WA_WATOA_HUDUMA):
         try:
-            return _WATOA[m](mfumo, maandishi, temperature)
+            return _piga_na_kusubiri(_WATOA[m], mfumo, maandishi, temperature)
         except Exception as e:
             kosa_la_mwisho = e
     raise RuntimeError(f"Watoa huduma wote wameshindwa: {kosa_la_mwisho}")
@@ -366,6 +395,34 @@ spelling, grammar, agreement, unnatural wording, mistranslation, information add
 "kabla" must be an exact snippet copied from the EDITED text. If there are no real problems, return an empty list.
 JSON only: {"makosa": [{"kabla": "", "baada": "", "aina": "", "sababu": ""}]}
 Write "sababu" in <<MAELEZO>>.
+"""
+
+
+MFUMO_WA_MTAFSIRI = """
+You are a fast, faithful translator and first-draft writer. Input language: <<CHANZO>>. Output language: <<LENGO>>.
+- Different languages: translate naturally and idiomatically (meaning first, not word-for-word).
+- Same language: lightly clean the text only (obvious typos, scrambled letters, missing spaces); do not restyle it.
+- Keep every fact, number, date, unit, dose and name. Keep paragraph breaks and lists.
+- No comments or explanations. A senior editor will polish your draft afterwards, so do not worry about fine grammar rules.
+JSON only, no other text: {"rasimu": "<the text in <<LENGO>>>"}
+"""
+
+MAELEKEZO_YA_RASIMU = (
+    "\n\nINPUT FORMAT: You receive a SOURCE text and a DRAFT produced by a fast translator. "
+    "Verify the DRAFT against the SOURCE: fix mistranslations, omissions and additions, then apply ALL the rules "
+    "above to produce the final text. The final text must stay faithful to the SOURCE."
+)
+
+MAELEKEZO_YA_UKAGUZI_WA_PILI = """
+
+UKAGUZI WA PILI (KAGUA UPYA): Maandishi haya yamekwisha kuhaririwa mara moja. Yakague tena kwa makini na urekebishe
+makosa yote yaliyobaki, hasa:
+1. Upatanisho wa ngeli: LI-YA ('matumizi yamesaidia', 'mafanikio yamekuja', 'mazingira yamebadilika'); U-I ('mradi
+   umekamilika', 'miradi imekamilika'); KI-VI ('kitabu kimefika', 'vitabu vimefika'); I-ZI ('biashara ndogondogo zinachangia').
+2. 'Kila' hufuatwa na umoja, na kitenzi chake pia ni cha umoja ('kila mwanafunzi ana', 'kila mdau anatimiza').
+3. Usambamba wa vitenzi kwenye orodha ('itaimarika, itatoa, na itaimarisha'; 'hujenga, huhamasisha, na huhakikisha').
+4. Alama za uandishi (mkato, nukta, nukta mkato) na nukta ya mwisho.
+5. Usipoteze wala usiongeze taarifa; namba na majina visibadilike. Usiguse sehemu zilizo sahihi.
 """
 
 
@@ -463,12 +520,13 @@ def _makosa_ya_jumla(asili, sahihi, lugha_chanzo=KISWAHILI, lugha_lengwa=KISWAHI
     return makosa
 
 
-def _kagua_kwa_ai(asili, sahihi, lugha_chanzo, lugha_lengwa, lugha_ya_maelezo, mtoa_wa_mhariri, tahadhari):
+def _kagua_kwa_ai(asili, sahihi, lugha_chanzo, lugha_lengwa, lugha_ya_maelezo, mtoa_wa_mhariri, tahadhari,
+                  ruhusiwa=None):
     """Mkaguzi wa AI (hiari): hutoa makosa yaliyobaki kwa lugha yoyote. Mtoa huduma tofauti na mhariri hupendelewa."""
     mfumo = _jaza(MFUMO_WA_MKAGUZI, pata_lugha(lugha_chanzo)["kiingereza"], pata_lugha(lugha_lengwa)["kiingereza"],
                   maelezo=pata_lugha(lugha_ya_maelezo)["kiingereza"])
     ujumbe = f"SOURCE:\n{asili}\n\nEDITED:\n{sahihi}"
-    watoa = list(MPANGILIO_WA_WATOA_HUDUMA)
+    watoa = list(ruhusiwa or MPANGILIO_WA_WATOA_HUDUMA)
     if mtoa_wa_mhariri in watoa:
         i = watoa.index(mtoa_wa_mhariri)
         watoa = watoa[i + 1:] + watoa[:i + 1]          # mhariri mwenyewe mwisho
@@ -556,16 +614,53 @@ def _maoni_ya_kurudia(makosa, uaminifu_ni_sawa):
             "na usiguse sehemu zilizo sahihi:\n" + "\n".join(mistari))
 
 
-def _hariri_mara_moja(maandishi, asili, mfumo, maoni="", lugha_chanzo=KISWAHILI, lugha_lengwa=KISWAHILI):
+def _hatua_ya_mtafsiri(asili, lugha_chanzo, lugha_lengwa, tahadhari):
+    """
+    Hatua ya 1 (mtafsiri): Groq hutoa rasimu ya haraka na ya asili. Groq akishindwa (mfano kikomo cha matumizi),
+    hatuombi Gemini rasimu: mhariri mkuu atatafsiri mwenyewe kutoka kwenye chanzo, kulinda kiwango cha bure.
+    """
+    mfumo = _jaza(MFUMO_WA_MTAFSIRI, pata_lugha(lugha_chanzo)["kiingereza"], pata_lugha(lugha_lengwa)["kiingereza"])
+    if ni_kiswahili(lugha_lengwa):
+        mfumo += "\nUse Standard Swahili (Kiswahili Sanifu)."
+    try:
+        j = piga_ai(mfumo, asili, temperature=0.2, mtoa="groq")
+    except Exception as e:
+        tahadhari.append(f"Mtafsiri (Groq) ameshindwa ({e}); Gemini atatafsiri na kuhariri mwenyewe.")
+        return None, None
+    rasimu = ((j or {}).get("rasimu") or (j or {}).get("maandishi_sahihi") or "").strip()
+    if not rasimu:
+        tahadhari.append("Mtafsiri (Groq) hakutoa maandishi; Gemini atatafsiri na kuhariri mwenyewe.")
+        return None, None
+    return rasimu, "groq"
+
+
+def _safisha_chanzo_kwa_kanuni(maandishi):
+    """Usafishaji wa chanzo cha Kiswahili kwa kanuni pekee (bila AI): hauli kiwango cha bure."""
+    makosa = (kagua_ngeli_mahali(maandishi) + kagua_marudio(maandishi) + kagua_nukta_mkato(maandishi)
+              + kagua_mkato_kabla_ya_ili(maandishi) + kagua_kwa_kanuni_za_bakita(maandishi))
+    safi = ondoa_mkato_kabla_ya_ili(
+        ondoa_marudio(tumia_marekebisho_ya_ngeli(tumia_marekebisho_ya_nukta_mkato(maandishi))))
+    orodha = [{kk: v for kk, v in k.items() if kk != "span"} for k in makosa]
+    return {"maandishi_sahihi": safi, "tahadhari": [], "marekebisho": orodha,
+            "alama": hesabu_alama(len(orodha), _idadi_ya_maneno(maandishi))}
+
+
+def _hariri_mara_moja(maandishi, asili, mfumo, maoni="", lugha_chanzo=KISWAHILI, lugha_lengwa=KISWAHILI,
+                      watoa=None, rasimu=None):
     """
     Jaribio moja: watoa huduma kwa mpangilio, lango la ubora, kisha marekebisho ya kanuni (Kiswahili pekee).
     `maandishi` ndiyo yanayotumwa kwa AI; `asili` ndiyo kigezo cha uaminifu.
     """
     tahadhari = []
     jibu, mtoa_aliyetumika, jibu_la_akiba, mtoa_wa_akiba = None, None, None, None
-    for m in MPANGILIO_WA_WATOA_HUDUMA:
+    mfumo_wa_wito = mfumo + (MAELEKEZO_YA_RASIMU if rasimu is not None else "") + maoni
+    ujumbe = maandishi
+    if rasimu is not None:
+        ujumbe = (f"SOURCE ({pata_lugha(lugha_chanzo)['kiingereza']}):\n{asili}\n\n"
+                  f"DRAFT ({pata_lugha(lugha_lengwa)['kiingereza']}) by a fast translator:\n{rasimu}")
+    for m in (watoa or MPANGILIO_WA_WATOA_HUDUMA):
         try:
-            j = piga_ai(mfumo + maoni, maandishi, temperature=0.1, mtoa=m)
+            j = piga_ai(mfumo_wa_wito, ujumbe, temperature=0.1, mtoa=m)
         except Exception as e:
             tahadhari.append(f"{m}: imeshindwa ({e})")
             continue
@@ -576,6 +671,10 @@ def _hariri_mara_moja(maandishi, asili, mfumo, maoni="", lugha_chanzo=KISWAHILI,
             break
         tahadhari.append(f"{m}: jibu halikupita ukaguzi wa ubora; najaribu mtoa huduma anayefuata.")
 
+    if jibu is None and jibu_la_akiba is None and rasimu is not None:
+        # Mhariri mkuu ameshindwa lakini rasimu ipo: itumike, ikirekebishwa kwa kanuni
+        jibu_la_akiba, mtoa_wa_akiba = {"maandishi_sahihi": rasimu, "marekebisho": []}, "rasimu"
+        tahadhari.append("Mhariri mkuu ameshindwa; nimetumia rasimu ya mtafsiri na kuirekebisha kwa kanuni.")
     if jibu is None:
         if jibu_la_akiba is None:
             raise RuntimeError("Hakuna mtoa huduma aliyetoa jibu. " + " | ".join(tahadhari))
@@ -606,7 +705,8 @@ def _hariri_mara_moja(maandishi, asili, mfumo, maoni="", lugha_chanzo=KISWAHILI,
 
 def hariri_kwa_ubora(maandishi, kamusi=None, mfumo=None, lengo=90, majaribio_ya_juu=3,
                      lugha_chanzo=KISWAHILI, lugha_lengwa=KISWAHILI, lugha_ya_maelezo=KISWAHILI,
-                     mkaguzi_wa_ai=False, hariri_chanzo_kwanza=True):
+                     mkaguzi_wa_ai=False, hariri_chanzo_kwanza=True,
+                     hali="kawaida", ukaguzi_wa_lazima=None):
     """
     Huhariri (au hutafsiri na kuhariri) maandishi na kurudia hadi alama ya matokeo ifikie `lengo`
     (chaguo-msingi 90) au majaribio yafikie `majaribio_ya_juu` (chaguo-msingi 3).
@@ -617,7 +717,11 @@ def hariri_kwa_ubora(maandishi, kamusi=None, mfumo=None, lengo=90, majaribio_ya_
     mkaguzi_wa_ai       - washa mkaguzi wa AI (simu moja zaidi kwa kila jaribio); unahitajika
                           ili alama iseme chochote kuhusu sarufi ya lugha zisizo Kiswahili.
     hariri_chanzo_kwanza- chanzo cha Kiswahili kikitafsiriwa kwenda lugha nyingine, kwanza
-                          kisafishwe kwa kanuni za Kiswahili (simu moja zaidi).
+                          kisafishwe kwa kanuni za Kiswahili.
+    hali                - "kawaida": mhariri mmoja, watoa huduma kwa mpangilio (OpenAI akiba).
+                          "bure": Groq anatafsiri (rasimu), Gemini anahariri kwa kanuni kali; hakuna OpenAI.
+                          "gemini_pekee": Gemini pekee, na ukaguzi wa pili wa lazima.
+    ukaguzi_wa_lazima   - fanya ukaguzi wa pili hata alama ikiwa tayari nzuri (chaguo-msingi: kwa gemini_pekee).
 
     Hurudisha: maandishi_sahihi, marekebisho, mtoa_huduma, tahadhari,
       alama (ubora wa maandishi ya kuingiza; None kwa chanzo kisicho Kiswahili),
@@ -629,12 +733,25 @@ def hariri_kwa_ubora(maandishi, kamusi=None, mfumo=None, lengo=90, majaribio_ya_
     sw_chanzo, sw_lengwa = ni_kiswahili(jc), ni_kiswahili(jl)
     mfumo = mfumo or jenga_mfumo(jc, jl, lugha_ya_maelezo)
     tahadhari, chanzo_kilichohaririwa, awali = [], None, None
+    if hali not in HALI_ZA_AI:
+        raise ValueError(f"hali isiyojulikana: {hali!r}; chagua kati ya {HALI_ZA_AI}")
+    watoa = WATOA_WA_HALI[hali]
+    if ukaguzi_wa_lazima is None:
+        ukaguzi_wa_lazima = hali == "gemini_pekee"
+    if ukaguzi_wa_lazima:
+        majaribio_ya_juu = max(majaribio_ya_juu, 2)
+    if hali != "kawaida" and len(maandishi) > KIKOMO_CHA_HERUFI_KWA_BURE:
+        tahadhari.append("Maandishi ni marefu; viwango vya bure vinaweza kukataa (kikomo cha tokeni kwa dakika). "
+                         "Yagawanye kwa aya na uyatume kwa awamu.")
 
     # Chanzo cha Kiswahili kinachokwenda lugha nyingine: kisafishwe kwanza kwa kanuni za Kiswahili
     if sw_chanzo and not sw_lengwa and hariri_chanzo_kwanza:
-        awali = hariri_kwa_ubora(maandishi, kamusi=kamusi, lengo=lengo, majaribio_ya_juu=1,
-                                 lugha_chanzo=KISWAHILI, lugha_lengwa=KISWAHILI,
-                                 lugha_ya_maelezo=lugha_ya_maelezo)
+        if hali == "kawaida":
+            awali = hariri_kwa_ubora(maandishi, kamusi=kamusi, lengo=lengo, majaribio_ya_juu=1,
+                                     lugha_chanzo=KISWAHILI, lugha_lengwa=KISWAHILI,
+                                     lugha_ya_maelezo=lugha_ya_maelezo)
+        else:   # hali za bure: usafishaji kwa kanuni pekee, ili kuokoa viwango vya bure
+            awali = _safisha_chanzo_kwa_kanuni(maandishi)
         chanzo_kilichohaririwa = awali["maandishi_sahihi"]
         tahadhari += awali["tahadhari"]
         maandishi = chanzo_kilichohaririwa
@@ -645,27 +762,38 @@ def hariri_kwa_ubora(maandishi, kamusi=None, mfumo=None, lengo=90, majaribio_ya_
         makosa_ai = []
         if mkaguzi_wa_ai:
             makosa_ai = _kagua_kwa_ai(asili, j["maandishi_sahihi"], jc, jl, lugha_ya_maelezo,
-                                      j["mtoa_huduma"], tahadhari)
+                                      j["mtoa_huduma"], tahadhari, ruhusiwa=watoa)
         alama = hesabu_alama_ya_matokeo(asili, j["maandishi_sahihi"], jc, jl, makosa_ai)
         return alama, _makosa_yaliyobaki(j["maandishi_sahihi"], asili, jc, jl, makosa_ai)
 
-    jaribio = _hariri_mara_moja(asili, asili, mfumo, "", jc, jl)
+    rasimu, mtoa_wa_rasimu = None, None
+    if hali == "bure":                                           # hatua ya 1: mtafsiri (Groq)
+        rasimu, mtoa_wa_rasimu = _hatua_ya_mtafsiri(asili, jc, jl, tahadhari)
+    jaribio = _hariri_mara_moja(asili, asili, mfumo, "", jc, jl, watoa, rasimu)   # hatua ya 2: mhariri mkuu
     marekebisho_ya_awali = list(jaribio["marekebisho"])
     marekebisho = list(marekebisho_ya_awali)
     tahadhari += jaribio["tahadhari"]
+    if hali == "bure" and jaribio["mtoa_huduma"] == "groq":
+        tahadhari.append("Gemini hakupatikana; Groq amehariri. Ubora wa ngeli za Kiswahili unaweza kuwa chini kuliko kawaida.")
 
     bora = jaribio
     alama_bora, makosa_baki = tathmini(bora)
     historia = [alama_bora]
     idadi = 1
 
-    while alama_bora < lengo and idadi < max(1, majaribio_ya_juu):
-        maoni = _maoni_ya_kurudia(
-            makosa_baki,
-            _ni_sawa(jc, jl) is False or kagua_uaminifu(asili, bora["maandishi_sahihi"]),
-        )
+    ukaguzi_bado = bool(ukaguzi_wa_lazima)
+    while idadi < max(1, majaribio_ya_juu) and (alama_bora < lengo or ukaguzi_bado):
+        maoni = ""
+        if makosa_baki or alama_bora < lengo:
+            maoni = _maoni_ya_kurudia(
+                makosa_baki,
+                _ni_sawa(jc, jl) is False or kagua_uaminifu(asili, bora["maandishi_sahihi"]),
+            )
+        if ukaguzi_bado and ni_kiswahili(jl):
+            maoni += MAELEKEZO_YA_UKAGUZI_WA_PILI
+        ilikuwa_ukaguzi, ukaguzi_bado = ukaguzi_bado, False
         try:
-            jaribio = _hariri_mara_moja(bora["maandishi_sahihi"], asili, mfumo, maoni, jc, jl)
+            jaribio = _hariri_mara_moja(bora["maandishi_sahihi"], asili, mfumo, maoni, jc, jl, watoa)
         except Exception as e:
             tahadhari.append(f"Jaribio la {idadi + 1} limeshindwa ({e}); nimebaki na matokeo bora zaidi.")
             break
@@ -674,7 +802,10 @@ def hariri_kwa_ubora(maandishi, kamusi=None, mfumo=None, lengo=90, majaribio_ya_
         tahadhari += jaribio["tahadhari"]
         alama_j, baki_j = tathmini(jaribio)
         historia.append(alama_j)
-        if alama_j > alama_bora:
+        kubali = alama_j > alama_bora or (
+            ilikuwa_ukaguzi and alama_j >= alama_bora
+            and _jibu_linakubalika(asili, {"maandishi_sahihi": jaribio["maandishi_sahihi"]}, jc, jl))
+        if kubali:
             bora, alama_bora, makosa_baki = jaribio, alama_j, baki_j
         else:
             tahadhari.append(f"Jaribio la {idadi} halikuboresha alama; nimebaki na matokeo bora zaidi.")
@@ -720,4 +851,7 @@ def hariri_kwa_ubora(maandishi, kamusi=None, mfumo=None, lengo=90, majaribio_ya_
         "mwelekeo": lengwa["mwelekeo"],
         "onyo_la_lugha": onyo_la_lugha(jl) or (onyo_la_lugha(jc) if not _ni_sawa(jc, jl) else None),
         "chanzo_kilichohaririwa": chanzo_kilichohaririwa,
+        "hali": hali,
+        "mtoa_wa_rasimu": mtoa_wa_rasimu,
+        "rasimu": rasimu,
     }
