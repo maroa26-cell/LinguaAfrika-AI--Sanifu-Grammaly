@@ -236,6 +236,8 @@ class CerebralCortex:
             except Exception:
                 self.gemini_client = None
         self.gemini_modeli = str(_siri("GEMINI_MODEL") or "gemini-2.5-flash").strip()
+        # Modeli kubwa ya kuthibitisha mapendekezo ya mhariri (hiari). Tupu = uthibitisho umezimwa.
+        self.gemini_pro_modeli = str(_siri("GEMINI_PRO_MODEL") or "").strip()
 
         # 2. Chaguo la Pili: Groq (API yake inaendana na OpenAI)
         self.groq_key = (_siri("GROQ_API_KEY") or _siri("CROQ_API_KEY") or "").strip()
@@ -260,7 +262,8 @@ class CerebralCortex:
         # 4. Injini ya Sheria za Sarufi ya Kiswahili
         self.kanuni = KanuniZaSarufiKiswahili()
 
-    def _piga_gemini(self, mfumo: str, mtumiaji: str, temperature: float = 0.2, json_mode: bool = False) -> Optional[str]:
+    def _piga_gemini(self, mfumo: str, mtumiaji: str, temperature: float = 0.2, json_mode: bool = False,
+                     modeli: Optional[str] = None) -> Optional[str]:
         """Hujaribu kutumia Gemini kwanza. Ikishindwa, inarudisha None ili OpenAI ichukue nafasi."""
         if not self.gemini_client:
             return None
@@ -273,7 +276,7 @@ class CerebralCortex:
                 config_kwargs["response_mime_type"] = "application/json"
 
             jibu = self.gemini_client.models.generate_content(
-                model=self.gemini_modeli,
+                model=modeli or self.gemini_modeli,
                 contents=mtumiaji,
                 config=types.GenerateContentConfig(**config_kwargs),
             )
@@ -330,6 +333,16 @@ class CerebralCortex:
     def piga_json(self, mfumo: str, mtumiaji: str) -> str:
         ujumbe = [{"role": "system", "content": mfumo}, {"role": "user", "content": mtumiaji}]
         return self._piga_mnyororo(ujumbe, 0.1, json_mode=True)
+
+    def piga_json_kina(self, mfumo: str, mtumiaji: str) -> str:
+        """Gemini Pro (GEMINI_PRO_MODEL) kwa uthibitisho wa pili. Hutupa hitilafu ikishindwa au isipowekwa,
+        ili mhariri aruke uthibitisho badala ya kutumia modeli ile ile ya haraka."""
+        if not (self.gemini_client and self.gemini_pro_modeli):
+            raise RuntimeError("GEMINI_PRO_MODEL haijawekwa")
+        jibu = self._piga_gemini(mfumo, mtumiaji, temperature=0.0, json_mode=True, modeli=self.gemini_pro_modeli)
+        if not jibu:
+            raise RuntimeError("Gemini Pro imeshindwa")
+        return jibu
 
     def _jibu(self, ujumbe: list, temperature: float) -> str:
         return self._piga_mnyororo(ujumbe, temperature, json_mode=False)
