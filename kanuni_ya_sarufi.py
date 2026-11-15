@@ -231,7 +231,11 @@ class KitambuziNgeli:
                 "adj_prefixes": ("ji", "j", ""),
             },
             "LI-YA_PL": {
-                "exceptions": {"macho", "meno", "mawe", "majina", "magari", "mashamba", "matunda", "maua", "maswali", "mambo", "makasha", "madebe", "maji", "maziwa", "majani", "mawazo", "maneno"},
+                "exceptions": {"macho", "meno", "mawe", "majina", "magari", "mashamba", "matunda", "maua", "maswali", "mambo", "makasha", "madebe", "maji", "maziwa", "majani", "mawazo", "maneno",
+                           # nomino za ma- zinazochukua "ya-" (si U-I): "matumizi yamesaidia", "mafanikio yamekuja"
+                           "matumizi", "mafanikio", "maendeleo", "mazingira", "mapato", "matokeo", "mahitaji",
+                           "maelezo", "maamuzi", "makubaliano", "mabadiliko", "maarifa", "mawasiliano",
+                           "mahusiano", "malengo", "matatizo", "mafunzo", "madhara", "matukio", "manufaa"},
                 "verb_pos": ("ya",),
                 "verb_neg": ("haya",),
                 "adj_prefixes": ("ma",),
@@ -413,6 +417,15 @@ MSAMIATI_WA_KIINGEREZA = [
 ]
 
 
+# 'Kila' hufuatwa na umoja (sheria 8e): wingi unaojulikana -> umoja
+UMOJA_WA_NOMINO_ZA_WINGI = {
+    "watoto": "mtoto", "watu": "mtu", "wanafunzi": "mwanafunzi", "walimu": "mwalimu", "wagonjwa": "mgonjwa",
+    "wafanyakazi": "mfanyakazi", "wakulima": "mkulima", "wageni": "mgeni", "wadau": "mdau", "wananchi": "mwananchi",
+    "wazazi": "mzazi", "madaktari": "daktari", "wauguzi": "muuguzi", "wateja": "mteja", "viongozi": "kiongozi",
+    "vitabu": "kitabu", "vijana": "kijana", "wanawake": "mwanamke", "wanaume": "mwanamume",
+}
+
+
 def _tumia_makosa(maandishi: str, makosa: list) -> tuple[str, list]:
     """Hutumia pendekezo la kwanza la kila kosa lisilopishana na jingine. Hurudisha (maandishi, mabadiliko)."""
     safi, mwisho = [], 0
@@ -569,6 +582,7 @@ class MkaguziSarufi:
         makosa.extend(self._kagua_kanuni_maalum(sentensi))
         makosa.extend(self._kagua_ngeli_mahali(sentensi))
         makosa.extend(self._kagua_marudio(sentensi))
+        makosa.extend(self._kagua_kila_na_wingi(sentensi))
         makosa.extend(self._kagua_usambamba_wa_vitenzi(sentensi))
         makosa.extend(self._kagua_usawa_wa_ku(sentensi))
         makosa.extend(self._kagua_tahajia(sentensi))
@@ -683,6 +697,18 @@ class MkaguziSarufi:
                     aina="USAMBAMBA", neno=m.group(0), nafasi=msingi + m0.end() + m.start(), urefu=len(m.group(0)),
                     ujumbe=f"Sentensi inaanza na kitenzi jina '{m0.group(1)}', kwa hiyo kitenzi tegemezi kibaki na 'ku-'.",
                     mapendekezo=["ku" + m.group(1) + m.group(2)], chanzo="Usawa wa ku-"))
+        return makosa
+
+    def _kagua_kila_na_wingi(self, s: str) -> list[Kosa]:
+        """Sheria 8e: 'kila wanafunzi' -> 'kila mwanafunzi' ('kila' hufuatwa na umoja)."""
+        makosa: list[Kosa] = []
+        for m in re.finditer(r"\b([Kk]ila)\s+([A-Za-z]+)\b", s):
+            umoja = UMOJA_WA_NOMINO_ZA_WINGI.get(m.group(2).lower())
+            if umoja:
+                makosa.append(Kosa(
+                    aina="NGELI", neno=m.group(0), nafasi=m.start(), urefu=len(m.group(0)),
+                    ujumbe=f"'{m.group(1)}' hufuatwa na umoja, si wingi ('{m.group(2)}' -> '{umoja}').",
+                    mapendekezo=[f"{m.group(1)} {umoja}"], chanzo="kila_umoja"))
         return makosa
 
     def _kagua_tahajia(self, s: str) -> list[Kosa]:
@@ -811,7 +837,8 @@ class MkaguziSarufi:
 
     # Mizizi ya vitenzi (maingizo ya herufi moja/mbili yameondolewa ili kupunguza tahadhari za uongo)
     _MIZIZI_VITENZI = {"kuj", "fany", "pend", "sik", "end", "let", "sem", "nun", "fung", "kal",
-                       "chez", "imb", "andik", "soma", "nyw", "taka", "wez", "fik", "jeng"}
+                       "chez", "imb", "andik", "soma", "nyw", "taka", "wez", "fik", "jeng",
+                       "said", "imar", "ongez", "boresh", "badilik", "kamilik", "anguk", "pungu", "kuw"}
 
     def _kagua_upatanisho_kiima_kitenzi(self, sentensi: str) -> list[Kosa]:
         makosa: list[Kosa] = []
