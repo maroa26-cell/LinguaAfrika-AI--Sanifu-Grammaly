@@ -184,7 +184,13 @@ def _futa_chaguo_za_zamani():
         del st.session_state[k]
 
 
-def onyesha_live_editor(piga_ai, piga_ai_kina=None, kamusi=None, ruhusu=None, tumia=None, max_chars=5000):
+def chagua_lugha_ya_kuhariri(ufunguo="live_lugha"):
+    """Kichaguzi cha 'Lugha ya kuhariri' (lugha zote zilizoorodheshwa + 'Lugha nyingine…'). Hurudisha jina au None."""
+    return _chagua_lugha("Lugha ya kuhariri", ufunguo, KISWAHILI)
+
+
+def onyesha_live_editor(piga_ai, piga_ai_kina=None, kamusi=None, ruhusu=None, tumia=None, max_chars=5000,
+                        lugha=None, kichwa=True):
     """
     Live Editor: mtumiaji huchagua lugha ya kuhariri, kisha anakagua makosa (Grammarly) au anahariri kiotomatiki.
     Kiswahili hutumia kanuni zako zote; lugha nyingine hutumia ukaguzi wa jumla na AI yenye maelekezo ya lugha hiyo.
@@ -193,10 +199,14 @@ def onyesha_live_editor(piga_ai, piga_ai_kina=None, kamusi=None, ruhusu=None, tu
     piga_ai_kina                  - hiari: uthibitisho wa Gemini Pro
     ruhusu(maneno) -> str | None  - hiari: ujumbe wa kosa kama salio halitoshi (None = endelea)
     tumia(maneno)                 - hiari: kata maneno kwenye salio baada ya AI kutumika
+    lugha                         - hiari: lugha iliyochaguliwa tayari na ukurasa (kisha kichaguzi hakionyeshwi)
+    kichwa                        - onyesha kichwa na maelezo (zima kama ukurasa una kichwa chake)
     """
-    st.subheader("Live Editor")
-    st.caption("Chagua lugha ya kuhariri, andika au bandika maandishi, kisha ukague au uhariri kiotomatiki.")
-    lugha = _chagua_lugha("Lugha ya kuhariri", "live_lugha", KISWAHILI)
+    if kichwa:
+        st.subheader("Live Editor")
+        st.caption("Chagua lugha ya kuhariri, andika au bandika maandishi, kisha ukague au uhariri kiotomatiki.")
+    if lugha is None:
+        lugha = chagua_lugha_ya_kuhariri()
     if not lugha:
         st.info("Andika jina la lugha kwanza.")
         return
