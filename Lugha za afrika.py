@@ -131,15 +131,39 @@ def ni_kiswahili(jina: str) -> bool:
     return (jina or "").strip().lower() == KISWAHILI.lower()
 
 
+# Majina mbadala yanayotumika kwenye menyu za app (mf. "Setswana (Botswana)", "Kichewa").
+_MAJINA_MBADALA = {
+    "kichewa": "Kichichewa", "chichewa": "Kichichewa", "chewa": "Kichichewa",
+    "setswana": "Kisetswana", "tswana": "Kisetswana",
+    "lingala": "Kilingala", "luganda": "Kiganda", "isizulu": "Kizulu", "zulu": "Kizulu",
+    "mandarin": "Kichina", "português": "Kireno", "portugues": "Kireno", "english": "Kiingereza",
+    "kiingereza (english)": "Kiingereza", "swahili": "Kiswahili",
+}
+
+
+def _tafuta_kwa_jina(jina: str):
+    j = jina.strip().lower()
+    for kitufe, v in LUGHA.items():
+        if kitufe.lower() == j or v["kiingereza"].lower() == j:
+            return kitufe
+    return _MAJINA_MBADALA.get(j)
+
+
 def pata_lugha(jina: str) -> dict:
     """
-    Hurudisha taarifa za lugha. Lugha isiyo kwenye orodha (mfano 'Kiswati', 'Wolof')
-    inakubaliwa kama lugha maalum, na ubora wake hukadiriwa 'chini'.
+    Hurudisha taarifa za lugha. Hukubali pia majina ya menyu yenye mabano, mf. 'Kiingereza (English)',
+    'Kizulu (isiZulu)', 'Setswana (Botswana)' na 'Kichewa'. Lugha isiyo kwenye orodha
+    (mfano 'Kiswati', 'Wolof') inakubaliwa kama lugha maalum, na ubora wake hukadiriwa 'chini'.
     """
     jina = (jina or KISWAHILI).strip()
-    for kitufe, v in LUGHA.items():
-        if kitufe.lower() == jina.lower() or v["kiingereza"].lower() == jina.lower():
-            return {"jina": kitufe, **v, "maalum": False}
+    chaguo = [jina]
+    if "(" in jina:
+        kabla, _, ndani = jina.partition("(")
+        chaguo += [kabla.strip(), ndani.rstrip(") ").strip()]
+    for c in chaguo:
+        kitufe = _tafuta_kwa_jina(c) if c else None
+        if kitufe:
+            return {"jina": kitufe, **LUGHA[kitufe], "maalum": False}
     return {
         "jina": jina, "kiingereza": jina, "msimbo": "", "mwelekeo": "ltr",
         "ubora_wa_ai": "chini", "maalum": True,
