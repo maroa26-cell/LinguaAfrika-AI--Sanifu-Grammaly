@@ -1,3 +1,4 @@
+
 """
 mhariri_pro.py - Kanuni zako za Kiswahili kwenye njia tatu:
 
@@ -22,13 +23,15 @@ import html
 import re
 
 import sanifu_editor as se
-from kanuni_ya_sarufi import KanuniZaSarufiKiswahili, MAELEKEZO_YA_LUGHA
+from kanuni_ya_sarufi import (KanuniZaSarufiKiswahili, MAELEKEZO_YA_LUGHA, maelekezo_ya_tafsiri,
+                              ni_jozi_ya_kiingereza_kiswahili)
 
 KUNDI = ("Tahajia", "Sarufi", "Uakifishaji", "Mtindo")
 RANGI = {"Tahajia": "#ffd6d6", "Sarufi": "#ffe2b8", "Uakifishaji": "#e3d4ff", "Mtindo": "#d3efdc"}
 
 _KUNDI_LA_AINA = {"NGELI": "Sarufi", "MOFOLOJIA": "Sarufi", "MTINDO": "Mtindo",
-                  "ISTILAHI": "Mtindo", "KIROBOTI": "Mtindo"}
+                  "ISTILAHI": "Mtindo", "KIROBOTI": "Mtindo", "TAHAJIA": "Tahajia",
+                  "USAMBAMBA": "Sarufi", "MSAMIATI": "Mtindo"}
 _CHANZO_CHA_KUBAHATISHA = {"ngeli_matrix", "kiima_kitenzi"}   # kanuni za makadirio: hazichaguliwi awali
 
 # Semi za kiroboti zenye mbadala wa moja kwa moja (nyingine ni ushauri tu)
@@ -84,8 +87,12 @@ def _masuala_ya_anagram(t, kamusi):
 
 
 def _masuala_ya_kanuni(t):
+    return _masuala_kutoka_kosa(t, _kanuni().kagua_sentensi_nzima(t, kagua_alama=False)["makosa"])
+
+
+def _masuala_kutoka_kosa(t, makosa):
     out = []
-    for k in _kanuni().kagua_sentensi_nzima(t, kagua_alama=False)["makosa"]:
+    for k in makosa:
         if k["aina"] == "TAWALI":
             continue
         nafasi, urefu = k["nafasi"], k["urefu"]
@@ -107,7 +114,7 @@ def _masuala_ya_kanuni(t):
     return out
 
 
-def _masuala_ya_alama(t, herufi_kubwa_na_kituo=True):
+def _masuala_ya_alama(t, herufi_kubwa_na_kituo=True, kituo_cha_mwisho=None):
     out = []
     for m in re.finditer(r"\b(?:Ingawa|Kwa kuwa|Kwa sababu)\b[^.;!?\n]*(;)", t, re.I):
         out.append(_suala("Uakifishaji", ";", [","], m.start(1), 1,
@@ -116,15 +123,19 @@ def _masuala_ya_alama(t, herufi_kubwa_na_kituo=True):
     for m in re.finditer(r"\w+(,)(?=\s+ili\b)", t):
         out.append(_suala("Uakifishaji", ",", [""], m.start(1), 1,
                           "Mkato haiwekwi kabla ya kiunganishi 'ili'.", "alama", 1))
-    if herufi_kubwa_na_kituo and len(t.split()) >= 2:
-        i = len(t) - len(t.lstrip())
-        if t[i:i + 1].isalpha() and not t[i].isupper():
-            out.append(_suala("Uakifishaji", t[i], [t[i].upper()], i, 1,
-                              "Sentensi lazima ianze na herufi kubwa.", "alama", 1))
-        j = len(t.rstrip()) - 1
-        if j >= 0 and t[j].isalnum():
-            out.append(_suala("Uakifishaji", t[j], [t[j] + "."], j, 1,
-                              "Sentensi lazima iishie na alama ya kituo (. ! au ?).", "alama", 1))
+    if kituo_cha_mwisho is None:
+        kituo_cha_mwisho = herufi_kubwa_na_kituo
+    if len(t.split()) >= 2:
+        if herufi_kubwa_na_kituo:
+            i = len(t) - len(t.lstrip())
+            if t[i:i + 1].isalpha() and not t[i].isupper():
+                out.append(_suala("Uakifishaji", t[i], [t[i].upper()], i, 1,
+                                  "Sentensi lazima ianze na herufi kubwa.", "alama", 1))
+        if kituo_cha_mwisho:
+            j = len(t.rstrip()) - 1
+            if j >= 0 and t[j].isalnum():
+                out.append(_suala("Uakifishaji", t[j], [t[j] + "."], j, 1,
+                                  "Sentensi lazima iishie na alama ya kituo (. ! au ?).", "alama", 1))
     return out
 
 
@@ -186,15 +197,19 @@ def _ondoa_mwingiliano(masuala):
 # API ya Mhariri Pro
 # ----------------------------------------------------------------------------
 
-def chambua(maandishi, kamusi=None, kutumia_ai=False, herufi_kubwa_na_kituo=True):
+def chambua(maandishi, kamusi=None, kutumia_ai=False, herufi_kubwa_na_kituo=True,
+            lugha_chanzo=None, chanzo=None, kituo_cha_mwisho=None):
     """
     Huchambua maandishi na kurudisha masuala yote yenye nafasi kamili.
+    Kwa tafsiri: toa lugha_chanzo na chanzo (maandishi ya awali) ili msamiati wa kitaaluma ukaguliwe.
     Hurudisha: masuala, idadi_kwa_kundi, alama (0-100), maneno, tahadhari.
     """
     tahadhari = []
     masuala = (_masuala_ya_anagram(maandishi, kamusi)
                + _masuala_ya_kanuni(maandishi)
-               + _masuala_ya_alama(maandishi, herufi_kubwa_na_kituo))
+               + _masuala_ya_alama(maandishi, herufi_kubwa_na_kituo, kituo_cha_mwisho))
+    if lugha_chanzo and chanzo:
+        masuala += _masuala_kutoka_kosa(maandishi, _kanuni().kagua_tafsiri(lugha_chanzo, chanzo, maandishi))
     if kutumia_ai and maandishi.strip():
         masuala += _masuala_ya_ai(maandishi, tahadhari)
     masuala = _ondoa_mwingiliano(masuala)
@@ -244,20 +259,20 @@ def onyesha_kwa_rangi(maandishi, masuala):
     return '<div style="white-space:pre-wrap;line-height:1.8">' + "".join(sehemu) + "</div>"
 
 
-def rekebisha_kiotomatiki(maandishi, kamusi=None, kutumia_ai=False, herufi_kubwa_na_kituo=True, awamu=3):
+def rekebisha_kiotomatiki(maandishi, kamusi=None, kutumia_ai=False, herufi_kubwa_na_kituo=True, awamu=3, **ziada):
     """
     Hutumia marekebisho yaliyochaguliwa awali tu (yenye uhakika wa juu), kwa awamu hadi yasibadilike.
     Yale ya makadirio (ngeli ya kivumishi/kiima-kitenzi, istilahi) hayatumiki; yanarudishwa kama 'yaliyobaki'.
     """
     yaliyotumika = []
     for _ in range(max(1, awamu)):
-        r = chambua(maandishi, kamusi, kutumia_ai, herufi_kubwa_na_kituo)
+        r = chambua(maandishi, kamusi, kutumia_ai, herufi_kubwa_na_kituo, **ziada)
         mpya = tumia_marekebisho(maandishi, r["masuala"])
         yaliyotumika += [m for m in r["masuala"] if m["imechaguliwa_awali"]]
         if mpya == maandishi:
             break
         maandishi = mpya
-    r = chambua(maandishi, kamusi, kutumia_ai, herufi_kubwa_na_kituo)
+    r = chambua(maandishi, kamusi, kutumia_ai, herufi_kubwa_na_kituo, **ziada)
     return {"maandishi": maandishi, "yaliyotumika": yaliyotumika,
             "yaliyobaki": [m for m in r["masuala"] if not m["imechaguliwa_awali"]],
             "alama": r["alama"]}
@@ -285,14 +300,24 @@ def tafsiri_kutoka_kiswahili(maandishi, lugha_lengwa, kamusi=None, **vigezo):
                                lugha_lengwa=lugha_lengwa, **vigezo)
 
 
-def rekebisha_tafsiri_ya_kiswahili(tafsiri, kamusi=None):
+def rekebisha_tafsiri_ya_kiswahili(tafsiri, kamusi=None, lugha_chanzo=None, chanzo=None):
     """
     Kwa mtafsiri uliopo (mf. cerebral_cortex.py): pitisha tafsiri ya Kiswahili hapa baada ya AI kuitoa.
-    Haiongezi alama ya kituo wala herufi kubwa (vichwa vya habari na vipande vifupi vinabaki salama).
+
+    Toa lugha_chanzo na chanzo (maandishi ya awali) ili kanuni za jozi zitumike: kwa Kiingereza -> Kiswahili
+    msamiati wa kitaaluma (tija, uaminifu, shirikisha malengo...) hukaguliwa na nukta ya mwisho huongezwa.
+    Bila hivyo, haiongezi alama ya kituo wala herufi kubwa (vichwa vya habari vinabaki salama).
     """
-    return rekebisha_kiotomatiki(tafsiri, kamusi=kamusi, herufi_kubwa_na_kituo=False)
+    jozi = bool(lugha_chanzo) and ni_jozi_ya_kiingereza_kiswahili(lugha_chanzo, "Kiswahili")
+    return rekebisha_kiotomatiki(tafsiri, kamusi=kamusi, herufi_kubwa_na_kituo=False,
+                                 lugha_chanzo=lugha_chanzo, chanzo=chanzo, kituo_cha_mwisho=jozi)
 
 
-def maelekezo_ya_tafsiri_ya_kiswahili():
-    """Kanuni zako 16 (MAELEKEZO_YA_LUGHA['Kiswahili']) kwa mtafsiri wako mwenyewe."""
+def maelekezo_ya_tafsiri_ya_kiswahili(lugha_chanzo=None):
+    """
+    Kanuni zako 16 (MAELEKEZO_YA_LUGHA['Kiswahili']) kwa mtafsiri wako mwenyewe. Ukitoa lugha_chanzo
+    ("Kiingereza (English)"), kanuni za jozi hiyo (ENGLISH-TO-SWAHILI TRANSLATION RULES) zinaongezwa.
+    """
+    if lugha_chanzo:
+        return maelekezo_ya_tafsiri(lugha_chanzo, "Kiswahili")
     return MAELEKEZO_YA_LUGHA["Kiswahili"]
