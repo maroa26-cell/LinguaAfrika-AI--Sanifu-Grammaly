@@ -38,27 +38,26 @@ MODELI = {
 }
 
 SANIFU_SYSTEM_PROMPT = """
-Wewe ni mhariri wa Kiswahili Sanifu. Fuata sheria hizi kwa ukali:
+Wewe ni AI Lingual Sanifu, mhariri bingwa na mtaalamu wa sarufi ya Kiswahili Sanifu. Kazi yako ni kurekebisha tahajia, sarufi, mpangilio wa maneno, na alama za uandishi katika maandishi ya Kiswahili.
 
-1. UAMINIFU: Usiondoe wala kubuni maneno ya msingi. Kila wazo, kitenzi na nomino
-   katika maandishi asilia lazima vibaki. Badilisha tu kilicho kosa.
-2. MPANGILIO: Tumia Kiima + Kitenzi + Shamirisho + Kielezi. Kielezi cha namna/mahali/wakati
-   huwekwa baada ya shamirisho (mf. "kujifunza masomo yao haraka", si "kujifunza haraka masomo yao").
-   Viashiria hufuata nomino ("mkutano huo", si "huo mkutano");
-   "wanakijiji wenzake", si "wenzake wanakijiji".
-3. NGELI: Neno la mahali lenye -ni (darasani, sokoni) halichukui "yenye/lenye/zenye".
-   Tumia "kwenye/penye/mwenye" au rudisha nomino bila -ni: "darasa lenye".
-   Hakikisha viambishi vya upatanisho vinaendana na ngeli ya nomino.
-4. UREFUSHAJI: Usirudie neno bila sababu ("kubwa kubwa"), isipokuwa marudio ya kisarufi
-   ya kweli (polepole, kidogo kidogo).
-5. NUKTA: Usitumie nukta mkato (;) pale koma (,) inatosha.
-6. HERUFI ZILIZOCHANGANYWA: Ukiona neno kama "M-A-L-U-W-I-M", panga upya herufi
-   zilezile kupata neno halisi la Kiswahili. Usibuni majina. Kama huna uhakika,
-   liache kama lilivyo.
-7. Kila marekebisho yataje kosa halisi na sababu sahihi ya kisarufi.
-   Usitoe sababu isiyo sahihi.
+KANUNI KUU ZA UHARIRI:
+1. MUUNDO WA SENTENSI (SVO): Hakikisha sentensi zinafuata mpangilio sahihi wa Kiima + Kitenzi + Shamirisho. Weka vihusishi (kama "kwa", "na", "katika") na vielezi mahali pake sahihi kisarufi. Vielezi vya namna, mahali na wakati huwekwa baada ya shamirisho. Viashiria hufuata nomino. Unapopanga upya sentensi, usibadilishe maana wala kuacha neno lolote.
+2. ZUIA URUDIAJI WA MANENO: Kamwe usirudie neno au kifungu cha maneno bila sababu (mfano: epuka "kubwa kubwa" au kurudia shamirisho mara mbili). Marudio ya kisarufi ya kweli (polepole, kidogo kidogo) yabaki.
+3. UPATANISHO WA NGELI: Hakiki upatanisho wa umoja na wingi kwa umakini. Nomino za wingi za ngeli ya I-ZI kama "Biashara ndogondogo" huchukua "zinachangia", si "inachangia". Neno la mahali lenye -ni (darasani, sokoni) halichukui "yenye/lenye": tumia "kwenye" ("darasani kwenye ...") au rudisha nomino bila -ni ("darasa lenye ...").
+4. UHIFADHI WA TAARIFA: Usidondoshe wala kuondoa maneno muhimu, nomino, au vihusishi vilivyokuwepo kwenye maandishi ya awali. Tunza maana halisi ya mwandishi. Kabla ya kujibu, hakikisha kila nomino na kitenzi cha msingi cha awali bado kipo.
+5. TAHAJIA NA HERUFI ZILIZOVURUGWA: Rekebisha makosa ya uandishi (mfano: "Serekali" kuwa "Serikali"). Kwa herufi zilizochanganywa (mfano M-A-L-U-W-I-M), panga upya herufi zilezile tu kupata neno halisi la Kiswahili; usibuni majina wala maneno yasiyotumia herufi zote. Usipopata jibu moja lenye uhakika, liache neno kama lilivyo.
+6. ALAMA ZA UANDISHI: Tumia mkato (,), nukta (.), na nukta mkato (;) kwa usahihi. Usiweke mkato kabla ya kiunganishi "ili". Usitumie nukta mkato pale mkato unatosha (mfano "Ingawa mvua inanyesha sana leo, hatuwezi ...").
 
-Toa JSON tu, bila maelezo mengine, kwa muundo huu:
+MIFANO YA MAREKEBISHO:
+- "Darasani yenye idadi kubwa kubwa ya wanafunzi" -> "Darasa lenye idadi kubwa ya wanafunzi"
+- "Biashara ndogondogo inachangia uchumi" -> "Biashara ndogondogo zinachangia uchumi"
+- "kituoni kusafiri abiria walikuwa wakingoja basi" -> "abiria walikuwa wakingoja basi kituoni ili kusafiri"
+- "Mvua kubwa sana jana ilinyesha" -> "Jana ilinyesha mvua kubwa sana"
+- "katika huo mkutano" -> "katika mkutano huo"; "wenzake wanakijiji" -> "wanakijiji wenzake"
+- "kujifunza haraka masomo yao" -> "kujifunza masomo yao haraka"
+
+MUUNDO WA JIBU:
+Toa JSON tu, bila maelezo mengine. Sehemu ya "maandishi_sahihi" ina maandishi yaliyorekebishwa PEKEE (bila utangulizi, maelezo wala orodha). Maelezo ya kila marekebisho yawekwe kwenye "marekebisho" pekee, na sababu iwe sahihi kisarufi:
 {"maandishi_sahihi": "...",
  "marekebisho": [{"kabla": "", "baada": "", "aina": "", "sababu": ""}]}
 """
@@ -178,6 +177,24 @@ def kagua_nukta_mkato(maandishi):
         "aina": "Alama za uandishi",
         "sababu": "Nukta mkato (;) imetumika pale koma (,) inatosha.",
     } for m in re.finditer(r"[^.;!?]*\b(?:Ingawa|Kwa kuwa|Kwa sababu)\b[^.;!?]*;", maandishi)]
+
+
+def tumia_marekebisho_ya_nukta_mkato(maandishi):
+    """'Ingawa mvua inanyesha; hatuwezi' -> 'Ingawa mvua inanyesha, hatuwezi'."""
+    return re.sub(r"([^.;!?]*\b(?:Ingawa|Kwa kuwa|Kwa sababu)\b[^.;!?]*);", r"\1,", maandishi)
+
+
+def kagua_mkato_kabla_ya_ili(maandishi):
+    """Kanuni ya 6: usiweke mkato kabla ya kiunganishi 'ili'."""
+    return [{
+        "kabla": m.group(0), "baada": m.group(0).replace(",", "", 1),
+        "aina": "Alama za uandishi",
+        "sababu": "Mkato haiwekwi kabla ya kiunganishi 'ili'.",
+    } for m in re.finditer(r"\w+,\s+ili\b", maandishi)]
+
+
+def ondoa_mkato_kabla_ya_ili(maandishi):
+    return re.sub(r"(\w+),(\s+ili\b)", r"\1\2", maandishi)
 
 
 def kagua_uaminifu(asili, matokeo, kizingiti=0.75):
@@ -310,24 +327,54 @@ def _jibu_linakubalika(asili, jibu):
     return not makubwa
 
 
-def hariri_kwa_ubora(maandishi, kamusi=None, mfumo=SANIFU_SYSTEM_PROMPT):
+def _makosa_yaliyobaki(maandishi):
+    """Makosa yanayogundulika kwenye matokeo (baada ya marekebisho ya kiotomatiki)."""
+    return (kagua_ngeli_mahali(maandishi) + kagua_marudio(maandishi)
+            + kagua_nukta_mkato(maandishi) + kagua_mkato_kabla_ya_ili(maandishi)
+            + kagua_kwa_kanuni_za_bakita(maandishi))
+
+
+def hesabu_alama_ya_matokeo(asili, sahihi):
     """
-    Huhariri maandishi. Hurudisha:
-      {"maandishi_sahihi", "marekebisho", "alama", "mtoa_huduma", "tahadhari"}
+    Ubora wa MATOKEO ya mhariri (0-100): msongamano wa makosa yaliyobaki,
+    na haizidi 85 ikiwa maneno ya msingi yamedondoshwa.
+    Inapima makosa ambayo vikagua vinaweza kuyaona tu, si kila kosa linalowezekana.
+    """
+    alama = hesabu_alama(len(_makosa_yaliyobaki(sahihi)), len(re.findall(r"\w+", asili)))
+    if not kagua_uaminifu(asili, sahihi):
+        alama = min(alama, 85)
+    return alama
+
+
+def _maoni_ya_kurudia(makosa, uaminifu_ni_sawa):
+    mistari = []
+    for k in makosa[:12]:
+        mistari.append(
+            f'- "{k.get("kabla", "")}" -> "{k.get("baada", "")}" '
+            f'({k.get("aina", "")}: {k.get("sababu", "")})'
+        )
+    if not uaminifu_ni_sawa:
+        mistari.append("- Maneno ya msingi ya maandishi asilia yamedondoshwa; yarudishe yote.")
+    return ("\n\nMAKOSA YALIYOBAKI KWENYE MAANDISHI HAYA. Yarekebishe yote "
+            "na usiguse sehemu zilizo sahihi:\n" + "\n".join(mistari))
+
+
+def _hariri_mara_moja(maandishi, asili, mfumo, maoni=""):
+    """
+    Jaribio moja la kuhariri: watoa huduma kwa mpangilio, lango la ubora, kisha marekebisho ya kanuni.
+    `maandishi` ndiyo yanayotumwa kwa AI; `asili` ndiyo kigezo cha uaminifu.
     """
     tahadhari = []
-    maandishi = tatua_anagram_kwenye_maandishi(maandishi, kamusi or [])
-
-    jibu, mtoa_aliyetumika, jibu_la_akiba = None, None, None
+    jibu, mtoa_aliyetumika, jibu_la_akiba, mtoa_wa_akiba = None, None, None, None
     for m in MPANGILIO_WA_WATOA_HUDUMA:
         try:
-            j = piga_ai(mfumo, maandishi, temperature=0.1, mtoa=m)
+            j = piga_ai(mfumo + maoni, maandishi, temperature=0.1, mtoa=m)
         except Exception as e:
             tahadhari.append(f"{m}: imeshindwa ({e})")
             continue
         if jibu_la_akiba is None:
             jibu_la_akiba, mtoa_wa_akiba = j, m
-        if _jibu_linakubalika(maandishi, j):
+        if _jibu_linakubalika(asili, j):
             jibu, mtoa_aliyetumika = j, m
             break
         tahadhari.append(f"{m}: jibu halikupita ukaguzi wa ubora; najaribu mtoa huduma anayefuata.")
@@ -338,32 +385,88 @@ def hariri_kwa_ubora(maandishi, kamusi=None, mfumo=SANIFU_SYSTEM_PROMPT):
         jibu, mtoa_aliyetumika = jibu_la_akiba, mtoa_wa_akiba
         tahadhari.append("Hakuna jibu lililopita ukaguzi wote; nimetumia la kwanza na kulirekebisha kwa kanuni.")
 
-    # Rekebisha kwa kanuni juu ya jibu la AI
     sahihi = jibu.get("maandishi_sahihi", maandishi)
     marekebisho = list(jibu.get("marekebisho", []))
 
+    # Makosa ya kanuni yaliyokuwa kwenye jibu la AI (kabla ya kurekebisha)
     for k in kagua_ngeli_mahali(sahihi) + kagua_marudio(sahihi):
         marekebisho.append({kk: v for kk, v in k.items() if kk != "span"})
-    sahihi = ondoa_marudio(tumia_marekebisho_ya_ngeli(sahihi))
 
-    # Makosa ya maandishi asilia ambayo AI haikuyataja
-    makosa_ya_asili = kagua_ngeli_mahali(maandishi) + kagua_marudio(maandishi) + kagua_nukta_mkato(maandishi)
-    taarifa = {(k.get("kabla") or "").strip() for k in marekebisho}
-    for k in makosa_ya_asili:
-        if k["kabla"].strip() not in taarifa:
-            marekebisho.append({kk: v for kk, v in k.items() if kk != "span"})
+    sahihi = ondoa_mkato_kabla_ya_ili(
+        ondoa_marudio(tumia_marekebisho_ya_ngeli(tumia_marekebisho_ya_nukta_mkato(sahihi)))
+    )
+    return {"maandishi_sahihi": sahihi, "marekebisho": marekebisho,
+            "mtoa_huduma": mtoa_aliyetumika, "tahadhari": tahadhari}
 
-    taarifa = {(k.get("kabla") or "").strip() for k in marekebisho}
-    for k in kagua_kwa_kanuni_za_bakita(sahihi) + kagua_kwa_kanuni_za_bakita(maandishi):
-        if (k["kabla"] or "").strip() not in taarifa:
-            marekebisho.append(k)
-            taarifa.add((k["kabla"] or "").strip())
 
-    idadi_ya_maneno = len(re.findall(r"\w+", maandishi))
+def hariri_kwa_ubora(maandishi, kamusi=None, mfumo=SANIFU_SYSTEM_PROMPT,
+                     lengo=90, majaribio_ya_juu=3):
+    """
+    Huhariri maandishi na kurudia mpaka alama ya matokeo ifikie `lengo` (chaguo-msingi 90)
+    au majaribio yafikie `majaribio_ya_juu` (chaguo-msingi 3). Kwa kasi (Mhariri Live)
+    tumia majaribio_ya_juu=1.
+
+    Hurudisha:
+      maandishi_sahihi, marekebisho, mtoa_huduma, tahadhari,
+      alama               - ubora wa maandishi ya KUINGIZA (makosa yaliyokuwepo),
+      alama_ya_matokeo    - ubora wa MATOKEO baada ya kuhariri,
+      lengo_limefikiwa, majaribio, historia_ya_alama, makosa_yaliyobaki
+    """
+    asili = tatua_anagram_kwenye_maandishi(maandishi, kamusi or [])
+
+    jaribio = _hariri_mara_moja(asili, asili, mfumo)
+    marekebisho_ya_awali = list(jaribio["marekebisho"])
+    marekebisho = list(marekebisho_ya_awali)
+    tahadhari = list(jaribio["tahadhari"])
+
+    bora = jaribio
+    makosa_baki = _makosa_yaliyobaki(bora["maandishi_sahihi"])
+    alama_bora = hesabu_alama_ya_matokeo(asili, bora["maandishi_sahihi"])
+    historia = [alama_bora]
+    idadi = 1
+
+    while alama_bora < lengo and idadi < max(1, majaribio_ya_juu):
+        maoni = _maoni_ya_kurudia(
+            makosa_baki, kagua_uaminifu(asili, bora["maandishi_sahihi"])
+        )
+        try:
+            jaribio = _hariri_mara_moja(bora["maandishi_sahihi"], asili, mfumo, maoni)
+        except Exception as e:
+            tahadhari.append(f"Jaribio la {idadi + 1} limeshindwa ({e}); nimebaki na matokeo bora zaidi.")
+            break
+        idadi += 1
+        marekebisho += jaribio["marekebisho"]
+        tahadhari += jaribio["tahadhari"]
+        alama_j = hesabu_alama_ya_matokeo(asili, jaribio["maandishi_sahihi"])
+        historia.append(alama_j)
+        if alama_j > alama_bora:
+            bora, alama_bora = jaribio, alama_j
+            makosa_baki = _makosa_yaliyobaki(bora["maandishi_sahihi"])
+        else:
+            tahadhari.append(f"Jaribio la {idadi} halikuboresha alama; nimebaki na matokeo bora zaidi.")
+            break
+
+    # Makosa yaliyokuwa kwenye maandishi ya awali ambayo AI haikuyataja
+    makosa_ya_asili = (kagua_ngeli_mahali(asili) + kagua_marudio(asili)
+                       + kagua_nukta_mkato(asili) + kagua_mkato_kabla_ya_ili(asili)
+                       + kagua_kwa_kanuni_za_bakita(asili))
+    for orodha in (marekebisho_ya_awali, marekebisho):
+        taarifa = {(k.get("kabla") or "").strip() for k in orodha}
+        for k in makosa_ya_asili:
+            if (k.get("kabla") or "").strip() not in taarifa:
+                orodha.append({kk: v for kk, v in k.items() if kk != "span"})
+                taarifa.add((k.get("kabla") or "").strip())
+
+    idadi_ya_maneno = len(re.findall(r"\w+", asili))
     return {
-        "maandishi_sahihi": sahihi,
+        "maandishi_sahihi": bora["maandishi_sahihi"],
         "marekebisho": marekebisho,
-        "alama": hesabu_alama(len(marekebisho), idadi_ya_maneno),
-        "mtoa_huduma": mtoa_aliyetumika,
+        "mtoa_huduma": bora["mtoa_huduma"],
         "tahadhari": tahadhari,
+        "alama": hesabu_alama(len(marekebisho_ya_awali), idadi_ya_maneno),
+        "alama_ya_matokeo": alama_bora,
+        "lengo_limefikiwa": alama_bora >= lengo,
+        "majaribio": idadi,
+        "historia_ya_alama": historia,
+        "makosa_yaliyobaki": [{kk: v for kk, v in k.items() if kk != "span"} for k in makosa_baki],
     }
