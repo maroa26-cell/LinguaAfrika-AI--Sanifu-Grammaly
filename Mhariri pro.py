@@ -1,4 +1,3 @@
-
 """
 mhariri_pro.py - Mhariri Pro v3.0 (Mfumo C kamili).
 
