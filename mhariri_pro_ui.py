@@ -19,7 +19,7 @@ import re
 
 import streamlit as st
 
-import mhariri_pro as mp
+import mhariri_pro_ui as mp
 
 MAELEZO_YA_RANGI = ("🟥 Tahajia &nbsp; 🟧 Sarufi &nbsp; 🟪 Uakifishaji &nbsp; 🟩 Mtindo "
                     "— elea juu ya neno lililopakwa rangi kuona sababu.")
