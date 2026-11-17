@@ -1,3 +1,4 @@
+
 """Mhariri wa Kiswahili (mtindo wa Grammarly).
 
 Hatua nne:
@@ -12,6 +13,10 @@ Lugha: `kagua(..., lugha="Kiswahili")` ni chaguo-msingi (Mhariri Pro hubaki Kisw
 hazitumiki kwao.
 Kila tatizo ni dict: id, start, end, original, suggestion, category, explanation, source
 (na `uhakika` kwa matatizo ya AI).
+
+[PATCH v2.2]: MAELEKEZO_YA_MFUMO sasa inaongeza MAELEKEZO_YA_LUGHA["Kiswahili"] (kanuni 16 za BAKITA)
+kwenye prompt — kama sanifu_editor.py. AI sasa inajua Yambiwa, 'akina mama wajawazito',
+'Pale … -po-', 'Kama … -singe-', istilahi za kidijitali, n.k.
 """
 import html
 import json
@@ -154,6 +159,14 @@ def ukaguzi_wa_jumla(text, msimbo=""):
 
 
 # -------------------------------------------------------------------- AI ---
+# ===== PATCH v2.2: ongeza kanuni 16 za BAKITA kwenye prompt =====
+try:
+    from kanuni_ya_sarufi import MAELEKEZO_YA_LUGHA as _MAL
+    _ZIADA_YA_BAKITA = "\n\nKANUNI ZA ZIADA (ZINALAZIMA):\n" + _MAL["Kiswahili"]
+except Exception:
+    _ZIADA_YA_BAKITA = ""
+# =================================================================
+
 MAELEKEZO_YA_MFUMO = (
     "Wewe ni mhariri mtaalamu wa Kiswahili sanifu (kiwango cha BAKITA). Kagua maandishi ya mtumiaji na utafute "
     "makosa ya tahajia, sarufi (upatanisho wa ngeli, viambishi vya nafsi, wakati na ukanushi), uakifishaji na mtindo. "
@@ -183,7 +196,8 @@ MAELEKEZO_YA_MFUMO = (
     '{"original":"nzuri","suggestion":"kizuri","category":"sarufi","uhakika":"juu",'
     '"explanation":"Kivumishi kinapatana na ngeli ya KI-VI: kizuri."}]}. '
     'Maandishi "Mimi ninapenda kusoma vitabu." -> {"issues":[]}.'
-)
+) + _ZIADA_YA_BAKITA
+
 
 MAELEKEZO_YA_UTHIBITISHO = (
     "Wewe ni msahihishaji mkuu wa Kiswahili sanifu. Mhariri msaidizi (AI) amependekeza marekebisho kwenye maandishi. "
