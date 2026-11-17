@@ -14,7 +14,7 @@ import streamlit.components.v1 as components
 from openai import OpenAI
 import database
 import mhariri
-import mhariri-pro-ui
+import mhariri_pro_ui
 import sarufi_bridge
 import skin_appearance
 from cerebral_cortex import CerebralCortex, orodha_ya_lahaja, SAUTI_ZA_GEMINI, KASI_ZA_SAUTI
