@@ -7,6 +7,9 @@ mwongozo wa tahajia/sarufi, na makadirio ya jinsi AI inavyoimudu.
 'ubora_wa_ai' ni MAKADIRIO ya jumla ya upatikanaji wa data za lugha kwa modeli za AI
 (juu / wastani / chini). Si kipimo kilichofanyiwa majaribio; litumie kama onyo tu.
 Lugha yoyote isiyo kwenye orodha inaweza kuongezwa kwa jina kupitia pata_lugha("Jina").
+
+v1.1: majina mbadala (mf. "Kichewa" -> "Kichichewa", "Kiluganda" -> "Kiganda") ili majina
+yanayotumika kwenye app.py yalingane na orodha hii.
 """
 
 from __future__ import annotations
@@ -118,6 +121,17 @@ LUGHA: dict[str, dict] = {
     },
 }
 
+# Majina mbadala (herufi ndogo) -> jina la msingi la lugha kwenye LUGHA (herufi ndogo).
+# Husaidia majina yanayotumika kwenye app.py (mf. "Kichewa") kulingana na orodha hii.
+MAJINA_MBADALA: dict[str, str] = {
+    "kichewa": "kichichewa",
+    "chichewa": "kichichewa",
+    "kiluganda": "kiganda",
+    "luganda": "kiganda",
+    "kitswana": "kisetswana",
+    "kiingereza (english)": "kiingereza",
+}
+
 ONYO_LA_UBORA = (
     "Lugha hii ina data chache za mafunzo kwenye modeli za AI, kwa hiyo makosa ni mengi zaidi. "
     "Hakiki matokeo na mzungumzaji wa lugha hiyo kabla ya kuyatumia."
@@ -141,6 +155,7 @@ def pata_lugha(jina: str) -> dict:
     jina = (jina or KISWAHILI).strip()
     # 'Kiingereza (English)' (jinsi inavyoonekana kwenye orodha ya app) -> 'Kiingereza'
     majina = {jina.lower(), re.sub(r"\s*\(.*?\)", "", jina).strip().lower()}
+    majina |= {MAJINA_MBADALA[m] for m in list(majina) if m in MAJINA_MBADALA}
     for kitufe, v in LUGHA.items():
         if kitufe.lower() in majina or v["kiingereza"].lower() in majina:
             return {"jina": kitufe, **v, "maalum": False}
