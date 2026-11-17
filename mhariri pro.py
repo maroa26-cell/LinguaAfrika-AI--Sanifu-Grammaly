@@ -1,18 +1,6 @@
+
 """
 mhariri_pro.py - Mhariri Pro v3.0 (Mfumo C kamili).
-
-Maregekebisho makuu:
-  [BUG A] _masuala_ya_alama: ilikagua herufi 1 tu; sasa sentensi ZOTE.
-  [BUG B] _masuala_ya_ai: ilirudia 3x kwa neno linalojirudia; sasa 1x.
-  [BUG C] _masuala_ya_ai: namba zilizoongezwa hazikugunduliwa; sasa pande zote.
-  [BUG D] _namba_za: '1.5' == '15'; sasa zinatofautishwa.
-  [BUG E] chambua: AI ilipata maandishi yote; sasa yanagawanywa sambamba.
-  [BUG F] piga_ai/piga_ai_kina zilikuwa ngumu; sasa zinapokewa.
-  [BUG G] se.piga_ai (dict) vs CerebralCortex.piga_json (string); sasa zote.
-  [BUG H] hakuna uthibitisho wa Pro; sasa unaungwa mkono.
-  [NEW]  marudio ya neno ("kubwa kubwa") yanakamatwa.
-  [NEW]  maandishi matupu yanarudisha dict kamili.
-  [NEW]  kila kosa lina 'start'/'end' (aliases za lingual_core).
 """
 
 from __future__ import annotations
