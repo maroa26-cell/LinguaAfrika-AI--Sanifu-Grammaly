@@ -1,26 +1,21 @@
 """
 kanuni_ya_sarufi.py — Injini Kuu ya Sheria na Kanuni za Sarufi ya Kiswahili Sanifu (BAKITA).
-Inatumiwa na cerebral_cortex.py na app.py kwa ajili ya tafsiri za AI Lingual na uhakiki wa maandishi.
+Inatumiwa na cerebral_cortex.py, mhariri_pro.py na app.py kwa tafsiri za AI Lingual na uhakiki wa maandishi.
 
-Toleo 2.6 (marekebisho ya ukaguzi):
-- Bug 1: _MIZIZI_VITENZI ina "som"/"tak" badala ya "soma"/"taka" — vitenzi vya
-         kawaida (wanasoma, anasoma, alisoma, anataka, alitaka) sasa vinakaguliwa.
-- Bug 2: _kagua_ngeli_mahali inatumia .get() salama — haitengenezi maneno yasiyokuwepo
-         (jira, mtiha, steshe) kwa nomino isiyojulikana; inatoa "kwenye" pekee.
-- Bug 3: _kagua_uandishi inarudisha nafasi/urefu/neno vinavyolingana — _tumia_makosa
-         inaweza kutumia ALAMA sasa (kabla haikufanya kazi kimya kimya).
-- Bug 4: _kagua_usambamba_wa_vitenzi inakagua tokens[j+1:i] (si tokens[j+1] pekee) —
-         "hujenga, kuhamasisha" sasa inakamatwa.
-- Bug 6: _isinge_kwa_nomino imepanuliwa (biashara, shirika, taarifa, sekta, ...).
-- Bug 7: _kagua_upatanisho_kiima_kitenzi inahifadhi herufi kubwa kwenye mapendekezo.
-- Bug 10: adj_prefixes ya LI-YA_SG haina "" (haikufikiwa kamwe).
-- Bug 11: KitambuziNgeli ina kikomo cha cache (5000) — haikui bila mwisho.
-- Usafi: NOMINO_ZENYE_NI imeondolewa maingizo yasiyoweza kufikika (benki, taasisi, akaunti).
+Toleo 2.7 (marekebisho ya ukaguzi wa pili):
+- Mpya: KanuniZaSarufiKiswahili.kagua_tafsiri() — mhariri_pro.py ilikuwa inaiita lakini haikuwepo
+        (ilianguka kimya kimya na kuonyesha "Ukaguzi wa tafsiri umeshindwa").
+- Mpya: Kanuni 17-19 kwenye MAELEKEZO_YA_LUGHA (ngeli ya ma-/mi-, tahajia na maneno ambata,
+        alama za uandishi na barua rasmi) kutoka KANUNI_KUU_ZA_SARUFI.
+- Mpya: Tahajia zaidi (serekali, maswala, kwasababu, kikipuuzia).
+- Mpya: Maneno ambata (wanyamapori, nguvukazi, sawasawa, vidogovidogo, ndogondogo, midogomidogo).
+- Mpya: Kila + wingi ("Kila mfugaji wanazingatia" -> "anazingatia") na maneno ya "ku-adopt".
+- Mpya: Msamiati wa tafsiri (lugha za wenyeji, walaghai, gharama nafuu, kukichukulia kilimo).
+- Marekebisho: "akina mama wanasoma" haikamatwi tena kimakosa kama kosa la kiima-kitenzi.
+- Marekebisho: Yambiwa haivuki mstari mpya (aya mbili tofauti hazichanganywi).
 
-Toleo 2.5 (Kanuni Kamili 1-16, Yambiwa, na Kanuni Maalum) — historia:
-- Imeunganisha sheria zote 16 za lugha kwenye MAELEKEZO_YA_LUGHA
-- Imeboresha GenericObjectConcordRule (Kanuni ya Yambiwa) na kurekebisha bug ya stem[0]
-- Imeongeza Kanuni L, M, N za mtindo, istilahi za kitiba, na ngeli I-ZI kwenye MkaguziSarufi
+Toleo 2.6: Bug 1-11 (mizizi ya vitenzi, .get() salama, nafasi za makosa, usambamba, cache n.k.)
+Toleo 2.5: Kanuni Kamili 1-16, Yambiwa, na Kanuni Maalum.
 """
 
 from __future__ import annotations
@@ -62,7 +57,7 @@ MAELEKEZO_YA_LUGHA = {
         "(b) ASSOCIATIVE '-A': Match '-a' strictly to the possessed noun's class ('kitabu cha', 'majina ya', 'uhuru wa'). "
         "(c) HABITUAL 'HU-': Never attach subject prefixes to 'hu-' ('mimi husoma', 'wao husoma'). "
         "(d) PASSIVE BORROWED VERBS: Arabic-origin verbs ending in -e/-i/-u take '-ewa/-iwa' in passive ('samehewa', 'tafsiriwa', 'jaribiwa'). "
-        "(e) 'KILA' AGREEMENT: 'Kila' always takes singular nouns and singular verbs ('kila mwanafunzi ana'). "
+        "(e) 'KILA' AGREEMENT: 'Kila' always takes singular nouns and singular verbs ('kila mwanafunzi ana'); every verb and pronoun in that sentence stays singular. "
         "(f) NARRATIVE '-KA-': In sequential past actions, use '-li-' on the first verb and '-ka-' on subsequent verbs ('Aliamka, akanawa, akaenda'). "
         "(g) NEGATIVE INFINITIVE: Use 'kuto-' for multisyllabic verbs ('kutosoma', 'kutofika') and 'kutoku-' only for monosyllabic verbs ('kutokula', 'kutokuja'). "
         "(h) MODAL 'LAZIMA': Follow 'lazima' or 'sharti' with the subjunctive '-e' ('Lazima afike'). "
@@ -73,7 +68,10 @@ MAELEKEZO_YA_LUGHA = {
         "13) COUNTERFACTUAL MODAL VERBS ('WANGEWEZA KU-'): Never use the calque 'wangekuwa wame-' for 'would have + verb'. Use 'wangeweza ku-' ('wangeweza kuiba') or direct conditional ('wangeiba'). "
         "14) DOUBLE-VOWEL VERB NEGATION ('-ZUI-I'): Preserve stem vowels before adding negative '-i' ('hakuzuii', 'hauzuii', never 'hakuzii'). "
         "15) I-ZI PLURAL CONDITIONAL NEGATION ('ZISINGE-'): Plural I-ZI nouns (such as 'mamlaka za...', 'taasisi za...', 'shule za...') take 'zisinge-' in negative conditionals ('mamlaka za eneo zisingejenga', NEVER 'hazingejenga'). "
-        "16) DIGITAL & INTERACTIVE EDUCATION TERMINOLOGY: Translate 'digital learning tools' as 'zana za kujifunza kupitia njia za kidijitali' (NEVER 'zana za kujifunza kidijitali'), and translate 'interactive lessons' as 'masomo kupitia njia shirikishi' (NEVER 'masomo ya mwingiliano')."
+        "16) DIGITAL & INTERACTIVE EDUCATION TERMINOLOGY: Translate 'digital learning tools' as 'zana za kujifunza kupitia njia za kidijitali' (NEVER 'zana za kujifunza kidijitali'), and translate 'interactive lessons' as 'masomo kupitia njia shirikishi' (NEVER 'masomo ya mwingiliano'). "
+        "17) MA- AND MI- NOUN CONCORD: Plural 'ma-' nouns such as 'matumizi', 'mafanikio', 'maoni', 'majukwaa', 'masuala', 'masharti' take 'ya-' concord ('matumizi yamesababisha', 'majukwaa yatakayosaidia'), never 'i-' or 'vi-', even when another noun stands between the subject and its verb ('matumizi mabaya ya mifereji yamesababisha'). Plural 'mi-' nouns such as 'mifano', 'mifumo', 'miradi' take 'i-' ('mifumo inaweza', 'miradi imeanza'). Verbal nouns starting a sentence ('Kupuuza...', 'Kuwekeza...') keep 'ku-' on their dependent verbs ('Kupuuza ... kunaweza'). "
+        "18) FIDELITY, SPELLING & COMPOUNDS: Never invent or add words absent from the source, never change an author's already-correct wording, never repeat adjacent words, and never delete a correct preposition (move a misplaced 'kwa' in front of its noun instead). Remove every English fragment such as 'ku-adopt'. Use 'mhimili', 'serikali', 'masuala', 'kwa sababu', and write 'sawasawa', 'wanyamapori', 'nguvukazi', 'vidogovidogo', 'ndogondogo', 'midogomidogo' as single words. Keep the object infix matched to the direct object ('anapojali afya ya wafanyakazi', never 'anapowajali afya'). A verbal-noun subject ('Kuelimisha jamii...') takes the future ('kutasaidia') or habitual ('husaidia'), and a list of parallel actions keeps one structure ('hujenga uaminifu, huhamasisha ubunifu, na huhakikisha ukuaji'). "
+        "19) PUNCTUATION & FORMAL LETTERS: Replace a semicolon followed by a capital letter with a full stop. End every article with exactly one full stop (never a comma or double full stop). In formal letters write headings in CAPITAL LETTERS, write dates without a comma ('15 Novemba 2026'), use first-person plural for an office ('Tunatanguliza...') and close with 'Wenu katika ujenzi wa taifa,'."
     ),
     "Kichina": "Write in Simplified Chinese characters (Mandarin).",
     "Kireno": "Use standard Portuguese as used in Mozambique and Angola (European norms).",
@@ -96,7 +94,11 @@ MAELEKEZO_YA_JOZI = {
         "as 'tija', 'trust' as 'uaminifu', 'share goals' as 'shirikisha malengo', and 'advanced infections' as "
         "'maambukizi yaliyokwisha komaa'. "
         "5) SPELLING & PUNCTUATION: Ensure standard spelling ('mhimili', not 'muhimili') and always end the final "
-        "sentence with a proper period (.)."
+        "sentence with a proper period (.). "
+        "6) PRECISE EQUIVALENTS: 'local languages' -> 'lugha za wenyeji' or 'lugha za asili' (NEVER 'lugha za kienyeji'); "
+        "'fraudsters' -> 'walaghai' (NOT 'wadanganyifu'); 'affordable' -> 'yenye gharama nafuu' (NEVER 'inayoweza kumudu'); "
+        "'treating farming as a business' -> 'kukichukulia kilimo kama biashara' (NEVER 'kutibu kilimo'); "
+        "'thrift' -> 'ubana matumizi'; 'not only... but also' -> 'si tu... bali pia'."
     ),
 }
 
@@ -197,7 +199,7 @@ class KitambuziNgeli:
     def _jenga_matrix(self):
         self.ngeli_matrix = {
             "A-WA_SG": {
-                "exceptions": {"mtu", "mtoto", "mgeni", "mwalimu", "mzee", "kijana", "rafiki", "baba", "mama", "kaka", "dada", "daktari", "mnyama", "mbwa", "paka", "simba", "ndege", "samaki", "mwanafunzi", "mwanamke", "mwanamume", "mlevi", "mchungaji", "mvuvi", "mwindaji", "mhudumu", "mfanyakazi", "mwekezaji", "mjasiriamali", "mhandisi", "mwandishi", "mwanasheria", "mwalimu", "mhasibu"},
+                "exceptions": {"mtu", "mtoto", "mgeni", "mwalimu", "mzee", "kijana", "rafiki", "baba", "mama", "kaka", "dada", "daktari", "mnyama", "mbwa", "paka", "simba", "ndege", "samaki", "mwanafunzi", "mwanamke", "mwanamume", "mlevi", "mchungaji", "mvuvi", "mwindaji", "mhudumu", "mfanyakazi", "mwekezaji", "mjasiriamali", "mhandisi", "mwandishi", "mwanasheria", "mhasibu"},
                 "verb_pos": ("a", "yu"),
                 "verb_neg": ("ha", "hayu"),
                 "adj_prefixes": ("m", "mw"),
@@ -243,7 +245,8 @@ class KitambuziNgeli:
                 "exceptions": {"macho", "meno", "mawe", "majina", "magari", "mashamba", "matunda", "maua", "maswali", "mambo", "makasha", "madebe", "maji", "maziwa", "majani", "mawazo", "maneno",
                            "matumizi", "mafanikio", "maendeleo", "mazingira", "mapato", "matokeo", "mahitaji",
                            "maelezo", "maamuzi", "makubaliano", "mabadiliko", "maarifa", "mawasiliano",
-                           "mahusiano", "malengo", "matatizo", "mafunzo", "madhara", "matukio", "manufaa"},
+                           "mahusiano", "malengo", "matatizo", "mafunzo", "madhara", "matukio", "manufaa",
+                           "masuala", "masharti", "majukwaa", "maoni"},
                 "verb_pos": ("ya",),
                 "verb_neg": ("haya",),
                 "adj_prefixes": ("ma",),
@@ -341,7 +344,8 @@ class GenericObjectConcordRule:
 
     def kagua(self, sentensi: str) -> List[Kosa]:
         makosa = []
-        for match in re.finditer(r"\b([a-zA-Z]+)(?=\s+([a-zA-Z]+)\b)", sentensi):
+        # v2.7: [ \t]+ badala ya \s+ — neno la mwisho wa aya moja halioanishwi na la kwanza la aya inayofuata.
+        for match in re.finditer(r"\b([a-zA-Z]+)(?=[ \t]+([a-zA-Z]+)\b)", sentensi):
             kitenzi_asili = match.group(1)
             nomino_asili = match.group(2)
             kitenzi = kitenzi_asili.lower()
@@ -404,7 +408,22 @@ class GenericObjectConcordRule:
 # MKAGUZI WA SARUFI
 # ============================================================
 
-MAKOSA_YA_TAHAJIA = {"muhimili": "mhimili"}
+MAKOSA_YA_TAHAJIA = {
+    "muhimili": "mhimili",
+    "serekali": "serikali",
+    "maswala": "masuala",
+    "kwasababu": "kwa sababu",
+    "kikipuuzia": "kikipuuza",
+}
+
+# Marudio yanayopaswa kuandikwa kama neno moja (v2.7): "sawa sawa" -> "sawasawa".
+MARUDIO_YA_KUUNGANISHA = {"sawa", "vidogo", "ndogo", "midogo"}
+
+# Maneno ambata yaliyoandikwa kwa nafasi (v2.7): (muundo, umbo sahihi)
+MANENO_AMBATA = [
+    (r"\bwanyama\s+pori\b", "wanyamapori"),
+    (r"\bnguvu\s+kazi\b", "nguvukazi"),
+]
 
 MSAMIATI_WA_KIINGEREZA = [
     {"jina": "productivity -> tija", "chanzo": r"\bproductivity\b",
@@ -421,6 +440,18 @@ MSAMIATI_WA_KIINGEREZA = [
      "makosa": [(r"\bmaambukizi\s+(?:ya\s+(?:hali|hatua)\s+ya\s+juu|ya\s+juu|yaliyoendelea|makali)\b",
                  "maambukizi yaliyokwisha komaa")],
      "ujumbe": "'Advanced infections' hutafsiriwa 'maambukizi yaliyokwisha komaa'."},
+    {"jina": "local languages -> lugha za wenyeji", "chanzo": r"\blocal\s+languages?\b",
+     "makosa": [(r"\blugha\s+za\s+kienyeji\b", "lugha za wenyeji")],
+     "ujumbe": "'Local languages' hutafsiriwa 'lugha za wenyeji' au 'lugha za asili', si 'lugha za kienyeji'."},
+    {"jina": "fraudsters -> walaghai", "chanzo": r"\bfraudsters?\b",
+     "makosa": [(r"\bwadanganyifu\b", "walaghai")],
+     "ujumbe": "'Fraudsters' hutafsiriwa 'walaghai', si 'wadanganyifu'."},
+    {"jina": "affordable -> yenye gharama nafuu", "chanzo": r"\baffordable\b",
+     "makosa": [(r"\binayoweza\s+kumudu\b", "yenye gharama nafuu")],
+     "ujumbe": "'Affordable' hutafsiriwa 'yenye gharama nafuu'; angalia upatanisho wa ngeli ya nomino husika."},
+    {"jina": "treating farming as a business", "chanzo": r"\btreat(?:ing|s|ed)?\s+farming\s+as\s+a\s+business\b",
+     "makosa": [(r"\bkutibu\s+kilimo\b", "kukichukulia kilimo")],
+     "ujumbe": "'Treating farming as a business' ni 'kukichukulia kilimo kama biashara', si 'kutibu kilimo'."},
 ]
 
 UMOJA_WA_NOMINO_ZA_WINGI = {
@@ -460,6 +491,21 @@ def _isinge_kwa_nomino(m: "re.Match") -> str:
     return f"{nomino}{kati} {kiambishi}{shina}"
 
 
+def _ambata_kwa_herufi(umbo: str):
+    """Hubadilisha maneno yenye nafasi kuwa neno moja, ikihifadhi herufi kubwa ya mwanzo."""
+    def f(m):
+        return umbo[0].upper() + umbo[1:] if m.group(0)[:1].isupper() else umbo
+    return f
+
+
+def _kila_umoja(m: "re.Match") -> str:
+    """Kanuni 8(e)/2: 'Kila mfugaji wanazingatia' -> 'Kila mfugaji anazingatia'."""
+    kitenzi_cha_wingi = "wa" + m.group(3)
+    if kitenzi_cha_wingi.lower() in UMOJA_WA_NOMINO_ZA_WINGI:
+        return m.group(0)                      # ni nomino ya wingi, si kitenzi
+    return f"{m.group(1)} {m.group(2)} a{m.group(3)}"
+
+
 class MkaguziSarufi:
     """
     Hukagua sentensi kwa:
@@ -469,6 +515,7 @@ class MkaguziSarufi:
       - Umoja wa kisintaksia wa sentensi
       - Kanuni maalum za mtindo, istilahi, na upatanisho wa I-ZI
       - Ngeli ya mahali ('darasani yenye') na urudiaji wa maneno ('kubwa kubwa')
+      - Maneno ambata, 'Kila' + wingi, na maneno ya Kiingereza yaliyochanganywa (v2.7)
     """
 
     VIVUMISHI_MIZIZI = {
@@ -509,8 +556,9 @@ class MkaguziSarufi:
     MANENO_YA_KURUKA_ZIADA = {"wema", "ubaya", "uzuri", "ukubwa", "uzee"}
 
     # Viunganishi vinavyoonyesha kwamba nomino iliyotangulia si kiima cha kitenzi kinachofuata.
+    # v2.7: "akina" imeongezwa — "akina mama wanasoma" ni sahihi (wingi wa heshima).
     VIUNGANISHI = {"wa", "ya", "za", "la", "cha", "vya", "pa", "kwa", "na", "kwenye",
-                   "katika", "hata", "au", "kama", "kila"}
+                   "katika", "hata", "au", "kama", "kila", "akina"}
 
     VIWAKILISHI_VYA_YENYE = {"yenye", "lenye", "chenye", "wenye", "zenye", "vyenye", "penye"}
 
@@ -711,7 +759,7 @@ class MkaguziSarufi:
         return makosa
 
     # ------------------------------------------------------------
-    # Marudio ya maneno ('kubwa kubwa')
+    # Marudio ya maneno ('kubwa kubwa'); v2.7: 'sawa sawa' -> 'sawasawa'
     # ------------------------------------------------------------
     def _kagua_marudio(self, s: str, tokens: list) -> List[Kosa]:
         makosa = []
@@ -719,9 +767,17 @@ class MkaguziSarufi:
             a, b = tokens[i], tokens[i + 1]
             if a[0].lower() != b[0].lower() or len(a[0]) < 3:
                 continue
-            if a[0].lower() in self.MARUDIO_HALALI:
-                continue
             if s[a[2]:b[1]].strip() != "":          # kati yao kuna alama: si marudio
+                continue
+            # 'sawa sawa', 'ndogo ndogo' n.k. ni neno moja (kanuni 5); aina TAHAJIA ili ionekane kwenye mhariri_pro.
+            if a[0].lower() in MARUDIO_YA_KUUNGANISHA:
+                umbo = s[a[1]:a[2]] + s[b[1]:b[2]].lower()
+                makosa.append(Kosa(
+                    aina="TAHAJIA", neno=s[a[1]:b[2]], nafasi=a[1], urefu=b[2] - a[1],
+                    ujumbe=f"Marudio '{a[0].lower()} {b[0].lower()}' huandikwa kama neno moja: '{umbo.lower()}'.",
+                    mapendekezo=[umbo], chanzo="maneno_ambata"))
+                continue
+            if a[0].lower() in self.MARUDIO_HALALI:
                 continue
             urefu = b[2] - a[1]
             makosa.append(Kosa(
@@ -822,7 +878,7 @@ class MkaguziSarufi:
                 r = r.replace(" isinge", " zisinge", 1)
             return r
 
-        return [
+        kanuni = [
             (re.compile(r"\b[Ww]akati\s+([A-Za-z']+)\s+([A-Za-z']*?(?:na|li|me|ta)po[A-Za-z']*)"),
              "Kanuni 11: kishazi cha wakati chenye '-po-' huanza na 'Pale', si 'Wakati'.",
              "kanuni_l", _pale_kwa_herufi),
@@ -858,7 +914,20 @@ class MkaguziSarufi:
             (re.compile(r"\bwangekuwa\s+wame[a-z]+"),
              "Kanuni 13: epuka 'wangekuwa wame-'; tumia 'wangeweza ku-' au hali ya masharti ya moja kwa moja.",
              "kanuni_wangeweza", None),
+            # --- v2.7 ---
+            (re.compile(r"\b([Kk]ila)\s+([A-Za-z']+)\s+wa((?:na|li|ta|me|ka|ki)[a-z]{3,})\b"),
+             "Kanuni 8(e)/17: 'Kila' + nomino ya umoja huchukua kitenzi cha umoja ('Kila mfugaji anazingatia').",
+             "kanuni_kila", _kila_umoja),
+            (re.compile(r"\b[Kk]u-[A-Za-z]{3,}\b"),
+             "Kanuni 18: neno la Kiingereza limeunganishwa na 'ku-'; liandike kwa Kiswahili sanifu.",
+             "kanuni_kiingereza", None),
         ]
+        for muundo, umbo in MANENO_AMBATA:
+            kanuni.append((
+                re.compile(muundo, re.IGNORECASE),
+                f"Kanuni 18: '{umbo}' huandikwa kama neno moja.",
+                "kanuni_ambata", _ambata_kwa_herufi(umbo)))
+        return kanuni
 
     def _kagua_mtindo(self, s: str) -> List[Kosa]:
         makosa = []
@@ -924,7 +993,7 @@ class MkaguziSarufi:
 # ============================================================
 
 class KanuniZaSarufiKiswahili:
-    """Kiolesura kinachotumiwa na cerebral_cortex.py."""
+    """Kiolesura kinachotumiwa na cerebral_cortex.py na mhariri_pro.py."""
 
     def __init__(self):
         self.mkaguzi = MkaguziSarufi()
@@ -953,6 +1022,18 @@ class KanuniZaSarufiKiswahili:
             "mabadiliko": mabadiliko,
             "idadi_ya_makosa": len(halisi),
         }
+
+    def kagua_tafsiri(self, lugha_chanzo: str, chanzo: str, tafsiri: str) -> List[Dict[str, Any]]:
+        """
+        v2.7: inatumiwa na mhariri_pro.chambua(). Hukagua msamiati wa tafsiri kwa kulinganisha chanzo na
+        matokeo (mfano 'fraudsters' -> 'walaghai'). Hurudisha orodha ya Kosa.to_dict(); tupu kwa jozi
+        zisizo Kiingereza -> Kiswahili au kama chanzo hakipo.
+        """
+        if not (tafsiri and chanzo and lugha_chanzo):
+            return []
+        if not ni_jozi_ya_kiingereza_kiswahili(lugha_chanzo):
+            return []
+        return [k.to_dict() for k in self.mkaguzi.kagua_msamiati(chanzo, tafsiri)]
 
     # Majina mbadala kwa upatanifu
     kagua = kagua_sentensi_nzima
