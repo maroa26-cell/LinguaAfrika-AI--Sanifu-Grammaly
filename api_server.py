@@ -1,8 +1,9 @@
 """
-AI Lingual Africa Sanifu API v3.1
+AI Lingual Africa Sanifu API v3.2
 Gemini 2.5 Flash (kuu) + Groq Llama 3.3 70B (akiba) + Hatua ya Pili ya Ukaguzi + Chujio salama la Python
 
-Njia zilezile: /api/chakata, /hariri, /tafsiri  (extension haihitaji kubadilishwa)
+Njia zilezile: /api/chakata, /hariri, /tafsiri  (extension ya zamani haihitaji kubadilishwa)
+Njia mpya: /pendekezo (au /api/pendekezo) -> orodha ya mapendekezo ya Kubali / Puuza yenye nafasi (offsets)
 Funguo za JSON zilezile: ok, matokeo, result
 
 Environment Variables (Render):
@@ -17,6 +18,7 @@ Environment Variables (Render):
 """
 import os
 import re
+import difflib
 import hmac
 import time
 from concurrent.futures import ThreadPoolExecutor
@@ -377,81 +379,292 @@ def _ina_herufi(s: str) -> bool:
 
 
 # ------------------------------------------------------------------
-# 8. NJIA (ROUTES)
+# 8. MSINGI WA UCHAKATAJI (unatumiwa na /hariri, /tafsiri na /pendekezo)
 # ------------------------------------------------------------------
-@app.route("/api/chakata", methods=["POST"])
-@app.route("/hariri", methods=["POST"])
-@app.route("/tafsiri", methods=["POST"])
-def huduma_ya_lugha():
+def chakata_maandishi(maandishi: str, kitendo: str) -> dict:
+    """
+    Hugawa maandishi kwa mistari, huchakata kwa sambamba, na kurudisha kila mstari
+    pamoja na nafasi yake (mwanzo) kwenye maandishi ya awali.
+    """
+    mistari = maandishi.split("\n")
+    muundo, vipande, mwanzo = [], [], 0
+    for mstari in mistari:
+        if not mstari.strip() or not _ina_herufi(mstari):
+            muundo.append(("kama_ilivyo", 0, mwanzo, mstari))
+        else:
+            sehemu = _gawa_mstari_mrefu(mstari.strip())
+            muundo.append(("chakata", len(sehemu), mwanzo, mstari))
+            vipande.extend(sehemu)
+        mwanzo += len(mstari) + 1
+
+    majibu = []
+    if vipande:
+        with ThreadPoolExecutor(max_workers=MAX_WORKERS) as mtambo:
+            majibu = list(mtambo.map(lambda k: chakata_kipande(k, kitendo), vipande))
+
+    mistari_matokeo, idx = [], 0
+    for aina, idadi, mwanzo_m, asili_m in muundo:
+        if aina == "kama_ilivyo":
+            matokeo_m = asili_m
+        else:
+            safi = [safisha_maandishi_sanifu(majibu[idx + i]["text"]) for i in range(idadi)]
+            idx += idadi
+            kichwani = asili_m[: len(asili_m) - len(asili_m.lstrip())]   # hifadhi nafasi za mwanzo (indent)
+            mkiani = asili_m[len(asili_m.rstrip()):]
+            matokeo_m = kichwani + " ".join(safi) + mkiani
+        mistari_matokeo.append(
+            {"aina": aina, "asili": asili_m, "matokeo": matokeo_m, "mwanzo": mwanzo_m}
+        )
+
+    return {
+        "mistari": mistari_matokeo,
+        "majibu": majibu,
+        "matokeo": "\n".join(m["matokeo"] for m in mistari_matokeo),
+    }
+
+
+def muhtasari_wa_majibu(majibu: list) -> dict:
+    return {
+        "jumla": len(majibu),
+        "zilizoshindwa": sum(1 for j in majibu if not j["ok"]),
+        "injini": sorted({j["injini"] for j in majibu if j["injini"]}),
+        "hatua2": sum(1 for j in majibu if j["hatua2"]),
+    }
+
+
+# ------------------------------------------------------------------
+# 9. MAPENDEKEZO YA KUBALI / PUUZA (kama Grammarly)
+#    Tunalinganisha maandishi asili na yaliyohaririwa neno kwa neno, kisha kila
+#    tofauti inakuwa pendekezo lenye nafasi kamili (mwanzo, mwisho) kwenye maandishi asili.
+# ------------------------------------------------------------------
+_TOKENI_RX = re.compile(r"(\s*)(\w+|[^\w\s])", re.UNICODE)
+_NENO_RX = re.compile(r"\w+", re.UNICODE)
+
+
+def _tokeni(s: str) -> list:
+    tokeni = []
+    for m in _TOKENI_RX.finditer(s):
+        tokeni.append({
+            "t": m.group(2),
+            "s": m.start(2),                                   # mwanzo wa neno
+            "e": m.end(2),                                     # mwisho wa neno
+            "ws": m.start(1) if m.group(1) else m.start(2),    # mwanzo ikijumuisha nafasi iliyotangulia
+            "pengo": bool(m.group(1)),                         # kuna nafasi kabla ya neno?
+        })
+    return tokeni
+
+
+def _ni_ngeli(a: str, b: str) -> bool:
+    """Maneno mawili yenye mwisho mmoja mrefu na viambishi tofauti vifupi (mf. imekuwa -> umekuwa)."""
+    if a.lower() == b.lower():
+        return False
+    n = 0
+    while n < min(len(a), len(b)) and a[-1 - n].lower() == b[-1 - n].lower():
+        n += 1
+    return n >= 4 and (len(a) - n) <= 4 and (len(b) - n) <= 4
+
+
+def _aina_na_maelezo(asili: str, mpya: str):
+    kawaida = re.sub(r"\s+", " ", asili.lower()).strip()
+    if kawaida in _TAHAJIA:
+        return "tahajia", f"Tahajia sahihi ni '{_TAHAJIA[kawaida]}'."
+
+    wa, wb = _NENO_RX.findall(asili), _NENO_RX.findall(mpya)
+    if wa == wb:
+        if re.sub(r"\s+", "", asili) == re.sub(r"\s+", "", mpya):
+            return "nafasi", "Nafasi kabla au baada ya alama za uandishi zimerekebishwa."
+        return "alama", "Alama za uandishi zimerekebishwa."
+    if [w.lower() for w in wa] == [w.lower() for w in wb]:
+        return "herufi", "Herufi kubwa au ndogo zimerekebishwa."
+
+    bila_kurudia = [w for i, w in enumerate(wa) if i == 0 or w.lower() != wa[i - 1].lower()]
+    if len(wa) > len(wb) and bila_kurudia == wb:
+        return "kujirudia", "Neno limejirudia bila sababu; limeondolewa."
+
+    if len(wa) == len(wb):
+        tofauti = [(x, y) for x, y in zip(wa, wb) if x != y]
+        if tofauti and all(_ni_ngeli(x, y) for x, y in tofauti):
+            x, y = tofauti[0]
+            return "ngeli", f"Kiambishi cha ngeli kimerekebishwa ('{x}' -> '{y}') ili kioane na nomino husika."
+        if len(wa) == 1:
+            if difflib.SequenceMatcher(None, wa[0].lower(), wb[0].lower()).ratio() >= 0.75:
+                return "tahajia", f"Tahajia imerekebishwa ('{wa[0]}' -> '{wb[0]}')."
+            return "msamiati", f"Neno limebadilishwa kwa msamiati unaofaa zaidi ('{wa[0]}' -> '{wb[0]}')."
+    return "sarufi", "Sentensi imerekebishwa kisarufi au kimtindo."
+
+
+def _tengeneza_mapendekezo(asili: str, mpya: str, mwanzo_wa_asili: int = 0) -> list:
+    ta, tb = _tokeni(asili), _tokeni(mpya)
+    sm = difflib.SequenceMatcher(
+        a=[(t["t"], t["pengo"]) for t in ta],
+        b=[(t["t"], t["pengo"]) for t in tb],
+        autojunk=False,
+    )
+
+    spans = []
+    for tag, i1, i2, j1, j2 in sm.get_opcodes():
+        if tag == "equal":
+            continue
+        # Kufuta neno lililorudiwa: onyesha maneno yote mawili
+        if j1 == j2 and i2 < len(ta) and j1 < len(tb) and ta[i2]["t"].lower() == ta[i2 - 1]["t"].lower():
+            i2, j2 = i2 + 1, j2 + 1
+        # Kuongeza/kufuta tupu: panua kwa neno jirani ili pendekezo liwe na msingi
+        elif i1 == i2 or j1 == j2:
+            if i1 > 0 and j1 > 0:
+                i1, j1 = i1 - 1, j1 - 1
+            elif i2 < len(ta) and j2 < len(tb):
+                i2, j2 = i2 + 1, j2 + 1
+
+        a_s = ta[i1]["s"] if i1 < len(ta) else len(asili)
+        b_s = tb[j1]["s"] if j1 < len(tb) else len(mpya)
+        if i1 < len(ta) and j1 < len(tb) and ta[i1]["pengo"] != tb[j1]["pengo"]:
+            a_s, b_s = ta[i1]["ws"], tb[j1]["ws"]          # badiliko la nafasi mwanzoni mwa pendekezo
+        a_e = ta[i2 - 1]["e"] if i2 > i1 else a_s
+        b_e = tb[j2 - 1]["e"] if j2 > j1 else b_s
+        spans.append([a_s, a_e, b_s, b_e])
+
+    # Unganisha mapendekezo yanayogusana ili nafasi zisigongane
+    zilizounganishwa = []
+    for sp in spans:
+        if zilizounganishwa and (sp[0] <= zilizounganishwa[-1][1] or sp[2] <= zilizounganishwa[-1][3]):
+            zilizounganishwa[-1][1] = max(zilizounganishwa[-1][1], sp[1])
+            zilizounganishwa[-1][3] = max(zilizounganishwa[-1][3], sp[3])
+        else:
+            zilizounganishwa.append(sp)
+
+    matokeo = []
+    for a_s, a_e, b_s, b_e in zilizounganishwa:
+        sa, sb = asili[a_s:a_e], mpya[b_s:b_e]
+        if sa == sb:
+            continue
+        aina, maelezo = _aina_na_maelezo(sa, sb)
+        matokeo.append({
+            "mwanzo": mwanzo_wa_asili + a_s,
+            "mwisho": mwanzo_wa_asili + a_e,
+            "asili": sa,                 # ni hasa maandishi yaliyo kati ya mwanzo na mwisho
+            "pendekezo": sb,             # yanachukua nafasi ya "asili"
+            "kutoka": sa.strip(),        # kwa kuonyesha kwenye pop-up
+            "kuwa": sb.strip(),
+            "aina": aina,
+            "maelezo": maelezo,
+        })
+    return matokeo
+
+
+def mapendekezo_ya_maandishi(mistari: list) -> list:
+    yote = []
+    for m in mistari:
+        if m["aina"] != "chakata" or m["asili"].strip() == m["matokeo"].strip():
+            continue
+        asili = m["asili"]
+        kichwani = len(asili) - len(asili.lstrip())
+        yote.extend(
+            _tengeneza_mapendekezo(asili.strip(), m["matokeo"].strip(), m["mwanzo"] + kichwani)
+        )
+    for i, p in enumerate(yote):
+        p["id"] = i
+    return yote
+
+
+def tumia_mapendekezo(maandishi: str, mapendekezo: list, ids=None) -> str:
+    """Tumia mapendekezo yote (Kubali yote) au yale ya ids pekee. Hufanya kazi kutoka mwisho kwenda mwanzo."""
+    chaguo = [m for m in mapendekezo if ids is None or m["id"] in ids]
+    for m in sorted(chaguo, key=lambda x: x["mwanzo"], reverse=True):
+        maandishi = maandishi[: m["mwanzo"]] + m["pendekezo"] + maandishi[m["mwisho"]:]
+    return maandishi
+
+
+# ------------------------------------------------------------------
+# 10. NJIA (ROUTES)
+# ------------------------------------------------------------------
+def _soma_ombi():
     data = request.get_json(silent=True) or {}
     maandishi = data.get("text") or data.get("maandishi") or ""
     kitendo = str(data.get("mode") or data.get("kitendo") or "hariri").lower()
+    return maandishi, kitendo
 
-    if request.path.endswith("/tafsiri") or kitendo in ("tafsiri", "translate"):
-        kitendo = "tafsiri"
-    else:
-        kitendo = "hariri"
 
+def _kagua_maandishi(maandishi):
     if not isinstance(maandishi, str) or not maandishi.strip():
         return jsonify({"ok": False, "error": "Tafadhali weka maandishi kwanza."}), 400
-
     if len(maandishi) > MAX_CHARS:
         return jsonify({
             "ok": False,
             "error": f"Maandishi ni marefu mno (herufi {len(maandishi)}). Kikomo ni {MAX_CHARS}. Yagawe sehemu sehemu.",
         }), 413
-
-    # Gawa kwa mistari; hifadhi mistari tupu na mistari isiyo na herufi (mf. "---", "1.")
-    mistari = maandishi.splitlines()
-    muundo = []   # kila kipengele: None (mstari tupu/usiobadilishwa) au idadi ya vipande
-    vipande = []  # orodha bapa ya vipande vya kuchakata
-    for mstari in mistari:
-        if not mstari.strip() or not _ina_herufi(mstari):
-            muundo.append(("kama_ilivyo", mstari))
-            continue
-        sehemu = _gawa_mstari_mrefu(mstari.strip())
-        muundo.append(("chakata", len(sehemu)))
-        vipande.extend(sehemu)
-
-    if not vipande:
+    if not any(_ina_herufi(m) for m in maandishi.split("\n")):
         return jsonify({"ok": False, "error": "Hakuna maandishi ya kuchakata."}), 400
+    return None
 
-    # Uchakataji sambamba, mpangilio unahifadhiwa na map()
-    with ThreadPoolExecutor(max_workers=MAX_WORKERS) as mtambo:
-        majibu = list(mtambo.map(lambda k: chakata_kipande(k, kitendo), vipande))
 
-    # Unganisha tena kwa mpangilio wa awali
-    matokeo_mistari, idx = [], 0
-    for aina, thamani in muundo:
-        if aina == "kama_ilivyo":
-            matokeo_mistari.append(thamani)
-        else:
-            sehemu_safi = [safisha_maandishi_sanifu(majibu[idx + i]["text"]) for i in range(thamani)]
-            idx += thamani
-            matokeo_mistari.append(" ".join(sehemu_safi))
+def _ai_hazipatikani():
+    return jsonify({
+        "ok": False,
+        "error": "Huduma za AI hazipatikani kwa sasa. Jaribu tena baadaye.",
+        "imechakatwa": False,
+    }), 502
 
-    matokeo_kamili = "\n".join(matokeo_mistari)
 
-    zilizoshindwa = sum(1 for j in majibu if not j["ok"])
-    injini = sorted({j["injini"] for j in majibu if j["injini"]})
-    hatua2 = sum(1 for j in majibu if j["hatua2"])
+@app.route("/api/chakata", methods=["POST"])
+@app.route("/hariri", methods=["POST"])
+@app.route("/tafsiri", methods=["POST"])
+def huduma_ya_lugha():
+    maandishi, kitendo = _soma_ombi()
+    if request.path.endswith("/tafsiri") or kitendo in ("tafsiri", "translate"):
+        kitendo = "tafsiri"
+    else:
+        kitendo = "hariri"
 
-    if zilizoshindwa == len(majibu):
-        return jsonify({
-            "ok": False,
-            "error": "Huduma za AI hazipatikani kwa sasa. Jaribu tena baadaye.",
-            "imechakatwa": False,
-        }), 502
+    kosa = _kagua_maandishi(maandishi)
+    if kosa:
+        return kosa
+
+    r = chakata_maandishi(maandishi, kitendo)
+    muh = muhtasari_wa_majibu(r["majibu"])
+    if muh["zilizoshindwa"] == muh["jumla"]:
+        return _ai_hazipatikani()
 
     return jsonify({
         "ok": True,
-        "matokeo": matokeo_kamili,
-        "result": matokeo_kamili,
-        "imechakatwa": zilizoshindwa == 0,         # false = baadhi ya vipande vimerudishwa kama vilivyo
-        "vipande_vilivyoshindwa": zilizoshindwa,
-        "vipande_jumla": len(majibu),
-        "injini_iliyotumika": injini,
-        "ukaguzi_wa_pili": hatua2,
+        "matokeo": r["matokeo"],
+        "result": r["matokeo"],
+        "imechakatwa": muh["zilizoshindwa"] == 0,   # false = baadhi ya vipande vimerudishwa kama vilivyo
+        "vipande_vilivyoshindwa": muh["zilizoshindwa"],
+        "vipande_jumla": muh["jumla"],
+        "injini_iliyotumika": muh["injini"],
+        "ukaguzi_wa_pili": muh["hatua2"],
+    })
+
+
+@app.route("/pendekezo", methods=["POST"])
+@app.route("/api/pendekezo", methods=["POST"])
+def huduma_ya_mapendekezo():
+    """
+    Hurudisha mapendekezo ya Kubali / Puuza. Kila pendekezo:
+      {id, mwanzo, mwisho, asili, pendekezo, kutoka, kuwa, aina, maelezo}
+    mwanzo/mwisho ni nafasi (code points) kwenye maandishi yaliyotumwa; maandishi[mwanzo:mwisho] == asili.
+    "Kubali" = badilisha asili kwa pendekezo. "Kubali yote" = tumia maandishi_yaliyohaririwa.
+    """
+    maandishi, _ = _soma_ombi()
+    kosa = _kagua_maandishi(maandishi)
+    if kosa:
+        return kosa
+
+    r = chakata_maandishi(maandishi, "hariri")
+    muh = muhtasari_wa_majibu(r["majibu"])
+    if muh["zilizoshindwa"] == muh["jumla"]:
+        return _ai_hazipatikani()
+
+    mapendekezo = mapendekezo_ya_maandishi(r["mistari"])
+    return jsonify({
+        "ok": True,
+        "mapendekezo": mapendekezo,
+        "idadi": len(mapendekezo),
+        "maandishi_yaliyohaririwa": r["matokeo"],
+        "imechakatwa": muh["zilizoshindwa"] == 0,
+        "vipande_vilivyoshindwa": muh["zilizoshindwa"],
+        "injini_iliyotumika": muh["injini"],
+        "ukaguzi_wa_pili": muh["hatua2"],
     })
 
 
@@ -459,8 +672,9 @@ def huduma_ya_lugha():
 def afya_ya_seva():
     return jsonify({
         "status": "Live",
-        "mfumo": "AI Lingual Africa Sanifu API v3.1",
+        "mfumo": "AI Lingual Africa Sanifu API v3.2",
         "injini": f"{GEMINI_MODEL} + Groq Fallback + Ukaguzi wa Pili + Chujio salama",
+        "njia": ["/api/chakata", "/hariri", "/tafsiri", "/pendekezo"],
         "gemini": bool(gemini_client),
         "groq": bool(groq_client),
         "hatua_mbili": HATUA_MBILI,
