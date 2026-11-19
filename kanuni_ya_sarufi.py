@@ -12,6 +12,7 @@ Toleo 2.7 (marekebisho ya ukaguzi wa pili):
 - Mpya: Kila + wingi ("Kila mfugaji wanazingatia" -> "anazingatia") na maneno ya "ku-adopt".
 - Mpya: Msamiati wa tafsiri (lugha za wenyeji, walaghai, gharama nafuu, kukichukulia kilimo).
 - Marekebisho: "akina mama wanasoma" haikamatwi tena kimakosa kama kosa la kiima-kitenzi.
+- Marekebisho: 'Watoto wanasoma vizuri' haibadilishwi tena kuwa 'wazuri' (kitenzi kinakata utafutaji wa kivumishi).
 - Marekebisho: Yambiwa haivuki mstari mpya (aya mbili tofauti hazichanganywi).
 
 Toleo 2.6: Bug 1-11 (mizizi ya vitenzi, .get() salama, nafasi za makosa, usambamba, cache n.k.)
@@ -585,6 +586,9 @@ class MkaguziSarufi:
         self._kitenzi_kamili_re = re.compile(
             r"^(?:ha)?(?:wa|a|u|i|zi|tu|m|ni|ki|vi|li|ya|hu)(?:nge|ngali|na|li|me|ta|ka|ki|ku)?[a-z]{3,}$"
         )
+        self._kitenzi_wazi_re = re.compile(
+            r"^(?:ha)?(?:wa|a|u|i|zi|tu|m|ni|ki|vi|li|ya)(?:nge|ngali|na|li|me|ta|ka|ki)[a-z]{2,}$"
+        )
         self._kanuni_za_mtindo = self._jenga_kanuni_za_mtindo()
 
     # ------------------------------------------------------------
@@ -678,7 +682,9 @@ class MkaguziSarufi:
                 tok = tokens[j]
                 g = self._gawanya_kivumishi(tok[0])
                 if g is None:
-                    if tok[0].lower() in self.VIUNGANISHI or self._ngeli_ya(tok[0].lower()):
+                    # v2.7: kitenzi chenye wakati kinakata utafutaji ('Watoto wanasoma vizuri': 'vizuri' si kivumishi cha 'watoto').
+                    if (tok[0].lower() in self.VIUNGANISHI or self._ngeli_ya(tok[0].lower())
+                            or self._kitenzi_wazi_re.match(tok[0].lower())):
                         break
                     continue
                 kiambishi, mzizi = g
