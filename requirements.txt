@@ -1,13 +1,13 @@
 # Vifurushi vinavyohitajika na app.py, pesapal_core.py, admin.py, dashboard.py, database.py, risiti.py
 streamlit>=1.40.0
 openai>=1.40.0
-google-genai
-groq
-PyGithub
+google-genai>=1.0.0
+groq>=0.11.0
+PyGithub>=2.1.0
 requests>=2.31.0
 pandas>=2.2.0
 numpy>=1.26.0
 bcrypt>=4.0.0
-segno
-psycopg[binary]
+segno>=1.6.0
+psycopg[binary]>=3.1
 reportlab>=4.0.0
