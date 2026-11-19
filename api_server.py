@@ -1,5 +1,5 @@
 """
-AI Lingual Africa Sanifu API v3.0
+AI Lingual Africa Sanifu API v3.1
 Gemini 2.5 Flash (kuu) + Groq Llama 3.3 70B (akiba) + Hatua ya Pili ya Ukaguzi + Chujio salama la Python
 
 Njia zilezile: /api/chakata, /hariri, /tafsiri  (extension haihitaji kubadilishwa)
@@ -155,6 +155,29 @@ _MANENO_YA_KAWAIDA = (
 )
 _RUDIA_RX = re.compile(r"\b(" + "|".join(_MANENO_YA_KAWAIDA) + r")(?:\s+\1\b)+", re.IGNORECASE)
 
+# Marekebisho ya ngeli yenye mipaka kali: yanashika tu maumbo mahususi yaliyothibitishwa kuwa makosa.
+# Hakuna "[^.?!]*?" inayoruka maneno ovyo, kwa hiyo sentensi sahihi hazigusiwi.
+_NGELI_MAUMBO_MAALUM = [
+    (re.compile(r"\bmashirika\s+madogomadogo\s+vya\b", re.IGNORECASE), "mashirika madogomadogo ya"),
+    (re.compile(r"\byamekuwa\s+vikichelewa\b", re.IGNORECASE), "yamekuwa yakichelewa"),
+    (re.compile(r"\byamekuwa\s+vikisuasua\b", re.IGNORECASE), "yamekuwa yakisuasua"),
+]
+
+# ukosefu/uhaba/upungufu (U-umoja) + "wa" + maneno 1-2 + "imekuwa"  ->  "umekuwa"
+# Kikomo cha maneno 1-2 na kutokuwepo kwa alama katikati huzuia kugusa "hali imekuwa", "serikali imekuwa".
+_NGELI_U_UMOJA = re.compile(
+    r"\b(ukosefu|uhaba|upungufu)(\s+wa\s+\w+(?:\s+\w+)?\s+)imekuwa\b", re.IGNORECASE
+)
+
+
+def _rekebisha_ngeli(maandishi: str) -> str:
+    for rx, sahihi in _NGELI_MAUMBO_MAALUM:
+        maandishi = rx.sub(
+            lambda m, s=sahihi: (s[0].upper() + s[1:]) if m.group(0)[:1].isupper() else s,
+            maandishi,
+        )
+    return _NGELI_U_UMOJA.sub(lambda m: m.group(1) + m.group(2) + "umekuwa", maandishi)
+
 
 def _badilisha_tahajia(m: "re.Match") -> str:
     asili = m.group(0)
@@ -168,6 +191,7 @@ def safisha_maandishi_sanifu(maandishi: str) -> str:
 
     maandishi = _RUDIA_RX.sub(r"\1", maandishi)
     maandishi = _TAHAJIA_RX.sub(_badilisha_tahajia, maandishi)
+    maandishi = _rekebisha_ngeli(maandishi)
 
     maandishi = re.sub(r"[ \t]{2,}", " ", maandishi)              # nafasi mbili au zaidi
     maandishi = re.sub(r"[ \t]+([,.;:!?])", r"\1", maandishi)     # nafasi kabla ya alama
@@ -215,6 +239,12 @@ Sheria:
 - USIBADILISHE maana, mpangilio wa mawazo, wala msamiati ulio sahihi. Usiongeze wala kupunguza sentensi.
 - Kama hakuna kosa, rudisha maandishi yaleyale bila mabadiliko yoyote.
 - 'matumizi', 'mafanikio', 'maoni' huchukua 'ya-'; 'kila' + nomino ya umoja huhitaji vitenzi vya umoja.
+- Mifano ya makosa ya kurekebisha (kosa -> sahihi):
+  * 'mashirika madogomadogo vya wakulima' -> 'mashirika madogomadogo ya wakulima' (mashirika huchukua 'ya')
+  * 'malipo yamekuwa vikichelewa' -> 'malipo yamekuwa yakichelewa'
+  * 'maendeleo yamekuwa vikisuasua' -> 'maendeleo yamekuwa yakisuasua'
+  * 'ukosefu wa ajira imekuwa tatizo' -> 'ukosefu wa ajira umekuwa tatizo' (ukosefu, uhaba, upungufu huchukua 'u-')
+- Kitenzi huoana na nomino inayotenda, si nomino iliyo karibu: 'ukosefu wa ajira umeongezeka, na hali imekuwa mbaya' ni SAHIHI (usibadilishe 'hali imekuwa').
 - Toa maandishi yaliyokaguliwa PEKEE, bila maelezo, bila nukuu, bila alama za ```.
 """
 
@@ -429,7 +459,7 @@ def huduma_ya_lugha():
 def afya_ya_seva():
     return jsonify({
         "status": "Live",
-        "mfumo": "AI Lingual Africa Sanifu API v3.0",
+        "mfumo": "AI Lingual Africa Sanifu API v3.1",
         "injini": f"{GEMINI_MODEL} + Groq Fallback + Ukaguzi wa Pili + Chujio salama",
         "gemini": bool(gemini_client),
         "groq": bool(groq_client),
