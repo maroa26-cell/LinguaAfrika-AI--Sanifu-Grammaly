@@ -1,3 +1,4 @@
+
 """
 mhariri_pro_ui.py - Kiolesura cha Streamlit cha Mhariri Pro v3.
 
@@ -39,9 +40,9 @@ def onyesha_mhariri_pro(kamusi=None, piga_ai=None, piga_ai_kina=None,
     maandishi = st.text_area("Andika au bandika maandishi ya Kiswahili",
                              height=220, key="pro_maandishi", max_chars=max_chars)
     kutumia_ai = st.checkbox(
-        "Mkaguzi wa AI (hukamata tahajia na makosa ambayo kanuni hazioni)",
+        "Mkaguzi wa AI (hukagua maandishi yote kwa kina, pamoja na makosa ambayo kanuni hazioni)",
         value=True, key="pro_ai",
-        help="Bila hii, ni kanuni za Sanifu pekee zinazokagua: haraka, lakini hazioni tahajia.",
+        help="Bila hii, ni kanuni za Sanifu pekee zinazokagua: haraka, lakini hazioni makosa yote ya tahajia na sarufi.",
     )
 
     hesabu = len(re.findall(r"\w+", maandishi or ""))
@@ -143,4 +144,3 @@ def onyesha_mhariri_pro(kamusi=None, piga_ai=None, piga_ai_kina=None,
     st.code(mp.tumia_marekebisho(maandishi, masuala, chaguliwa, mbadala), language=None)
 
     return bill
-   
