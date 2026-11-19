@@ -1,0 +1,456 @@
+{
+  "toleo": 1,
+  "maelezo": "Seti ya majaribio ya AI Lingual Africa Sanifu. Aina 'hariri': 'inatarajiwa' ni jibu sahihi kamili (kategoria 'usigusiwe' = sentensi sahihi isiyopaswa kubadilishwa). Aina 'tafsiri': 'lazima_iwe_na' na 'isiwe_na' ni maneno yanayokaguliwa. 'chujio_peke': true = kesi inayoweza kupimwa bila AI (--chujio-tu). ONYO: majibu haya niliyoyaandaa mimi; yakague na uongeze kesi kutoka kwenye maandishi yako halisi.",
+  "visa": [
+    {
+      "id": "ngeli-01",
+      "aina": "hariri",
+      "kategoria": "ngeli",
+      "ingizo": "Matumizi ya simu janja imesababisha mabadiliko makubwa katika biashara.",
+      "inatarajiwa": "Matumizi ya simu janja yamesababisha mabadiliko makubwa katika biashara.",
+      "chujio_peke": false
+    },
+    {
+      "id": "ngeli-02",
+      "aina": "hariri",
+      "kategoria": "ngeli",
+      "ingizo": "Mafanikio ya wakulima vimekuwa makubwa mwaka huu.",
+      "inatarajiwa": "Mafanikio ya wakulima yamekuwa makubwa mwaka huu.",
+      "chujio_peke": false
+    },
+    {
+      "id": "ngeli-03",
+      "aina": "hariri",
+      "kategoria": "ngeli",
+      "ingizo": "Maoni ya wananchi imekuwa muhimu kwa serikali.",
+      "inatarajiwa": "Maoni ya wananchi yamekuwa muhimu kwa serikali.",
+      "chujio_peke": false
+    },
+    {
+      "id": "ngeli-04",
+      "aina": "hariri",
+      "kategoria": "ngeli",
+      "ingizo": "Ukosefu wa ajira imekuwa tatizo kubwa nchini.",
+      "inatarajiwa": "Ukosefu wa ajira umekuwa tatizo kubwa nchini.",
+      "chujio_peke": true
+    },
+    {
+      "id": "ngeli-05",
+      "aina": "hariri",
+      "kategoria": "ngeli",
+      "ingizo": "Uhaba wa maji safi imekuwa changamoto kwa wakazi.",
+      "inatarajiwa": "Uhaba wa maji safi umekuwa changamoto kwa wakazi.",
+      "chujio_peke": true
+    },
+    {
+      "id": "ngeli-06",
+      "aina": "hariri",
+      "kategoria": "ngeli",
+      "ingizo": "Upungufu wa dawa hospitalini imeathiri wagonjwa wengi.",
+      "inatarajiwa": "Upungufu wa dawa hospitalini umeathiri wagonjwa wengi.",
+      "chujio_peke": false
+    },
+    {
+      "id": "ngeli-07",
+      "aina": "hariri",
+      "kategoria": "ngeli",
+      "ingizo": "Mashirika madogomadogo vya wakulima yanahitaji mikopo.",
+      "inatarajiwa": "Mashirika madogomadogo ya wakulima yanahitaji mikopo.",
+      "chujio_peke": true
+    },
+    {
+      "id": "ngeli-08",
+      "aina": "hariri",
+      "kategoria": "ngeli",
+      "ingizo": "Malipo yamekuwa vikichelewa kila mwezi.",
+      "inatarajiwa": "Malipo yamekuwa yakichelewa kila mwezi.",
+      "chujio_peke": true
+    },
+    {
+      "id": "ngeli-09",
+      "aina": "hariri",
+      "kategoria": "ngeli",
+      "ingizo": "Maendeleo yamekuwa vikisuasua kwa miaka mingi.",
+      "inatarajiwa": "Maendeleo yamekuwa yakisuasua kwa miaka mingi.",
+      "chujio_peke": true
+    },
+    {
+      "id": "ngeli-10",
+      "aina": "hariri",
+      "kategoria": "ngeli",
+      "ingizo": "Kikwazo kubwa ni ukosefu wa mitaji.",
+      "inatarajiwa": "Kikwazo kikubwa ni ukosefu wa mitaji.",
+      "chujio_peke": false
+    },
+    {
+      "id": "ngeli-11",
+      "aina": "hariri",
+      "kategoria": "ngeli",
+      "ingizo": "Mkutano wa jana ilikuwa mfupi.",
+      "inatarajiwa": "Mkutano wa jana ulikuwa mfupi.",
+      "chujio_peke": false
+    },
+    {
+      "id": "ngeli-12",
+      "aina": "hariri",
+      "kategoria": "ngeli",
+      "ingizo": "Vitabu vipya imefika shuleni jana.",
+      "inatarajiwa": "Vitabu vipya vimefika shuleni jana.",
+      "chujio_peke": false
+    },
+    {
+      "id": "ngeli-13",
+      "aina": "hariri",
+      "kategoria": "ngeli",
+      "ingizo": "Matumizi ya mbolea nyingi imesababisha uchafuzi wa udongo.",
+      "inatarajiwa": "Matumizi ya mbolea nyingi yamesababisha uchafuzi wa udongo.",
+      "chujio_peke": false
+    },
+    {
+      "id": "kila-01",
+      "aina": "hariri",
+      "kategoria": "kila",
+      "ingizo": "Kila mkulima akizingatia kanuni bora, watapata mavuno mengi.",
+      "inatarajiwa": "Kila mkulima akizingatia kanuni bora, atapata mavuno mengi.",
+      "chujio_peke": false
+    },
+    {
+      "id": "kila-02",
+      "aina": "hariri",
+      "kategoria": "kila",
+      "ingizo": "Kila mwanafunzi anatakiwa kuleta vitabu vyao.",
+      "inatarajiwa": "Kila mwanafunzi anatakiwa kuleta vitabu vyake.",
+      "chujio_peke": false
+    },
+    {
+      "id": "shamirisho-01",
+      "aina": "hariri",
+      "kategoria": "shamirisho",
+      "ingizo": "Mgonjwa anapowajali afya yake hupona haraka.",
+      "inatarajiwa": "Mgonjwa anapojali afya yake hupona haraka.",
+      "chujio_peke": false
+    },
+    {
+      "id": "tahajia-01",
+      "aina": "hariri",
+      "kategoria": "tahajia",
+      "ingizo": "Serekali imetangaza mpango mpya wa elimu.",
+      "inatarajiwa": "Serikali imetangaza mpango mpya wa elimu.",
+      "chujio_peke": true
+    },
+    {
+      "id": "tahajia-02",
+      "aina": "hariri",
+      "kategoria": "tahajia",
+      "ingizo": "Tulichelewa kwasababu ya mvua kubwa.",
+      "inatarajiwa": "Tulichelewa kwa sababu ya mvua kubwa.",
+      "chujio_peke": true
+    },
+    {
+      "id": "tahajia-03",
+      "aina": "hariri",
+      "kategoria": "tahajia",
+      "ingizo": "Maswala ya afya yanahitaji kipaumbele.",
+      "inatarajiwa": "Masuala ya afya yanahitaji kipaumbele.",
+      "chujio_peke": true
+    },
+    {
+      "id": "tahajia-04",
+      "aina": "hariri",
+      "kategoria": "tahajia",
+      "ingizo": "Wanyama pori wanalindwa katika hifadhi hii.",
+      "inatarajiwa": "Wanyamapori wanalindwa katika hifadhi hii.",
+      "chujio_peke": true
+    },
+    {
+      "id": "tahajia-05",
+      "aina": "hariri",
+      "kategoria": "tahajia",
+      "ingizo": "Nguvu kazi ya taifa inahitaji mafunzo.",
+      "inatarajiwa": "Nguvukazi ya taifa inahitaji mafunzo.",
+      "chujio_peke": true
+    },
+    {
+      "id": "kurudia-01",
+      "aina": "hariri",
+      "kategoria": "kurudia",
+      "ingizo": "Walizungumza kuhusu kuhusu afya ya jamii.",
+      "inatarajiwa": "Walizungumza kuhusu afya ya jamii.",
+      "chujio_peke": true
+    },
+    {
+      "id": "alama-01",
+      "aina": "hariri",
+      "kategoria": "alama",
+      "ingizo": "Wagonjwa walifika mapema ,lakini daktari alichelewa.",
+      "inatarajiwa": "Wagonjwa walifika mapema, lakini daktari alichelewa.",
+      "chujio_peke": false
+    },
+    {
+      "id": "alama-02",
+      "aina": "hariri",
+      "kategoria": "alama",
+      "ingizo": "Mkulima alipanda mahindi, maharage na alizeti",
+      "inatarajiwa": "Mkulima alipanda mahindi, maharage na alizeti.",
+      "chujio_peke": false
+    },
+    {
+      "id": "mchanganyiko-01",
+      "aina": "hariri",
+      "kategoria": "mchanganyiko",
+      "ingizo": "Wakulima wanataka ku-export mazao yao nje ya nchi.",
+      "inatarajiwa": null,
+      "chujio_peke": false,
+      "lazima_iwe_na": [
+        "kuuza"
+      ],
+      "isiwe_na": [
+        "export"
+      ]
+    },
+    {
+      "id": "mchanganyiko-02",
+      "aina": "hariri",
+      "kategoria": "mchanganyiko",
+      "ingizo": "Tunahitaji ku-improve huduma za afya vijijini.",
+      "inatarajiwa": null,
+      "chujio_peke": false,
+      "lazima_iwe_na": [
+        "kuboresha"
+      ],
+      "isiwe_na": [
+        "improve"
+      ]
+    },
+    {
+      "id": "sahihi-01",
+      "aina": "hariri",
+      "kategoria": "usigusiwe",
+      "ingizo": "Ukosefu wa ajira umeongezeka, na hali imekuwa mbaya.",
+      "chujio_peke": true
+    },
+    {
+      "id": "sahihi-02",
+      "aina": "hariri",
+      "kategoria": "usigusiwe",
+      "ingizo": "Upungufu wa walimu umeathiri shule, na serikali imekuwa makini.",
+      "chujio_peke": true
+    },
+    {
+      "id": "sahihi-03",
+      "aina": "hariri",
+      "kategoria": "usigusiwe",
+      "ingizo": "Ukosefu wa ajira, hali imekuwa mbaya.",
+      "chujio_peke": true
+    },
+    {
+      "id": "sahihi-04",
+      "aina": "hariri",
+      "kategoria": "usigusiwe",
+      "ingizo": "Mashirika madogo yanachangia uchumi wa taifa.",
+      "chujio_peke": true
+    },
+    {
+      "id": "sahihi-05",
+      "aina": "hariri",
+      "kategoria": "usigusiwe",
+      "ingizo": "Mgonjwa anaendelea kupona kidogo kidogo.",
+      "chujio_peke": true
+    },
+    {
+      "id": "sahihi-06",
+      "aina": "hariri",
+      "kategoria": "usigusiwe",
+      "ingizo": "Anaenda polepole kila siku.",
+      "chujio_peke": true
+    },
+    {
+      "id": "sahihi-07",
+      "aina": "hariri",
+      "kategoria": "usigusiwe",
+      "ingizo": "Wakulima wa Masasi wanalima korosho kwa wingi.",
+      "chujio_peke": true
+    },
+    {
+      "id": "sahihi-08",
+      "aina": "hariri",
+      "kategoria": "usigusiwe",
+      "ingizo": "Dkt. Juma alifika saa 3:30 asubuhi.",
+      "chujio_peke": true
+    },
+    {
+      "id": "sahihi-09",
+      "aina": "hariri",
+      "kategoria": "usigusiwe",
+      "ingizo": "Matumizi ya mbolea yameongezeka mwaka huu.",
+      "chujio_peke": true
+    },
+    {
+      "id": "sahihi-10",
+      "aina": "hariri",
+      "kategoria": "usigusiwe",
+      "ingizo": "Watoto wetu wanapenda kusoma vitabu hivi.",
+      "chujio_peke": true
+    },
+    {
+      "id": "sahihi-11",
+      "aina": "hariri",
+      "kategoria": "usigusiwe",
+      "ingizo": "Hospitali imepokea dawa mpya wiki hii.",
+      "chujio_peke": true
+    },
+    {
+      "id": "sahihi-12",
+      "aina": "hariri",
+      "kategoria": "usigusiwe",
+      "ingizo": "Mkutano mrefu ulifanyika jana jioni.",
+      "chujio_peke": true
+    },
+    {
+      "id": "sahihi-13",
+      "aina": "hariri",
+      "kategoria": "usigusiwe",
+      "ingizo": "Muhtasari\n\n- Matumizi ya mbolea yameongezeka.\n- Mavuno yamekuwa mengi.",
+      "chujio_peke": true
+    },
+    {
+      "id": "sahihi-14",
+      "aina": "hariri",
+      "kategoria": "usigusiwe",
+      "ingizo": "Kila mkulima akizingatia kanuni bora atapata mavuno mengi.",
+      "chujio_peke": true
+    },
+    {
+      "id": "sahihi-15",
+      "aina": "hariri",
+      "kategoria": "usigusiwe",
+      "ingizo": "Mafanikio ya kilimo yamekuwa makubwa.",
+      "chujio_peke": true
+    },
+    {
+      "id": "sahihi-16",
+      "aina": "hariri",
+      "kategoria": "usigusiwe",
+      "ingizo": "Alikwenda sokoni kununua mchele, mafuta na sukari.",
+      "chujio_peke": true
+    },
+    {
+      "id": "tafsiri-01",
+      "aina": "tafsiri",
+      "kategoria": "istilahi",
+      "ingizo": "Climate change threatens food security in many African countries.",
+      "lazima_iwe_na": [
+        "mabadiliko ya tabianchi",
+        "usalama wa chakula"
+      ]
+    },
+    {
+      "id": "tafsiri-02",
+      "aina": "tafsiri",
+      "kategoria": "istilahi",
+      "ingizo": "Mobile money has driven financial inclusion across rural areas.",
+      "lazima_iwe_na": [
+        "ushirikishwaji wa kifedha"
+      ]
+    },
+    {
+      "id": "tafsiri-03",
+      "aina": "tafsiri",
+      "kategoria": "istilahi",
+      "ingizo": "Renewable energy is not only cheaper but also cleaner.",
+      "lazima_iwe_na": [
+        "nishati jadidifu",
+        "bali pia"
+      ]
+    },
+    {
+      "id": "tafsiri-04",
+      "aina": "tafsiri",
+      "kategoria": "istilahi",
+      "ingizo": "Fraudsters target people who do not understand digital payments.",
+      "lazima_iwe_na": [
+        "walaghai"
+      ]
+    },
+    {
+      "id": "tafsiri-05",
+      "aina": "tafsiri",
+      "kategoria": "istilahi",
+      "ingizo": "The blue economy offers new opportunities for coastal communities, including aquaculture.",
+      "lazima_iwe_na": [
+        "uchumi wa buluu",
+        "ufugaji wa viumbe maji"
+      ]
+    },
+    {
+      "id": "tafsiri-06",
+      "aina": "tafsiri",
+      "kategoria": "istilahi",
+      "ingizo": "Mangrove forests protect coral reefs and local fishing communities.",
+      "lazima_iwe_na": [
+        "mikoko",
+        "miamba ya matumbawe"
+      ]
+    },
+    {
+      "id": "tafsiri-07",
+      "aina": "tafsiri",
+      "kategoria": "istilahi",
+      "ingizo": "Smallholder farmers need better market linkages and fair prices.",
+      "lazima_iwe_na": [
+        "wakulima wadogo",
+        "miunganiko ya masoko"
+      ]
+    },
+    {
+      "id": "tafsiri-08",
+      "aina": "tafsiri",
+      "kategoria": "istilahi",
+      "ingizo": "Consumer protection laws safeguard people from unfair loan terms.",
+      "lazima_iwe_na": [
+        "ulinzi wa mlaji"
+      ]
+    },
+    {
+      "id": "tafsiri-09",
+      "aina": "tafsiri",
+      "kategoria": "istilahi",
+      "ingizo": "Agriculture is the backbone of our economy.",
+      "lazima_iwe_na": [
+        "mhimili mkuu"
+      ],
+      "isiwe_na": [
+        "backbone"
+      ]
+    },
+    {
+      "id": "tafsiri-10",
+      "aina": "tafsiri",
+      "kategoria": "istilahi",
+      "ingizo": "Stakeholders must work hand in hand to build capacity.",
+      "lazima_iwe_na": [
+        "wadau",
+        "bega kwa bega"
+      ]
+    },
+    {
+      "id": "tafsiri-11",
+      "aina": "tafsiri",
+      "kategoria": "istilahi",
+      "ingizo": "Every farmer who follows good practices will increase his harvest.",
+      "lazima_iwe_na": [
+        "Kila mkulima"
+      ]
+    },
+    {
+      "id": "tafsiri-12",
+      "aina": "tafsiri",
+      "kategoria": "istilahi",
+      "ingizo": "The rule of law and human rights are essential for democracy.",
+      "lazima_iwe_na": [
+        "utawala wa sheria",
+        "haki za binadamu"
+      ]
+    }
+  ]
+}
