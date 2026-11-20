@@ -1,6 +1,7 @@
 """
 AI Lingual Africa Sanifu API v3.2
 Gemini 2.5 Flash (kuu) + Groq Llama 3.3 70B (akiba) + Hatua ya Pili ya Ukaguzi + Chujio salama la Python
++ Sheria ya 4B (chujio_4b.py): kuondoa Kiingereza kilichochanganywa kwenye Kiswahili
 
 Njia zilezile: /api/chakata, /hariri, /tafsiri  (extension ya zamani haihitaji kubadilishwa)
 Njia mpya: /pendekezo (au /api/pendekezo) -> orodha ya mapendekezo ya Kubali / Puuza yenye nafasi (offsets)
@@ -28,6 +29,8 @@ from flask_cors import CORS
 from google import genai
 from google.genai import types
 from groq import Groq
+
+from chujio_4b import ondoa_kiingereza, ina_kiingereza
 
 # ------------------------------------------------------------------
 # 1. MIPANGILIO
@@ -164,6 +167,7 @@ _NGELI_MAUMBO_MAALUM = [
     (re.compile(r"\bmashirika\s+madogomadogo\s+vya\b", re.IGNORECASE), "mashirika madogomadogo ya"),
     (re.compile(r"\byamekuwa\s+vikichelewa\b", re.IGNORECASE), "yamekuwa yakichelewa"),
     (re.compile(r"\byamekuwa\s+vikisuasua\b", re.IGNORECASE), "yamekuwa yakisuasua"),
+    (re.compile(r"\bmafanikio\s+kubwa\b", re.IGNORECASE), "mafanikio makubwa"),
 ]
 
 # ukosefu/uhaba/upungufu (U-umoja) + "wa" + maneno 1-2 + "imekuwa"  ->  "umekuwa"
@@ -228,7 +232,12 @@ Fuata sheria hizi kali bila kukosea:
    - Kitenzi lazima kioane na nomino halisi inayotenda, si nomino iliyo karibu tu.
 2. KIVUMISHI 'KILA': Sentensi ikianza na 'Kila' + nomino ya umoja ('Kila mkulima'), vitenzi VYOTE na viwakilishi VYOTE viwe UMOJA.
 3. SHAMIRISHO NA WAKATI: 'anapojali afya' (siyo 'anapowajali afya'). Kitenzi kikuu baada ya kitenzi-jina kichukue wakati ujao ('kutasaidia') au mazoea ('husaidia').
-4. UAMINIFU: Usiongeze sentensi wala maneno mapya. Usibadilishe maneno ambayo tayari ni sahihi. Ondoa maneno ya Kiingereza yaliyochanganywa ('ku-export' -> 'kuuza nje').
+4. UAMINIFU: Usiongeze sentensi wala maneno mapya (isipokuwa maneno sanifu yanayochukua nafasi ya Kiingereza kwa sheria 4B). Usibadilishe maneno ambayo tayari ni sahihi.
+4B. UKALI WA KUONDOA KIINGEREZA (STRICT NO CODE-SWITCHING):
+   - Unapohariri Kiswahili, ondoa kila neno la Kiingereza lililochanganywa katikati ya sentensi ya Kiswahili, pamoja na miundo ya kiambishi + '-' + kitenzi cha Kiingereza (mfano: 'ku-launch', 'ana-post', 'nime-manage'). Badilisha kwa neno sanifu la Kiswahili lenye maana ileile, kisha hakikisha ngeli na viambishi vinaoana na neno jipya.
+   - Mifano: ku-launch -> kuanzisha; ku-post -> kuchapisha; ku-attract -> kuvutia; ku-manage -> kusimamia; ku-build brand -> kujenga chapa; capital -> mtaji; platforms -> majukwaa; transactions -> miamala; online -> mtandaoni; business plan -> mpango wa biashara; records -> kumbukumbu; loans -> mikopo; digital marketing -> masoko ya kidijitali.
+   - USIBADILISHE: majina maalum ya watu, chapa, kampuni na bidhaa (Facebook, WhatsApp, Pesapal); URL na barua pepe; msimbo; nukuu ndani ya alama za nukuu; sentensi zilizoandikwa kwa Kiingereza kikamilifu kwa makusudi.
+   - Katika tafsiri (EN -> SW), matokeo yote yawe Kiswahili; usiache neno la Kiingereza isipokuwa jina maalum.
 5. TAFSIRI (EN -> SW): Tafsiri maana halisi na misemo kwa ufasaha (si neno kwa neno). Tunza msisitizo wa 'not only... but also' ('si tu... bali pia').
 6. MUUNDO: Dumisha vichwa vya habari, orodha na namba kama zilivyo. Hifadhi majina ya watu, vifupisho na nambari.
 7. MATOKEO: Toa matokeo yaliyohaririwa/kutafsiriwa PEKEE, bila maelezo ya ziada, bila nukuu, bila alama za ```.
@@ -247,6 +256,7 @@ Sheria:
   * 'malipo yamekuwa vikichelewa' -> 'malipo yamekuwa yakichelewa'
   * 'maendeleo yamekuwa vikisuasua' -> 'maendeleo yamekuwa yakisuasua'
   * 'ukosefu wa ajira imekuwa tatizo' -> 'ukosefu wa ajira umekuwa tatizo' (ukosefu, uhaba, upungufu huchukua 'u-')
+- Kama maandishi yana neno la Kiingereza lililochanganywa na Kiswahili (mfano 'ku-launch', 'online'), libadilishe na neno sanifu la Kiswahili, na ulinde majina maalum, URL, barua pepe na nukuu.
 - Kitenzi huoana na nomino inayotenda, si nomino iliyo karibu: 'ukosefu wa ajira umeongezeka, na hali imekuwa mbaya' ni SAHIHI (usibadilishe 'hali imekuwa').
 - Toa maandishi yaliyokaguliwa PEKEE, bila maelezo, bila nukuu, bila alama za ```.
 """
@@ -336,9 +346,12 @@ def chakata_kipande(kipande: str, kitendo: str) -> dict:
         vidokezo = pata_vidokezo_vya_kamusi(kipande)
         ujumbe = f"Tafsiri aya hii kwenda Kiswahili Sanifu fasaha:{vidokezo}\n\n{kipande}"
     else:
+        # Sheria 4B: ondoa Kiingereza kabla ya AI, ili AI ione Kiswahili na irekebishe ngeli.
+        kipande_cha_ai = ondoa_kiingereza(kipande)
         ujumbe = (
-            "Hariri sarufi, ngeli, tahajia, na alama za uandishi za aya hii ya Kiswahili "
-            f"bila kuongeza maneno mapya:\n\n{kipande}"
+            "Hariri sarufi, ngeli, tahajia, na alama za uandishi za aya hii ya Kiswahili, "
+            "ukiondoa maneno ya Kiingereza yaliyochanganywa (sheria 4B), "
+            f"bila kuongeza maneno mengine mapya:\n\n{kipande_cha_ai}"
         )
 
     hatua1, injini = ita_ai(SYSTEM_PROMPT, ujumbe)
@@ -421,7 +434,11 @@ def chakata_maandishi(maandishi: str, kitendo: str) -> dict:
         if aina == "kama_ilivyo":
             matokeo_m = asili_m
         else:
-            safi = [safisha_maandishi_sanifu(majibu[idx + i]["text"]) for i in range(idadi)]
+            # Sheria 4B: kichujio baada ya AI kama kinga, kisha chujio salama la sanifu.
+            safi = [
+                safisha_maandishi_sanifu(ondoa_kiingereza(majibu[idx + i]["text"]))
+                for i in range(idadi)
+            ]
             idx += idadi
             kichwani = asili_m[: len(asili_m) - len(asili_m.lstrip())]   # hifadhi nafasi za mwanzo (indent)
             mkiani = asili_m[len(asili_m.rstrip()):]
@@ -482,6 +499,9 @@ def _aina_na_maelezo(asili: str, mpya: str):
     kawaida = re.sub(r"\s+", " ", asili.lower()).strip()
     if kawaida in _TAHAJIA:
         return "tahajia", f"Tahajia sahihi ni '{_TAHAJIA[kawaida]}'."
+
+    if ina_kiingereza(asili) and not ina_kiingereza(mpya):
+        return "kiingereza", "Neno la Kiingereza limebadilishwa na neno sanifu la Kiswahili."
 
     wa, wb = _NENO_RX.findall(asili), _NENO_RX.findall(mpya)
     if wa == wb:
