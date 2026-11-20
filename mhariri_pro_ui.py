@@ -35,8 +35,6 @@ def _futa_chaguo_za_zamani():
 def onyesha_mhariri_pro(kamusi=None, piga_ai=None, piga_ai_kina=None,
                         max_chars=None, kikomo_maneno=None):
     """Onyesha UI. Hurudisha bill dict au None."""
-    st.subheader("Mhariri wa Kiswahili Sanifu Pro")
-
     maandishi = st.text_area("Andika au bandika maandishi ya Kiswahili",
                              height=220, key="pro_maandishi", max_chars=max_chars)
     kutumia_ai = st.checkbox(
