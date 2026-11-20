@@ -465,7 +465,7 @@ def _onyesha_precheck(pc):
 
 if "mhariri" in chaguo_menyu:
     str_platform.markdown(
-        "<h3 style='color: #D97706;'>\U0001F4DD Mhariri wa Kiswahili Sanifu Pro (Grammarly Mode)</h3>",
+        "<h3 style='color: #D97706;'>\U0001F4DD Mhariri wa Kiswahili Sanifu Pro</h3>",
         unsafe_allow_html=True)
 
     if maneno_yaliyobaki <= 0:
