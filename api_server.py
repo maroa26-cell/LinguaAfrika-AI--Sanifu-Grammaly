@@ -14,7 +14,7 @@ Environment Variables (Render):
   HATUA_MBILI      (hiari) -> "1" (chaguo-msingi) au "0" kuzima ukaguzi wa pili
   MAX_CHARS        (hiari) -> kikomo cha herufi, chaguo-msingi 15000
   MAX_WORKERS      (hiari) -> uchakataji sambamba, chaguo-msingi 3
-  GEMINI_MODEL, GROQ_MODEL (hiari)
+  GEMINI_MODEL, GEMINI_FALLBACK_MODEL, GROQ_MODEL (hiari) -> majina ya modeli; badilisha hapa modeli ikistaafishwa
 """
 import os
 import re
@@ -34,8 +34,9 @@ from groq import Groq
 # ------------------------------------------------------------------
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
 GROQ_API_KEY = os.environ.get("GROQ_API_KEY")
-GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-2.5-flash")
-GROQ_MODEL = os.environ.get("GROQ_MODEL", "llama-3.3-70b-versatile")
+GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-3.8-flash")
+GEMINI_FALLBACK_MODEL = os.environ.get("GEMINI_FALLBACK_MODEL", "gemini-3.6-flash")  # akiba ya Gemini ikijaa
+GROQ_MODEL = os.environ.get("GROQ_MODEL", "openai/gpt-oss-120b")
 API_KEY_YA_HUDUMA = os.environ.get("API_KEY")
 ALLOWED_ORIGINS = os.environ.get("ALLOWED_ORIGINS", "*").strip()
 HATUA_MBILI = os.environ.get("HATUA_MBILI", "1") == "1"
@@ -254,22 +255,35 @@ Sheria:
 # ------------------------------------------------------------------
 # 5. KUITA AI (Gemini kwanza, Groq akiba)
 # ------------------------------------------------------------------
+def _ni_kosa_la_muda(e: Exception) -> bool:
+    """429/500/503/504 au tatizo la mtandao: inafaa kujaribu tena. 400/401/403/404: usijaribu tena."""
+    code = getattr(e, "code", None)
+    return code is None or code in (429, 500, 502, 503, 504)
+
+
 def _ita_gemini(system: str, ujumbe: str):
     if not gemini_client:
         return None
-    for jaribio in range(2):
-        try:
-            jibu = gemini_client.models.generate_content(
-                model=GEMINI_MODEL,
-                contents=ujumbe,
-                config=types.GenerateContentConfig(system_instruction=system, temperature=0.0),
-            )
-            if jibu and jibu.text:
-                return jibu.text.strip()
-            return None  # jibu tupu (mf. limezuiwa): nenda Groq
-        except Exception as e:
-            print(f"Hitilafu ya Gemini (jaribio {jaribio + 1}): {e}")
-            time.sleep(1.5 * (jaribio + 1))
+    modeli = [GEMINI_MODEL]
+    if GEMINI_FALLBACK_MODEL and GEMINI_FALLBACK_MODEL != GEMINI_MODEL:
+        modeli.append(GEMINI_FALLBACK_MODEL)
+
+    for modeli_jina in modeli:
+        for jaribio in range(2):
+            try:
+                jibu = gemini_client.models.generate_content(
+                    model=modeli_jina,
+                    contents=ujumbe,
+                    config=types.GenerateContentConfig(system_instruction=system, temperature=0.0),
+                )
+                if jibu and jibu.text:
+                    return jibu.text.strip()
+                break  # jibu tupu (mf. limezuiwa): jaribu modeli inayofuata
+            except Exception as e:
+                print(f"Hitilafu ya Gemini ({modeli_jina}, jaribio {jaribio + 1}): {e}")
+                if not _ni_kosa_la_muda(e):
+                    break  # mf. modeli haipo (404): nenda modeli inayofuata mara moja
+                time.sleep(1.5 * (jaribio + 1))
     return None
 
 
@@ -673,7 +687,7 @@ def afya_ya_seva():
     return jsonify({
         "status": "Live",
         "mfumo": "AI Lingual Africa Sanifu API v3.2",
-        "injini": f"{GEMINI_MODEL} + Groq Fallback + Ukaguzi wa Pili + Chujio salama",
+        "injini": f"{GEMINI_MODEL} (akiba: {GEMINI_FALLBACK_MODEL}) + Groq {GROQ_MODEL} + Ukaguzi wa Pili + Chujio salama",
         "njia": ["/api/chakata", "/hariri", "/tafsiri", "/pendekezo"],
         "gemini": bool(gemini_client),
         "groq": bool(groq_client),
