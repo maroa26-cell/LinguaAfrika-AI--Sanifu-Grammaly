@@ -1,18 +1,22 @@
 """
-AI Lingual Africa Sanifu API v3.2
-Gemini 2.5 Flash (kuu) + Groq Llama 3.3 70B (akiba) + Hatua ya Pili ya Ukaguzi + Chujio salama la Python
+AI Lingual Africa Sanifu API v3.3
+Gemini (kuu) + Groq (akiba) + Hatua ya Pili ya Ukaguzi + Chujio salama la Python
 + Sheria ya 4B (chujio_4b.py): kuondoa Kiingereza kilichochanganywa kwenye Kiswahili
 
 Njia zilezile: /api/chakata, /hariri, /tafsiri  (extension ya zamani haihitaji kubadilishwa)
-Njia mpya: /pendekezo (au /api/pendekezo) -> orodha ya mapendekezo ya Kubali / Puuza yenye nafasi (offsets)
-Funguo za JSON zilezile: ok, matokeo, result
+Njia za mapendekezo: /pendekezo (au /api/pendekezo) -> orodha ya mapendekezo yenye nafasi (offsets)
+MPYA v3.3 (kwa Chrome extension ya Lingual Sanifu):
+  GET  /health      -> {"status":"ok"}  (kuamsha seva ya Render; haihitaji ufunguo)
+  POST /v1/kagua    -> {"ok":true,"ai":true,"issues":[{original,suggestion,label,explanation,hiari}]}
+                       (pia: /api/kagua na /kagua)
 
 Environment Variables (Render):
   GEMINI_API_KEY   (inapendekezwa)
   GROQ_API_KEY     (akiba)
-  API_KEY          (hiari) -> ikiwekwa, extension itume header: X-API-Key
+  API_KEY          (hiari) -> ikiwekwa, extension itume header: X-API-Key (iwe sawa na ufunguo ulio kwenye mipangilio ya extension)
   ALLOWED_ORIGINS  (hiari) -> mfano: chrome-extension://abcdef...,https://tovuti-yako.com  (chaguo-msingi: *)
-  HATUA_MBILI      (hiari) -> "1" (chaguo-msingi) au "0" kuzima ukaguzi wa pili
+  HATUA_MBILI      (hiari) -> "1" (chaguo-msingi) au "0" kuzima ukaguzi wa pili (kwa /hariri, /tafsiri, /pendekezo)
+  KAGUA_HATUA_MBILI (hiari) -> "0" (chaguo-msingi) kwa /v1/kagua ili ukaguzi wa kuandika uwe wa haraka; "1" kuwasha
   MAX_CHARS        (hiari) -> kikomo cha herufi, chaguo-msingi 15000
   MAX_WORKERS      (hiari) -> uchakataji sambamba, chaguo-msingi 3
   GEMINI_MODEL, GEMINI_FALLBACK_MODEL, GROQ_MODEL (hiari) -> majina ya modeli; badilisha hapa modeli ikistaafishwa
@@ -43,6 +47,7 @@ GROQ_MODEL = os.environ.get("GROQ_MODEL", "openai/gpt-oss-120b")
 API_KEY_YA_HUDUMA = os.environ.get("API_KEY")
 ALLOWED_ORIGINS = os.environ.get("ALLOWED_ORIGINS", "*").strip()
 HATUA_MBILI = os.environ.get("HATUA_MBILI", "1") == "1"
+KAGUA_HATUA_MBILI = os.environ.get("KAGUA_HATUA_MBILI", "0") == "1"
 MAX_CHARS = int(os.environ.get("MAX_CHARS", "15000"))
 MAX_WORKERS = int(os.environ.get("MAX_WORKERS", "3"))
 MAX_KIPANDE = 1200  # herufi kwa kipande kimoja cha aya ndefu
@@ -71,11 +76,15 @@ def angalia_ufunguo():
     """Ikiwa API_KEY imewekwa kwenye Render, omba header ya X-API-Key."""
     if not API_KEY_YA_HUDUMA:
         return None
-    if request.method == "OPTIONS" or request.path == "/":
+    if request.method == "OPTIONS" or request.path in ("/", "/health"):
         return None
     ulioletwa = request.headers.get("X-API-Key", "")
     if not hmac.compare_digest(ulioletwa, API_KEY_YA_HUDUMA):
-        return jsonify({"ok": False, "error": "Huna ruhusa ya kutumia huduma hii."}), 401
+        return jsonify({
+            "ok": False,
+            "kosa": "UFUNGUO_SIO_SAHIHI",   # extension inasoma 'kosa'
+            "error": "Huna ruhusa ya kutumia huduma hii.",
+        }), 401
     return None
 
 
@@ -340,7 +349,10 @@ def _uwiano_unakubalika(asili: str, matokeo: str, kitendo: str) -> bool:
     return 0.6 <= ratio <= 1.8
 
 
-def chakata_kipande(kipande: str, kitendo: str) -> dict:
+def chakata_kipande(kipande: str, kitendo: str, hatua_mbili=None) -> dict:
+    if hatua_mbili is None:
+        hatua_mbili = HATUA_MBILI
+
     # --- Hatua ya 1: kuhariri / kutafsiri ---
     if kitendo == "tafsiri":
         vidokezo = pata_vidokezo_vya_kamusi(kipande)
@@ -366,7 +378,7 @@ def chakata_kipande(kipande: str, kitendo: str) -> dict:
     matokeo, ilitumia_hatua2 = hatua1, False
 
     # --- Hatua ya 2: ukaguzi wa ngeli/sarufi bila kubadilisha maana ---
-    if HATUA_MBILI:
+    if hatua_mbili:
         if kitendo == "tafsiri":
             ujumbe2 = (
                 f"Maandishi asili (Kiingereza), kwa kumbukumbu ya maana tu:\n{kipande}\n\n"
@@ -406,9 +418,9 @@ def _ina_herufi(s: str) -> bool:
 
 
 # ------------------------------------------------------------------
-# 8. MSINGI WA UCHAKATAJI (unatumiwa na /hariri, /tafsiri na /pendekezo)
+# 8. MSINGI WA UCHAKATAJI (unatumiwa na /hariri, /tafsiri, /pendekezo na /v1/kagua)
 # ------------------------------------------------------------------
-def chakata_maandishi(maandishi: str, kitendo: str) -> dict:
+def chakata_maandishi(maandishi: str, kitendo: str, hatua_mbili=None) -> dict:
     """
     Hugawa maandishi kwa mistari, huchakata kwa sambamba, na kurudisha kila mstari
     pamoja na nafasi yake (mwanzo) kwenye maandishi ya awali.
@@ -427,7 +439,7 @@ def chakata_maandishi(maandishi: str, kitendo: str) -> dict:
     majibu = []
     if vipande:
         with ThreadPoolExecutor(max_workers=MAX_WORKERS) as mtambo:
-            majibu = list(mtambo.map(lambda k: chakata_kipande(k, kitendo), vipande))
+            majibu = list(mtambo.map(lambda k: chakata_kipande(k, kitendo, hatua_mbili), vipande))
 
     mistari_matokeo, idx = [], 0
     for aina, idadi, mwanzo_m, asili_m in muundo:
@@ -609,6 +621,47 @@ def tumia_mapendekezo(maandishi: str, mapendekezo: list, ids=None) -> str:
 
 
 # ------------------------------------------------------------------
+# 9B. MUUNDO WA CHROME EXTENSION (/v1/kagua)
+#     Extension inatarajia: {ok, ai, issues:[{original, suggestion, label, explanation, hiari}]}
+#     Nafasi (offsets) huzihesabu yenyewe kwa kutafuta 'original' kwenye maandishi.
+# ------------------------------------------------------------------
+_LEBO_ZA_AINA = {
+    "tahajia": "Tahajia",
+    "ngeli": "Ngeli",
+    "kiingereza": "Kiingereza",
+    "nafasi": "Nafasi",
+    "alama": "Alama za uandishi",
+    "herufi": "Herufi kubwa/ndogo",
+    "kujirudia": "Neno limejirudia",
+    "msamiati": "Msamiati",
+    "sarufi": "Sarufi",
+}
+# Mapendekezo ya mtindo/msamiati ni ya hiari (hayajumuishwi kwenye "Kubali yote")
+_AINA_ZA_HIARI = {"msamiati", "sarufi"}
+
+
+def _kwa_extension(mapendekezo: list) -> list:
+    """Hubadilisha mapendekezo kuwa muundo wa extension; huondoa tupu na marudio ya jozi ileile."""
+    issues, ameonekana = [], set()
+    for p in mapendekezo:
+        original, suggestion = p["kutoka"], p["kuwa"]
+        if not original or not suggestion or original == suggestion:
+            continue
+        jozi = (original, suggestion)
+        if jozi in ameonekana:   # jozi ileile mara mbili ingeweza kubadilisha mahali pamoja mara mbili
+            continue
+        ameonekana.add(jozi)
+        issues.append({
+            "original": original,
+            "suggestion": suggestion,
+            "label": _LEBO_ZA_AINA.get(p["aina"], "Mengineyo"),
+            "explanation": p["maelezo"],
+            "hiari": p["aina"] in _AINA_ZA_HIARI,
+        })
+    return issues
+
+
+# ------------------------------------------------------------------
 # 10. NJIA (ROUTES)
 # ------------------------------------------------------------------
 def _soma_ombi():
@@ -620,20 +673,24 @@ def _soma_ombi():
 
 def _kagua_maandishi(maandishi):
     if not isinstance(maandishi, str) or not maandishi.strip():
-        return jsonify({"ok": False, "error": "Tafadhali weka maandishi kwanza."}), 400
+        return jsonify({"ok": False, "kosa": "MAANDISHI_TUPU",
+                        "error": "Tafadhali weka maandishi kwanza."}), 400
     if len(maandishi) > MAX_CHARS:
         return jsonify({
             "ok": False,
+            "kosa": "MAANDISHI_MAREFU",
             "error": f"Maandishi ni marefu mno (herufi {len(maandishi)}). Kikomo ni {MAX_CHARS}. Yagawe sehemu sehemu.",
         }), 413
     if not any(_ina_herufi(m) for m in maandishi.split("\n")):
-        return jsonify({"ok": False, "error": "Hakuna maandishi ya kuchakata."}), 400
+        return jsonify({"ok": False, "kosa": "MAANDISHI_TUPU",
+                        "error": "Hakuna maandishi ya kuchakata."}), 400
     return None
 
 
 def _ai_hazipatikani():
     return jsonify({
         "ok": False,
+        "kosa": "AI_HAZIPATIKANI",
         "error": "Huduma za AI hazipatikani kwa sasa. Jaribu tena baadaye.",
         "imechakatwa": False,
     }), 502
@@ -702,16 +759,54 @@ def huduma_ya_mapendekezo():
     })
 
 
+@app.route("/v1/kagua", methods=["POST"])
+@app.route("/api/kagua", methods=["POST"])
+@app.route("/kagua", methods=["POST"])
+def huduma_ya_extension():
+    """
+    Njia ya Chrome extension ya Lingual Sanifu (background.js).
+    Ombi:  {"text": "..."}  + header X-API-Key
+    Jibu:  {"ok": true, "ai": true, "issues": [{original, suggestion, label, explanation, hiari}]}
+    Kwa kasi, hatua ya pili ya ukaguzi imezimwa hapa kwa chaguo-msingi (KAGUA_HATUA_MBILI=0).
+    """
+    maandishi, _ = _soma_ombi()
+    kosa = _kagua_maandishi(maandishi)
+    if kosa:
+        return kosa
+
+    r = chakata_maandishi(maandishi, "hariri", hatua_mbili=KAGUA_HATUA_MBILI)
+    muh = muhtasari_wa_majibu(r["majibu"])
+    if muh["zilizoshindwa"] == muh["jumla"]:
+        return _ai_hazipatikani()
+
+    issues = _kwa_extension(mapendekezo_ya_maandishi(r["mistari"]))
+    return jsonify({
+        "ok": True,
+        # ai=false ikiwa baadhi ya vipande vimeshindwa: extension isihifadhi jibu hili kwenye akiba
+        "ai": muh["zilizoshindwa"] == 0,
+        "issues": issues,
+        "idadi": len(issues),
+        "injini_iliyotumika": muh["injini"],
+    })
+
+
+@app.route("/health", methods=["GET"])
+def afya_nyepesi():
+    """Nyepesi sana: extension huitumia kuamsha seva ya Render iliyolala."""
+    return jsonify({"status": "ok"})
+
+
 @app.route("/", methods=["GET"])
 def afya_ya_seva():
     return jsonify({
         "status": "Live",
-        "mfumo": "AI Lingual Africa Sanifu API v3.2",
+        "mfumo": "AI Lingual Africa Sanifu API v3.3",
         "injini": f"{GEMINI_MODEL} (akiba: {GEMINI_FALLBACK_MODEL}) + Groq {GROQ_MODEL} + Ukaguzi wa Pili + Chujio salama",
-        "njia": ["/api/chakata", "/hariri", "/tafsiri", "/pendekezo"],
+        "njia": ["/api/chakata", "/hariri", "/tafsiri", "/pendekezo", "/v1/kagua", "/health"],
         "gemini": bool(gemini_client),
         "groq": bool(groq_client),
         "hatua_mbili": HATUA_MBILI,
+        "kagua_hatua_mbili": KAGUA_HATUA_MBILI,
     })
 
 
