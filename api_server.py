@@ -7,7 +7,7 @@ Njia zilezile: /api/chakata, /hariri, /tafsiri  (extension ya zamani haihitaji k
 Njia za mapendekezo: /pendekezo (au /api/pendekezo) -> orodha ya mapendekezo yenye nafasi (offsets)
 MPYA v3.3 (kwa Chrome extension ya Lingual Sanifu):
   GET  /health      -> {"status":"ok"}  (kuamsha seva ya Render; haihitaji ufunguo)
-  POST /v1/kagua    -> {"ok":true,"ai":true,"issues":[{original,suggestion,label,explanation,hiari}]}
+  POST /v1/kagua    -> {"ok":true,"ai":true,"issues":[{original,suggestion,start,end,label,explanation,hiari}]}
                        (pia: /api/kagua na /kagua)
 
 Environment Variables (Render):
@@ -622,8 +622,8 @@ def tumia_mapendekezo(maandishi: str, mapendekezo: list, ids=None) -> str:
 
 # ------------------------------------------------------------------
 # 9B. MUUNDO WA CHROME EXTENSION (/v1/kagua)
-#     Extension inatarajia: {ok, ai, issues:[{original, suggestion, label, explanation, hiari}]}
-#     Nafasi (offsets) huzihesabu yenyewe kwa kutafuta 'original' kwenye maandishi.
+#     Extension inatarajia: {ok, ai, issues:[{original, suggestion, start, end, label, explanation, hiari}]}
+#     start/end ni nafasi za UTF-16 kwenye maandishi yaliyotumwa (lingual_utils.js inazihitaji).
 # ------------------------------------------------------------------
 _LEBO_ZA_AINA = {
     "tahajia": "Tahajia",
@@ -640,20 +640,30 @@ _LEBO_ZA_AINA = {
 _AINA_ZA_HIARI = {"msamiati", "sarufi"}
 
 
-def _kwa_extension(mapendekezo: list) -> list:
-    """Hubadilisha mapendekezo kuwa muundo wa extension; huondoa tupu na marudio ya jozi ileile."""
-    issues, ameonekana = [], set()
+def _u16(s: str, i: int) -> int:
+    """Nafasi ya code points (Python) -> nafasi ya UTF-16 (JavaScript). Tofauti hutokea kwa emoji."""
+    return len(s[:i].encode("utf-16-le", "surrogatepass")) // 2
+
+
+def _kwa_extension(maandishi: str, mapendekezo: list) -> list:
+    """
+    Hubadilisha mapendekezo kuwa muundo wa extension. Kila kosa lina start/end (UTF-16) kwenye
+    maandishi yaliyotumwa; lingual_utils.js (hifadhiMajibu) inazihitaji kupanga makosa kwa sentensi.
+    """
+    issues = []
     for p in mapendekezo:
         original, suggestion = p["kutoka"], p["kuwa"]
         if not original or not suggestion or original == suggestion:
             continue
-        jozi = (original, suggestion)
-        if jozi in ameonekana:   # jozi ileile mara mbili ingeweza kubadilisha mahali pamoja mara mbili
+        anza = p["mwanzo"] + (len(p["asili"]) - len(p["asili"].lstrip()))
+        mwisho = anza + len(original)
+        if maandishi[anza:mwisho] != original:   # kinga: nafasi lazima ilingane na maandishi
             continue
-        ameonekana.add(jozi)
         issues.append({
             "original": original,
             "suggestion": suggestion,
+            "start": _u16(maandishi, anza),
+            "end": _u16(maandishi, mwisho),
             "label": _LEBO_ZA_AINA.get(p["aina"], "Mengineyo"),
             "explanation": p["maelezo"],
             "hiari": p["aina"] in _AINA_ZA_HIARI,
@@ -766,7 +776,7 @@ def huduma_ya_extension():
     """
     Njia ya Chrome extension ya Lingual Sanifu (background.js).
     Ombi:  {"text": "..."}  + header X-API-Key
-    Jibu:  {"ok": true, "ai": true, "issues": [{original, suggestion, label, explanation, hiari}]}
+    Jibu:  {"ok": true, "ai": true, "issues": [{original, suggestion, start, end, label, explanation, hiari}]}
     Kwa kasi, hatua ya pili ya ukaguzi imezimwa hapa kwa chaguo-msingi (KAGUA_HATUA_MBILI=0).
     """
     maandishi, _ = _soma_ombi()
@@ -779,7 +789,7 @@ def huduma_ya_extension():
     if muh["zilizoshindwa"] == muh["jumla"]:
         return _ai_hazipatikani()
 
-    issues = _kwa_extension(mapendekezo_ya_maandishi(r["mistari"]))
+    issues = _kwa_extension(maandishi, mapendekezo_ya_maandishi(r["mistari"]))
     return jsonify({
         "ok": True,
         # ai=false ikiwa baadhi ya vipande vimeshindwa: extension isihifadhi jibu hili kwenye akiba
