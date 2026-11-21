@@ -76,7 +76,7 @@ def angalia_ufunguo():
     """Ikiwa API_KEY imewekwa kwenye Render, omba header ya X-API-Key."""
     if not API_KEY_YA_HUDUMA:
         return None
-    if request.method == "OPTIONS" or request.path in ("/", "/health"):
+    if request.method == "OPTIONS" or request.path in ("/", "/health", "/uchunguzi"):
         return None
     ulioletwa = request.headers.get("X-API-Key", "")
     if not hmac.compare_digest(ulioletwa, API_KEY_YA_HUDUMA):
@@ -282,6 +282,7 @@ def _ni_kosa_la_muda(e: Exception) -> bool:
 
 def _ita_gemini(system: str, ujumbe: str):
     if not gemini_client:
+        print("Gemini: GEMINI_API_KEY haijawekwa kwenye Render.")
         return None
     modeli = [GEMINI_MODEL]
     if GEMINI_FALLBACK_MODEL and GEMINI_FALLBACK_MODEL != GEMINI_MODEL:
@@ -297,6 +298,7 @@ def _ita_gemini(system: str, ujumbe: str):
                 )
                 if jibu and jibu.text:
                     return jibu.text.strip()
+                print(f"Gemini ({modeli_jina}): jibu tupu (huenda limezuiwa).")
                 break  # jibu tupu (mf. limezuiwa): jaribu modeli inayofuata
             except Exception as e:
                 print(f"Hitilafu ya Gemini ({modeli_jina}, jaribio {jaribio + 1}): {e}")
@@ -308,6 +310,7 @@ def _ita_gemini(system: str, ujumbe: str):
 
 def _ita_groq(system: str, ujumbe: str):
     if not groq_client:
+        print("Groq: GROQ_API_KEY haijawekwa kwenye Render.")
         return None
     try:
         chat = groq_client.chat.completions.create(
@@ -368,11 +371,13 @@ def chakata_kipande(kipande: str, kitendo: str, hatua_mbili=None) -> dict:
 
     hatua1, injini = ita_ai(SYSTEM_PROMPT, ujumbe)
     if not hatua1:
+        print(f"Kipande kimeshindwa: Gemini na Groq hazikujibu (herufi {len(kipande)}).")
         return {"text": kipande, "ok": False, "injini": None, "hatua2": False}
 
     if not _uwiano_unakubalika(kipande, hatua1, kitendo):
         # AI imeongeza/kupunguza kupita kiasi: kwenye uhariri tunarudi kwenye asili
         if kitendo != "tafsiri":
+            print(f"Kipande kimekataliwa na kinga ya urefu: asili={len(kipande)}, jibu la {injini}={len(hatua1)}. Jibu: {hatua1[:120]!r}")
             return {"text": kipande, "ok": False, "injini": injini, "hatua2": False}
 
     matokeo, ilitumia_hatua2 = hatua1, False
@@ -798,6 +803,49 @@ def huduma_ya_extension():
         "idadi": len(issues),
         "injini_iliyotumika": muh["injini"],
     })
+
+
+@app.route("/uchunguzi", methods=["GET"])
+def uchunguzi():
+    """
+    Hujaribu Gemini na Groq kwa ombi dogo na kuonyesha kosa halisi (bila kuonyesha funguo).
+    Fungua kwenye kivinjari: /uchunguzi  (au /uchunguzi?ufunguo=API_KEY yako, ikiwa umeweka API_KEY).
+    """
+    if API_KEY_YA_HUDUMA and not hmac.compare_digest(request.args.get("ufunguo", ""), API_KEY_YA_HUDUMA):
+        return jsonify({"ok": False, "error": "Weka ?ufunguo=<API_KEY> mwishoni mwa anwani."}), 401
+
+    def jaribu(fn):
+        t0 = time.time()
+        try:
+            out = fn()
+            return {"ok": bool(out), "sekunde": round(time.time() - t0, 1), "jibu": (out or "")[:80]}
+        except Exception as e:  # noqa: BLE001
+            return {"ok": False, "sekunde": round(time.time() - t0, 1),
+                    "kosa": f"{type(e).__name__}: {str(e)[:300]}", "code": getattr(e, "code", None)}
+
+    ujumbe = "Jibu kwa neno moja tu: sawa"
+    matokeo = {"gemini": {}, "groq": None}
+
+    if gemini_client:
+        for jina in dict.fromkeys([GEMINI_MODEL, GEMINI_FALLBACK_MODEL]):
+            if not jina:
+                continue
+            matokeo["gemini"][jina] = jaribu(
+                lambda j=jina: gemini_client.models.generate_content(model=j, contents=ujumbe).text
+            )
+    else:
+        matokeo["gemini"] = {"kosa": "GEMINI_API_KEY haijawekwa kwenye Render"}
+
+    if groq_client:
+        matokeo["groq"] = {GROQ_MODEL: jaribu(
+            lambda: groq_client.chat.completions.create(
+                model=GROQ_MODEL, messages=[{"role": "user", "content": ujumbe}]
+            ).choices[0].message.content
+        )}
+    else:
+        matokeo["groq"] = {"kosa": "GROQ_API_KEY haijawekwa kwenye Render"}
+
+    return jsonify(matokeo)
 
 
 @app.route("/health", methods=["GET"])
