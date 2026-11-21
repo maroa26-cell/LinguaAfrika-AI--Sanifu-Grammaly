@@ -1,14 +1,23 @@
 """
-AI Lingual Africa Sanifu API v3.3
+AI Lingual Africa Sanifu API v3.4
 Gemini (kuu) + Groq (akiba) + Hatua ya Pili ya Ukaguzi + Chujio salama la Python
 + Sheria ya 4B (chujio_4b.py): kuondoa Kiingereza kilichochanganywa kwenye Kiswahili
++ MPYA v3.4: sheria_baada_ya_ai.py -> ulinzi wa nukuu na sheria mpya za Kiswahili
 
 Njia zilezile: /api/chakata, /hariri, /tafsiri  (extension ya zamani haihitaji kubadilishwa)
 Njia za mapendekezo: /pendekezo (au /api/pendekezo) -> orodha ya mapendekezo yenye nafasi (offsets)
-MPYA v3.3 (kwa Chrome extension ya Lingual Sanifu):
+Kwa Chrome extension ya Lingual Sanifu:
   GET  /health      -> {"status":"ok"}  (kuamsha seva ya Render; haihitaji ufunguo)
   POST /v1/kagua    -> {"ok":true,"ai":true,"issues":[{original,suggestion,start,end,label,explanation,hiari}]}
                        (pia: /api/kagua na /kagua)
+
+MABADILIKO v3.4 (kiendelezi kinanufaika kupitia /v1/kagua):
+  1. Nukuu ("..." na “...”) zinalindwa kwa alama [[NUKUU_n]] wakati wa kuhariri: AI na chujio la 4B
+     havizigusi. Alama zikipotea, kipande kinarudishwa kama kilivyo (hakuna nukuu inayopotea).
+  2. Sheria mpya baada ya AI: "Je, ..." huisha na "?", kionyeshi baada ya nomino
+     ("hii sekta" -> "sekta hii", pendekezo la hiari), tahajia (myingi, mwananchi, nchi).
+  3. /v1/kagua: AI ikishindwa lakini sheria za Python zimepata makosa, makosa hayo yanarudishwa
+     (ai=false, onyo=AI_HAZIPATIKANI) badala ya kosa la 502.
 
 Environment Variables (Render):
   GEMINI_API_KEY   (inapendekezwa)
@@ -17,6 +26,7 @@ Environment Variables (Render):
   ALLOWED_ORIGINS  (hiari) -> mfano: chrome-extension://abcdef...,https://tovuti-yako.com  (chaguo-msingi: *)
   HATUA_MBILI      (hiari) -> "1" (chaguo-msingi) au "0" kuzima ukaguzi wa pili (kwa /hariri, /tafsiri, /pendekezo)
   KAGUA_HATUA_MBILI (hiari) -> "0" (chaguo-msingi) kwa /v1/kagua ili ukaguzi wa kuandika uwe wa haraka; "1" kuwasha
+  SHERIA_ZA_MAJARIBIO (hiari) -> "0" (chaguo-msingi). "1" huwasha sheria za "bwana shamba/afya" (thibitisha BAKITA kwanza)
   MAX_CHARS        (hiari) -> kikomo cha herufi, chaguo-msingi 15000
   MAX_WORKERS      (hiari) -> uchakataji sambamba, chaguo-msingi 3
   GEMINI_MODEL, GEMINI_FALLBACK_MODEL, GROQ_MODEL (hiari) -> majina ya modeli; badilisha hapa modeli ikistaafishwa
@@ -35,6 +45,13 @@ from google.genai import types
 from groq import Groq
 
 from chujio_4b import ondoa_kiingereza, ina_kiingereza
+from sheria_baada_ya_ai import (
+    linda_nukuu_kabla_ya_ai,
+    nukuu_zote_zipo,
+    rudisha_nukuu,
+    bila_nukuu,
+    rekebisha_kiswahili_sanifu,
+)
 
 # ------------------------------------------------------------------
 # 1. MIPANGILIO
@@ -150,6 +167,7 @@ def pata_vidokezo_vya_kamusi(maandishi: str) -> str:
 # ------------------------------------------------------------------
 # 3. CHUJIO SALAMA LA PYTHON
 #    Hurekebisha tu mambo yasiyo na utata. Ngeli na sarufi huachiwa AI.
+#    (Sheria mpya za Je/kionyeshi/tahajia ziko kwenye sheria_baada_ya_ai.py)
 # ------------------------------------------------------------------
 # Tahajia zilizothibitishwa. Ongeza mpya hapa baada ya kuzihakiki tu.
 _TAHAJIA = {
@@ -218,6 +236,23 @@ def safisha_maandishi_sanifu(maandishi: str) -> str:
     return maandishi
 
 
+def _maliza_kwa_sheria(maandishi: str) -> str:
+    """
+    Hatua ya mwisho ya Python kwa kila kipande, baada ya AI:
+    nukuu zinalindwa -> 4B -> chujio salama -> sheria mpya -> nukuu zinarudishwa mahali pake.
+    Kila hatua ikiharibu alama za nukuu, hatua hiyo inarukwa (nukuu hazipotei kamwe).
+    """
+    ulinzi, nukuu = linda_nukuu_kabla_ya_ai(maandishi)
+    t = ondoa_kiingereza(ulinzi)
+    if not nukuu_zote_zipo(t, nukuu):
+        t = ulinzi
+    t2 = safisha_maandishi_sanifu(t)
+    if nukuu_zote_zipo(t2, nukuu):
+        t = t2
+    safi, _ = rekebisha_kiswahili_sanifu(t, nukuu)
+    return safi
+
+
 def _safisha_jibu_la_ai(maandishi: str) -> str:
     """Huondoa uzio wa ``` au nukuu zilizozunguka jibu zima la AI."""
     t = maandishi.strip()
@@ -250,6 +285,7 @@ Fuata sheria hizi kali bila kukosea:
 5. TAFSIRI (EN -> SW): Tafsiri maana halisi na misemo kwa ufasaha (si neno kwa neno). Tunza msisitizo wa 'not only... but also' ('si tu... bali pia').
 6. MUUNDO: Dumisha vichwa vya habari, orodha na namba kama zilivyo. Hifadhi majina ya watu, vifupisho na nambari.
 7. MATOKEO: Toa matokeo yaliyohaririwa/kutafsiriwa PEKEE, bila maelezo ya ziada, bila nukuu, bila alama za ```.
+8. NUKUU ZILIZOHIFADHIWA: Alama kama [[NUKUU_0]], [[NUKUU_1]] ni nukuu za watu zilizohifadhiwa. Ziache KAMA ZILIVYO, mahali pale pale, na kila moja mara moja tu. Usizitafsiri, usizibadilishe, usiziondoe, wala usiongeze alama mpya.
 """
 
 SYSTEM_UKAGUZI = """
@@ -267,6 +303,7 @@ Sheria:
   * 'ukosefu wa ajira imekuwa tatizo' -> 'ukosefu wa ajira umekuwa tatizo' (ukosefu, uhaba, upungufu huchukua 'u-')
 - Kama maandishi yana neno la Kiingereza lililochanganywa na Kiswahili (mfano 'ku-launch', 'online'), libadilishe na neno sanifu la Kiswahili, na ulinde majina maalum, URL, barua pepe na nukuu.
 - Kitenzi huoana na nomino inayotenda, si nomino iliyo karibu: 'ukosefu wa ajira umeongezeka, na hali imekuwa mbaya' ni SAHIHI (usibadilishe 'hali imekuwa').
+- Alama kama [[NUKUU_0]] ni nukuu zilizohifadhiwa: ziache kama zilivyo, mahali pale pale, mara moja tu kila moja.
 - Toa maandishi yaliyokaguliwa PEKEE, bila maelezo, bila nukuu, bila alama za ```.
 """
 
@@ -342,6 +379,10 @@ def ita_ai(system: str, ujumbe: str):
 # ------------------------------------------------------------------
 # 6. UCHAKATAJI WA KIPANDE KIMOJA (HATUA YA 1 + HATUA YA 2 + ULINZI)
 # ------------------------------------------------------------------
+def _ina_herufi(s: str) -> bool:
+    return bool(re.search(r"[^\W\d_]", s))
+
+
 def _uwiano_unakubalika(asili: str, matokeo: str, kitendo: str) -> bool:
     """Ulinzi dhidi ya AI kuongeza maelezo au kukata maneno."""
     if not matokeo.strip():
@@ -356,28 +397,42 @@ def chakata_kipande(kipande: str, kitendo: str, hatua_mbili=None) -> dict:
     if hatua_mbili is None:
         hatua_mbili = HATUA_MBILI
 
-    # --- Hatua ya 1: kuhariri / kutafsiri ---
+    # --- Maandalizi: nukuu zinalindwa kwenye uhariri (si kwenye tafsiri, ambako nukuu nazo hutafsiriwa) ---
+    nukuu = []
     if kitendo == "tafsiri":
+        msingi = kipande
         vidokezo = pata_vidokezo_vya_kamusi(kipande)
         ujumbe = f"Tafsiri aya hii kwenda Kiswahili Sanifu fasaha:{vidokezo}\n\n{kipande}"
     else:
-        # Sheria 4B: ondoa Kiingereza kabla ya AI, ili AI ione Kiswahili na irekebishe ngeli.
-        kipande_cha_ai = ondoa_kiingereza(kipande)
+        msingi, nukuu = linda_nukuu_kabla_ya_ai(kipande)
+        if nukuu and not _ina_herufi(bila_nukuu(msingi)):
+            # Kipande chote ni nukuu: hakuna cha kuhariri, usipoteze ombi la AI.
+            return {"text": kipande, "ok": True, "injini": None, "hatua2": False}
+        # Sheria 4B: ondoa Kiingereza kabla ya AI (nje ya nukuu), ili AI ione Kiswahili na irekebishe ngeli.
+        kipande_cha_ai = ondoa_kiingereza(msingi)
+        if not nukuu_zote_zipo(kipande_cha_ai, nukuu):
+            kipande_cha_ai = msingi
         ujumbe = (
             "Hariri sarufi, ngeli, tahajia, na alama za uandishi za aya hii ya Kiswahili, "
             "ukiondoa maneno ya Kiingereza yaliyochanganywa (sheria 4B), "
             f"bila kuongeza maneno mengine mapya:\n\n{kipande_cha_ai}"
         )
 
+    # --- Hatua ya 1: kuhariri / kutafsiri ---
     hatua1, injini = ita_ai(SYSTEM_PROMPT, ujumbe)
     if not hatua1:
         print(f"Kipande kimeshindwa: Gemini na Groq hazikujibu (herufi {len(kipande)}).")
         return {"text": kipande, "ok": False, "injini": None, "hatua2": False}
 
-    if not _uwiano_unakubalika(kipande, hatua1, kitendo):
+    if not nukuu_zote_zipo(hatua1, nukuu):
+        # AI imepoteza/kubadilisha alama za nukuu: rudisha asili, usipoteze nukuu yoyote.
+        print(f"Kipande kimekataliwa: {injini} imepoteza alama za nukuu. Jibu: {hatua1[:120]!r}")
+        return {"text": kipande, "ok": False, "injini": injini, "hatua2": False}
+
+    if not _uwiano_unakubalika(msingi, hatua1, kitendo):
         # AI imeongeza/kupunguza kupita kiasi: kwenye uhariri tunarudi kwenye asili
         if kitendo != "tafsiri":
-            print(f"Kipande kimekataliwa na kinga ya urefu: asili={len(kipande)}, jibu la {injini}={len(hatua1)}. Jibu: {hatua1[:120]!r}")
+            print(f"Kipande kimekataliwa na kinga ya urefu: asili={len(msingi)}, jibu la {injini}={len(hatua1)}. Jibu: {hatua1[:120]!r}")
             return {"text": kipande, "ok": False, "injini": injini, "hatua2": False}
 
     matokeo, ilitumia_hatua2 = hatua1, False
@@ -392,11 +447,17 @@ def chakata_kipande(kipande: str, kitendo: str, hatua_mbili=None) -> dict:
         else:
             ujumbe2 = f"Maandishi ya kukagua:\n{hatua1}"
         hatua2, _ = ita_ai(SYSTEM_UKAGUZI, ujumbe2)
-        # Kubali ukaguzi tu ikiwa haujabadilisha urefu sana
-        if hatua2 and 0.8 <= len(hatua2) / max(len(hatua1), 1) <= 1.25:
+        # Kubali ukaguzi tu ikiwa nukuu zote zipo na haujabadilisha urefu sana
+        if hatua2 and nukuu_zote_zipo(hatua2, nukuu) and 0.8 <= len(hatua2) / max(len(hatua1), 1) <= 1.25:
             matokeo, ilitumia_hatua2 = hatua2, True
 
-    return {"text": matokeo, "ok": True, "injini": injini, "hatua2": ilitumia_hatua2}
+    # Rudisha nukuu mahali pake kabla ya kutoka kwenye kipande hiki.
+    return {
+        "text": rudisha_nukuu(matokeo, nukuu),
+        "ok": True,
+        "injini": injini,
+        "hatua2": ilitumia_hatua2,
+    }
 
 
 # ------------------------------------------------------------------
@@ -416,10 +477,6 @@ def _gawa_mstari_mrefu(mstari: str) -> list:
     if sasa:
         vipande.append(sasa)
     return vipande
-
-
-def _ina_herufi(s: str) -> bool:
-    return bool(re.search(r"[^\W\d_]", s))
 
 
 # ------------------------------------------------------------------
@@ -451,11 +508,9 @@ def chakata_maandishi(maandishi: str, kitendo: str, hatua_mbili=None) -> dict:
         if aina == "kama_ilivyo":
             matokeo_m = asili_m
         else:
-            # Sheria 4B: kichujio baada ya AI kama kinga, kisha chujio salama la sanifu.
-            safi = [
-                safisha_maandishi_sanifu(ondoa_kiingereza(majibu[idx + i]["text"]))
-                for i in range(idadi)
-            ]
+            # Hatua ya mwisho ya Python (hata kama AI imeshindwa): nukuu zinalindwa,
+            # 4B + chujio salama + sheria mpya zinatumika, kisha nukuu zinarudi.
+            safi = [_maliza_kwa_sheria(majibu[idx + i]["text"]) for i in range(idadi)]
             idx += idadi
             kichwani = asili_m[: len(asili_m) - len(asili_m.lstrip())]   # hifadhi nafasi za mwanzo (indent)
             mkiani = asili_m[len(asili_m.rstrip()):]
@@ -524,9 +579,15 @@ def _aina_na_maelezo(asili: str, mpya: str):
     if wa == wb:
         if re.sub(r"\s+", "", asili) == re.sub(r"\s+", "", mpya):
             return "nafasi", "Nafasi kabla au baada ya alama za uandishi zimerekebishwa."
+        if asili.rstrip().endswith(".") and mpya.rstrip().endswith("?"):
+            return "alama", "Sentensi inayoanza na 'Je,' ni swali, kwa hiyo huishia na alama ya kuuliza (?)."
         return "alama", "Alama za uandishi zimerekebishwa."
     if [w.lower() for w in wa] == [w.lower() for w in wb]:
         return "herufi", "Herufi kubwa au ndogo zimerekebishwa."
+
+    # Maneno yaleyale kwa mpangilio tofauti (mf. "hii sekta" -> "sekta hii")
+    if len(wa) == len(wb) >= 2 and sorted(w.lower() for w in wa) == sorted(w.lower() for w in wb):
+        return "mpangilio", "Kionyeshi kinakaa baada ya nomino kwa Kiswahili sanifu (mf. 'sekta hii'). Ni pendekezo la mtindo."
 
     bila_kurudia = [w for i, w in enumerate(wa) if i == 0 or w.lower() != wa[i - 1].lower()]
     if len(wa) > len(wb) and bila_kurudia == wb:
@@ -541,6 +602,9 @@ def _aina_na_maelezo(asili: str, mpya: str):
             if difflib.SequenceMatcher(None, wa[0].lower(), wb[0].lower()).ratio() >= 0.75:
                 return "tahajia", f"Tahajia imerekebishwa ('{wa[0]}' -> '{wb[0]}')."
             return "msamiati", f"Neno limebadilishwa kwa msamiati unaofaa zaidi ('{wa[0]}' -> '{wb[0]}')."
+    elif difflib.SequenceMatcher(None, "".join(wa).lower(), "".join(wb).lower()).ratio() >= 0.85:
+        # Maneno yameunganishwa au kutenganishwa (mf. "mwana inchi" -> "mwananchi")
+        return "tahajia", f"Tahajia imerekebishwa ('{asili.strip()}' -> '{mpya.strip()}')."
     return "sarufi", "Sentensi imerekebishwa kisarufi au kimtindo."
 
 
@@ -565,6 +629,10 @@ def _tengeneza_mapendekezo(asili: str, mpya: str, mwanzo_wa_asili: int = 0) -> l
                 i1, j1 = i1 - 1, j1 - 1
             elif i2 < len(ta) and j2 < len(tb):
                 i2, j2 = i2 + 1, j2 + 1
+        # "." -> "?" (swali la "Je,"): jumuisha neno la mwisho ili pendekezo lieleweke
+        elif (i2 - i1 == 1 and j2 - j1 == 1 and ta[i1]["t"] == "." and tb[j1]["t"] == "?"
+              and i1 > 0 and j1 > 0):
+            i1, j1 = i1 - 1, j1 - 1
 
         a_s = ta[i1]["s"] if i1 < len(ta) else len(asili)
         b_s = tb[j1]["s"] if j1 < len(tb) else len(mpya)
@@ -638,11 +706,12 @@ _LEBO_ZA_AINA = {
     "alama": "Alama za uandishi",
     "herufi": "Herufi kubwa/ndogo",
     "kujirudia": "Neno limejirudia",
+    "mpangilio": "Mpangilio wa maneno",
     "msamiati": "Msamiati",
     "sarufi": "Sarufi",
 }
-# Mapendekezo ya mtindo/msamiati ni ya hiari (hayajumuishwi kwenye "Kubali yote")
-_AINA_ZA_HIARI = {"msamiati", "sarufi"}
+# Mapendekezo ya mtindo/msamiati/mpangilio ni ya hiari (hayajumuishwi kwenye "Kubali yote")
+_AINA_ZA_HIARI = {"msamiati", "sarufi", "mpangilio"}
 
 
 def _u16(s: str, i: int) -> int:
@@ -783,6 +852,10 @@ def huduma_ya_extension():
     Ombi:  {"text": "..."}  + header X-API-Key
     Jibu:  {"ok": true, "ai": true, "issues": [{original, suggestion, start, end, label, explanation, hiari}]}
     Kwa kasi, hatua ya pili ya ukaguzi imezimwa hapa kwa chaguo-msingi (KAGUA_HATUA_MBILI=0).
+
+    Ikiwa AI zote zimeshindwa lakini sheria za Python (nukuu salama, Je/?, tahajia, n.k.) zimepata
+    makosa, makosa hayo yanarudishwa na ai=false (extension haitayahifadhi kwenye akiba) na
+    onyo="AI_HAZIPATIKANI". Bila makosa yoyote, kosa la kawaida la 502 linarudishwa kama zamani.
     """
     maandishi, _ = _soma_ombi()
     kosa = _kagua_maandishi(maandishi)
@@ -791,18 +864,23 @@ def huduma_ya_extension():
 
     r = chakata_maandishi(maandishi, "hariri", hatua_mbili=KAGUA_HATUA_MBILI)
     muh = muhtasari_wa_majibu(r["majibu"])
-    if muh["zilizoshindwa"] == muh["jumla"]:
-        return _ai_hazipatikani()
+    ai_zote_zimeshindwa = muh["zilizoshindwa"] == muh["jumla"]
 
     issues = _kwa_extension(maandishi, mapendekezo_ya_maandishi(r["mistari"]))
-    return jsonify({
+    if ai_zote_zimeshindwa and not issues:
+        return _ai_hazipatikani()
+
+    jibu = {
         "ok": True,
         # ai=false ikiwa baadhi ya vipande vimeshindwa: extension isihifadhi jibu hili kwenye akiba
         "ai": muh["zilizoshindwa"] == 0,
         "issues": issues,
         "idadi": len(issues),
         "injini_iliyotumika": muh["injini"],
-    })
+    }
+    if ai_zote_zimeshindwa:
+        jibu["onyo"] = "AI_HAZIPATIKANI"
+    return jsonify(jibu)
 
 
 @app.route("/uchunguzi", methods=["GET"])
@@ -858,8 +936,8 @@ def afya_nyepesi():
 def afya_ya_seva():
     return jsonify({
         "status": "Live",
-        "mfumo": "AI Lingual Africa Sanifu API v3.3",
-        "injini": f"{GEMINI_MODEL} (akiba: {GEMINI_FALLBACK_MODEL}) + Groq {GROQ_MODEL} + Ukaguzi wa Pili + Chujio salama",
+        "mfumo": "AI Lingual Africa Sanifu API v3.4",
+        "injini": f"{GEMINI_MODEL} (akiba: {GEMINI_FALLBACK_MODEL}) + Groq {GROQ_MODEL} + Ukaguzi wa Pili + Chujio salama + Sheria baada ya AI",
         "njia": ["/api/chakata", "/hariri", "/tafsiri", "/pendekezo", "/v1/kagua", "/health"],
         "gemini": bool(gemini_client),
         "groq": bool(groq_client),
