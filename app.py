@@ -1,810 +1,1003 @@
-import streamlit as str_platform
+"""
+AI Lingual Africa Sanifu API v3.4.2
+Gemini (kuu) + Groq (akiba) + Hatua ya Pili ya Ukaguzi + Chujio salama la Python
++ Sheria ya 4B (chujio_4b.py): kuondoa Kiingereza kilichochanganywa kwenye Kiswahili
++ v3.4: sheria_baada_ya_ai.py -> ulinzi wa nukuu na sheria mpya za Kiswahili
++ v3.4.1: Gemini ikitoa 429 (kikomo kimejaa), inarukwa kwa muda na Groq inatumika mara moja
++ MPYA v3.4.2: kanuni za ngeli ya -ingi, marudio halali, "akina mama/baba wengi" na "wakati/muda mwingi"
+  kwenye prompt za AI; kichujio cha marudio halali kwenye /v1/kagua
+
+Njia zilezile: /api/chakata, /hariri, /tafsiri  (extension ya zamani haihitaji kubadilishwa)
+Njia za mapendekezo: /pendekezo (au /api/pendekezo) -> orodha ya mapendekezo yenye nafasi (offsets)
+Kwa Chrome extension ya Lingual Sanifu:
+  GET  /health      -> {"status":"ok"}  (kuamsha seva ya Render; haihitaji ufunguo)
+  POST /v1/kagua    -> {"ok":true,"ai":true,"issues":[{original,suggestion,start,end,label,explanation,hiari}]}
+                       (pia: /api/kagua na /kagua)
+
+MABADILIKO v3.4.2:
+  1. SYSTEM_PROMPT na SYSTEM_UKAGUZI: kanuni za '-ingi' kwa ngeli, marudio halali ('wadogo wadogo'),
+     'akina mama/baba wengi' (si 'akina watoto'), 'wakati mwingi' na 'muda mwingi'.
+  2. _MARUDIO_HALALI + kichujio kwenye _kwa_extension: pendekezo la kuondoa marudio halali
+     (mf. 'wadogo wadogo') halifiki tena kwa kiendelezi.
+
+MABADILIKO v3.4.1:
+  Gemini ikijibu 429 RESOURCE_EXHAUSTED (kikomo cha matumizi), kusubiri hakusaidii. Sasa modeli zote
+  mbili zikitoa 429, Gemini inarukwa kwa GEMINI_PUMZIKO_SEKUNDE (chaguo-msingi sekunde 120) na maombi
+  yanakwenda moja kwa moja kwa Groq. Hii inaondoa ucheleweshaji wa takriban sekunde 9 kwa kila ombi.
+
+MABADILIKO v3.4 (kiendelezi kinanufaika kupitia /v1/kagua):
+  1. Nukuu ("..." na “...”) zinalindwa kwa alama [[NUKUU_n]] wakati wa kuhariri: AI na chujio la 4B
+     havizigusi. Alama zikipotea, kipande kinarudishwa kama kilivyo (hakuna nukuu inayopotea).
+  2. Sheria mpya baada ya AI: "Je, ..." huisha na "?", kionyeshi baada ya nomino
+     ("hii sekta" -> "sekta hii", pendekezo la hiari), tahajia (myingi, mwananchi, wananchi).
+  3. /v1/kagua: AI ikishindwa lakini sheria za Python zimepata makosa, makosa hayo yanarudishwa
+     (ai=false, onyo=AI_HAZIPATIKANI) badala ya kosa la 502.
+
+Environment Variables (Render):
+  GEMINI_API_KEY   (inapendekezwa)
+  GROQ_API_KEY     (akiba)
+  API_KEY          (hiari) -> ikiwekwa, extension itume header: X-API-Key (iwe sawa na ufunguo ulio kwenye mipangilio ya extension)
+  ALLOWED_ORIGINS  (hiari) -> mfano: chrome-extension://abcdef...,https://tovuti-yako.com  (chaguo-msingi: *)
+  HATUA_MBILI      (hiari) -> "1" (chaguo-msingi) au "0" kuzima ukaguzi wa pili (kwa /hariri, /tafsiri, /pendekezo)
+  KAGUA_HATUA_MBILI (hiari) -> "0" (chaguo-msingi) kwa /v1/kagua ili ukaguzi wa kuandika uwe wa haraka; "1" kuwasha
+  SHERIA_ZA_MAJARIBIO (hiari) -> "0" (chaguo-msingi). "1" huwasha sheria za "bwana shamba/afya" (thibitisha BAKITA kwanza)
+  MAX_CHARS        (hiari) -> kikomo cha herufi, chaguo-msingi 15000
+  MAX_WORKERS      (hiari) -> uchakataji sambamba, chaguo-msingi 3
+  GEMINI_PUMZIKO_SEKUNDE (hiari) -> sekunde za kuruka Gemini baada ya 429, chaguo-msingi 120
+  GEMINI_MODEL, GEMINI_FALLBACK_MODEL, GROQ_MODEL (hiari) -> majina ya modeli; badilisha hapa modeli ikistaafishwa
+"""
 import os
-import time
-import io
-import wave
-import numpy as np
 import re
-import collections
-import json
-import html
-import pandas as pd
-import requests
-import streamlit.components.v1 as components
-from openai import OpenAI
-import database
-import mhariri
-import mhariri_pro_ui
-import sarufi_bridge
-import skin_appearance
-from cerebral_cortex import CerebralCortex, orodha_ya_lahaja, SAUTI_ZA_GEMINI, KASI_ZA_SAUTI
-
-muda_mwanzo = time.time()
-self_healing_status = "\U0001F7E2 autonomous shield: active & healthy"
-str_platform.set_page_config(page_title="Lingual Africa Sanifu", page_icon="\U0001F9E0",
-                             layout="wide", initial_sidebar_state="expanded")
-
-_APP_URL_MSINGI = "https://linguaafrika-ai--sanifu-grammaly-m5xtj9pydnpe2qibp2jezc.streamlit.app"
-MAX_CHARS = 5000
-
-MISIMBO_YA_IMLA = {
-    "Kiswahili": "sw", "Kiingereza (English)": "en", "Kifaransa": "fr", "Kiarabu": "ar",
-    "Kichina (Mandarin)": "zh", "Kireno (Portugu\u00eas)": "pt", "Kizulu (isiZulu)": "zu",
-    "Setswana (Botswana)": "tn", "Kinyarwanda": "rw", "Kiganda (Luganda)": "lg",
-    "Lingala": "ln", "Kichewa": "ny",
-}
-
-
-def _secret(jina):
-    try:
-        return str_platform.secrets.get(jina)
-    except Exception:
-        return None
-
-
-APP_URL = str(_secret("APP_URL") or _APP_URL_MSINGI).strip().rstrip("/")
-
-
-def weka_seo_schema():
-    data = {
-        "@context": "https://schema.org", "@type": "DefinedTermSet",
-        "@id": f"{APP_URL}/#kamusi", "url": APP_URL,
-        "name": "Kamusi Kuu ya Lingual Africa Sanifu",
-        "description": "Kamusi ya kidijitali ya istilahi za Kiswahili na Kiingereza.",
-        "inLanguage": ["sw", "en"],
-        "provider": {"@type": "Organization", "name": "Lingual Africa Sanifu"},
-    }
-    payload = json.dumps(data, ensure_ascii=False).replace("</", "<\\/")
-    js_literal = json.dumps(payload)
-    kodi_html = (
-        "<script>(function(){try{var d=window.parent.document;"
-        "if(d.getElementById('seo-jsonld'))return;"
-        "var s=d.createElement('script');s.type='application/ld+json';s.id='seo-jsonld';"
-        f"s.text={js_literal};d.head.appendChild(s);}}catch(e){{}}}})();</script>"
-    )
-    try:
-        if hasattr(str_platform, "iframe"):
-            str_platform.iframe(kodi_html, height=1)
-        else:
-            components.html(kodi_html, height=0)
-    except Exception as e:
-        print(f"[seo] imeshindwa kuweka JSON-LD: {type(e).__name__}: {e}")
-
-
-class _FailiLaSauti(io.BytesIO):
-    def __init__(self, data, name="sauti.wav", type_="audio/wav"):
-        super().__init__(data)
-        self.name = name
-        self.type = type_
-
-
-def boresha_sauti_wav(data, lengo_rms=0.12, kikomo_cha_kuongeza=40.0):
-    try:
-        with wave.open(io.BytesIO(data), "rb") as w:
-            ch, sw, sr, n = w.getnchannels(), w.getsampwidth(), w.getframerate(), w.getnframes()
-            raw = w.readframes(n)
-        if sw != 2 or n == 0:
-            return data, 0.0
-        x = np.frombuffer(raw, dtype="<i2").astype(np.float32) / 32768.0
-        x = x - x.mean()
-        fr = max(int(sr * 0.05) * ch, 1)
-        k = len(x) // fr
-        if k == 0:
-            return data, 0.0
-        rms_fr = np.sqrt((x[:k * fr].reshape(k, fr) ** 2).mean(axis=1))
-        if rms_fr.max() < 0.002:
-            return data, 0.0
-        hai = rms_fr[rms_fr > rms_fr.max() * 0.1]
-        rms_hai = float(np.sqrt((hai ** 2).mean()))
-        gain = min(max(lengo_rms / max(rms_hai, 1e-6), 1.0), kikomo_cha_kuongeza)
-        if gain < 1.1:
-            return data, 0.0
-        y = np.tanh(x * gain)
-        out = io.BytesIO()
-        with wave.open(out, "wb") as w:
-            w.setnchannels(ch); w.setsampwidth(2); w.setframerate(sr)
-            w.writeframes((y * 32767).astype("<i2").tobytes())
-        return out.getvalue(), float(20 * np.log10(gain))
-    except Exception:
-        return data, 0.0
-
-
-def gawa_wav_vipande(data, sekunde=300):
-    try:
-        with wave.open(io.BytesIO(data), "rb") as w:
-            ch, sw, sr, n = w.getnchannels(), w.getsampwidth(), w.getframerate(), w.getnframes()
-            raw = w.readframes(n)
-        if sw != 2 or n <= sr * sekunde * 1.2:
-            return [data]
-        x = np.frombuffer(raw, dtype="<i2").reshape(-1, ch)
-        blok = int(sr * 0.1)
-        mipaka, mwanzo = [], 0
-        while len(x) - mwanzo > sr * sekunde * 1.2:
-            lengo = mwanzo + sr * sekunde
-            dirisha = x[lengo - sr * 8: lengo].astype(np.float32)
-            kb = len(dirisha) // blok
-            nishati = np.abs(dirisha[:kb * blok]).reshape(kb, blok * ch).mean(axis=1)
-            kata = lengo - sr * 8 + int(nishati.argmin()) * blok
-            mipaka.append((mwanzo, kata)); mwanzo = kata
-        mipaka.append((mwanzo, len(x)))
-        vipande = []
-        for a, b in mipaka:
-            out = io.BytesIO()
-            with wave.open(out, "wb") as w:
-                w.setnchannels(ch); w.setsampwidth(2); w.setframerate(sr)
-                w.writeframes(x[a:b].tobytes())
-            vipande.append(out.getvalue())
-        return vipande
-    except Exception:
-        return [data]
-
-
-def onyesha_jibu(res, border_color="#10B981", bg="rgba(16,185,129,0.1)"):
-    salama = html.escape(str(res or ""))
-    str_platform.markdown(
-        f"<div style='background:{bg}; border:1px solid {border_color}; padding:20px; "
-        f"border-radius:10px; margin-top:15px; white-space:pre-wrap;'>{salama}</div>",
-        unsafe_allow_html=True)
-
-
-def _ai_debug_imewashwa():
-    return str(_secret("AI_DEBUG") or "").strip().lower() in ("1", "true", "yes", "ndiyo")
-
-
-def onyesha_hitilafu(muktadha, e):
-    print(f"[hitilafu] {muktadha}: {type(e).__name__}: {e}")
-    if isinstance(e, ValueError):
-        str_platform.error(str(e))
-        return
-    t = str(e).lower()
-    if _ai_debug_imewashwa():
-        str_platform.error(f"❌ Kosa la AI ({muktadha}): {type(e).__name__} - {str(e)}")
-        return
-    if any(k in t for k in ("billing", "quota", "429", "rate limit", "insufficient")):
-        str_platform.error("Huduma ya AI haipatikani kwa sasa. Tafadhali jaribu tena baadaye.")
-    else:
-        str_platform.error(f"Imeshindikana {muktadha}. Tafadhali jaribu tena.")
-
-
-_HERUFI_ZA_CJK = r"[\u3400-\u9fff\uf900-\ufaff\u3040-\u30ff\uac00-\ud7af]"
-
-
-def hesabu_maneno(t):
-    t = str(t or "")
-    cjk = len(re.findall(_HERUFI_ZA_CJK, t))
-    bila_cjk = re.sub(_HERUFI_ZA_CJK, " ", t)
-    return len(bila_cjk.split()) + (cjk + 1) // 2
-
-
-def _ep_md(t):
-    return re.sub(r"([\\`*_{}\[\]()#+\-.!~|>$])", r"\\\1", str(t))
-
-
-KAMUSI_CSV_FILE = "kamusi.csv"
-KAMUSI_CSV_URL = str(_secret("KAMUSI_CSV_URL") or "").strip()
-KAMUSI_GITHUB_TOKEN = str(_secret("KAMUSI_GITHUB_TOKEN") or "").strip()
-KAMUSI_SAFU = ["swahili_term", "english_term", "category", "description_sw"]
-
-
-def _kiungo_cha_api_cha_github(url):
-    m = re.match(r"^https://raw\.githubusercontent\.com/([^/]+)/([^/]+)/([^/]+)/(.+?)(?:\?.*)?$", url)
-    if not m:
-        return None
-    owner, repo, ref, path = m.groups()
-    return f"https://api.github.com/repos/{owner}/{repo}/contents/{path}", ref
-
-
-def pakia_kamusi_csv():
-    try:
-        return _pakia_kamusi_iliyofanikiwa(), None
-    except RuntimeError as e:
-        return pd.DataFrame(columns=KAMUSI_SAFU), str(e)
-
-
-@str_platform.cache_data(ttl=600, show_spinner=False)
-def _pakia_kamusi_iliyofanikiwa():
-    df, kosa = _soma_kamusi_csv()
-    if kosa:
-        raise RuntimeError(kosa)
-    return df
-
-
-def _soma_kamusi_csv():
-    tupu = pd.DataFrame(columns=KAMUSI_SAFU)
-    njia = os.path.join(os.path.dirname(os.path.abspath(__file__)), KAMUSI_CSV_FILE)
-    chanzo = njia if os.path.exists(njia) else (KAMUSI_CSV_URL or None)
-    if not chanzo:
-        print(f"[kamusi] hakuna chanzo: weka {KAMUSI_CSV_FILE} kwenye repo au KAMUSI_CSV_URL kwenye Secrets")
-        return tupu, "no_source"
-    try:
-        if chanzo == KAMUSI_CSV_URL and KAMUSI_GITHUB_TOKEN:
-            vichwa = {"Authorization": f"Bearer {KAMUSI_GITHUB_TOKEN}"}
-            api = _kiungo_cha_api_cha_github(chanzo)
-            if api:
-                vichwa.update({"Accept": "application/vnd.github.raw+json",
-                               "X-GitHub-Api-Version": "2022-11-28"})
-                r = requests.get(api[0], params={"ref": api[1]}, headers=vichwa, timeout=20)
-            else:
-                r = requests.get(chanzo, headers=vichwa, timeout=20)
-            if r.status_code != 200:
-                print(f"[kamusi] GitHub ilijibu {r.status_code}: {r.text[:200]}")
-                return tupu, f"read_error:HTTP_{r.status_code}"
-            df = pd.read_csv(io.StringIO(r.content.decode("utf-8-sig")), dtype=str).fillna("")
-        else:
-            df = pd.read_csv(chanzo, dtype=str, encoding="utf-8-sig").fillna("")
-    except Exception as e:
-        print(f"[kamusi] imeshindwa kusoma CSV: {type(e).__name__}: {e}")
-        return tupu, f"read_error:{type(e).__name__}"
-    if "swahili_term" not in df.columns:
-        print(f"[kamusi] safu 'swahili_term' haipo. Safu zilizopo: {list(df.columns)}")
-        return tupu, "bad_columns"
-    for safu in KAMUSI_SAFU:
-        if safu not in df.columns:
-            df[safu] = ""
-    return df, None
-
-
-def _pata_kamusi_set():
-    """Seti ya swahili_term kwa utatuzi wa anagram. Huhifadhiwa kwenye session_state."""
-    if "_kamusi_set_cache" not in str_platform.session_state:
-        try:
-            df, _ = pakia_kamusi_csv()
-            str_platform.session_state["_kamusi_set_cache"] = (
-                set(df["swahili_term"].str.lower().str.strip()) if not df.empty else set()
-            )
-        except Exception:
-            str_platform.session_state["_kamusi_set_cache"] = set()
-    return str_platform.session_state["_kamusi_set_cache"]
-
-
-def tafuta_kwenye_kamusi_csv(neno, kikomo=20):
-    df, kosa = pakia_kamusi_csv()
-    if kosa:
-        return None, kosa
-    q = str(neno).strip().lower()
-    istilahi = df["swahili_term"].str.lower().str.strip()
-    kamili = df[istilahi == q]
-    sehemu = df[istilahi.str.contains(q, regex=False) & (istilahi != q)]
-    return pd.concat([kamili, sehemu]).head(kikomo), None
-
-
-def onyesha_matokeo_ya_kamusi(matokeo):
-    for _, r in matokeo.iterrows():
-        str_platform.success(f"**Neno la Kiswahili:** {r['swahili_term']}")
-        str_platform.write(f"**Tafsiri ya Kiingereza (English):** *{r['english_term']}*")
-        if r["category"]:
-            str_platform.write(f"**Kundi (Category):** {r['category']}")
-        if r["description_sw"]:
-            str_platform.info(f"**Maelezo ya Kiswahili:** {r['description_sw']}")
-        str_platform.markdown("---")
-
-
-try:
-    database.anzisha_hifadhidata_ya_chuma()
-except Exception as exc:
-    str_platform.error("Imeshindikana kuanzisha hifadhidata. Kagua usanidi wa database kisha jaribu tena.")
-    print(f"Database initialization failed: {type(exc).__name__}: {exc}")
-    str_platform.stop()
-
-skin_appearance.inject_premium_glassmorphic_skin()
-
-api_key_source = os.environ.get("OPENAI_API_KEY") or _secret("OPENAI_API_KEY")
-client = None
-if isinstance(api_key_source, str) and api_key_source.strip():
-    client = OpenAI(api_key=api_key_source.strip())
-ubongo = CerebralCortex(client)
-
-if not (ubongo.gemini_client or ubongo.groq_client or ubongo.openai_client):
-    str_platform.error("\U0001F512 secrets error! Weka angalau ufunguo mmoja kwenye Secrets: "
-                       "GEMINI_API_KEY, GROQ_API_KEY au OPENAI_API_KEY.")
-    str_platform.stop()
-
-
-def _piga_ai(mfumo, mtumiaji):
-    return ubongo.piga_json(mfumo, mtumiaji)
-
-
-def _piga_ai_kina(mfumo, mtumiaji):
-    return ubongo.piga_json_kina(mfumo, mtumiaji)
-
-
-_UTHIBITISHO_WA_PRO = bool(getattr(ubongo, "gemini_pro_modeli", ""))
-
-
-weka_seo_schema()
-skin_appearance.render_top_revenue_banner()
-
-str_platform.markdown(
-    "<h1 style='text-align: center; color: #D97706; font-size: 46px; margin-bottom: 0; "
-    "font-weight: 900; text-shadow: 0 0 40px rgba(217,119,6,0.3);'>\U0001F451 Lingual Africa Sanifu</h1>",
-    unsafe_allow_html=True)
-str_platform.markdown(
-    "<p style='text-align: center; color: #94A3B8; font-size: 14px; font-weight: 700; "
-    "margin-top: 5px; letter-spacing: 3px;'>HUDUMA YA OURWORTHLINKS BUSINESS \u2022 "
-    "THE AUTONOMOUS BIOMIMETIC WEB APPLICATION</p>",
-    unsafe_allow_html=True)
-str_platform.write("---")
-
-kasi_ya_radi = (time.time() - muda_mwanzo) * 1000
-
-if "freemium_words_used" not in str_platform.session_state:
-    str_platform.session_state["freemium_words_used"] = 0
-
-maneno_yaliyotumika = str_platform.session_state["freemium_words_used"]
-maneno_yaliyobaki = max(0, 600 - maneno_yaliyotumika)
-rada_nafasi = str_platform.sidebar.empty()
-
-
-def onyesha_rada():
-    baki = max(0, 600 - str_platform.session_state["freemium_words_used"])
-    kodi = f"""
-    <div style='background: linear-gradient(135deg, #1E293B 0%, #0F172A 100%); border: 2px solid #D97706; padding: 18px; border-radius: 14px; margin-bottom: 20px; box-shadow: 0 10px 25px rgba(217,119,6,0.15);'>
-        <p style='color: #D97706; font-size: 13px; margin: 0 0 10px 0; text-align: center; font-weight: 900; letter-spacing: 1px;'>\U0001F4CA RADA YA UBONGO (CNS METRICS)</p>
-        <p style='color: #F59E0B; font-size: 13px; margin: 0;'>\U0001F381 <b>Salio la Bure:</b> {baki}/600 Maneno</p>
-        <p style='color: #34D399; font-size: 13px; margin: 6px 0 0 0;'>\U0001F6E1\uFE0F <b>OWTHS Filter:</b> \U0001F7E2 100% Active</p>
-        <p style='color: #34D399; font-size: 13px; margin: 6px 0;'>\u26A1 <b>Synapse Latency:</b> {kasi_ya_radi:.3f}ms</p>
-        <hr style='border-color: rgba(255,255,255,0.05); margin: 8px 0;'>
-        <p style='color: #94A3B8; font-size: 11px; margin: 0; text-align: center;'>Status: {self_healing_status}</p>
-    </div>
-    """
-    rada_nafasi.markdown("".join(l.strip() for l in kodi.splitlines()), unsafe_allow_html=True)
-
-
-onyesha_rada()
-
-str_platform.sidebar.markdown(
-    "<p style='color: #94A3B8; font-size: 12px; font-weight: 800; letter-spacing: 1px; "
-    "margin-bottom: 5px;'>\U0001F310 HUDUMA ZOTE NNE ZA BIASHARA:</p>",
-    unsafe_allow_html=True)
-
-menyu_kamili = {
-    "mhariri": "\U0001F4DD Mhariri wa Kiswahili Sanifu Pro & Real-Time Prompt",
-    "mtafsiri": "\U0001F500 Mtafsiri wa Lugha & Muktadha Suite",
-    "kamusi": "\U0001F4DA Maktaba ya Kamusi Kuu",
-    "sauti": "\U0001F399\uFE0F Roboti wa Sauti, Imla (Transcription) & TTS",
-}
-
-chaguo_display = str_platform.sidebar.radio(
-    label="Chagua huduma",
-    options=list(menyu_kamili.values()),
-    key="portal_radio_gate",
-    label_visibility="collapsed",
+import difflib
+import hmac
+import time
+from concurrent.futures import ThreadPoolExecutor
+
+from flask import Flask, request, jsonify
+from flask_cors import CORS
+from google import genai
+from google.genai import types
+from groq import Groq
+
+from chujio_4b import ondoa_kiingereza, ina_kiingereza
+from sheria_baada_ya_ai import (
+    linda_nukuu_kabla_ya_ai,
+    nukuu_zote_zipo,
+    rudisha_nukuu,
+    bila_nukuu,
+    rekebisha_kiswahili_sanifu,
 )
-chaguo_menyu = [k for k, v in menyu_kamili.items() if v == chaguo_display]
 
-str_platform.sidebar.write("---")
-str_platform.sidebar.link_button(
-    label="\U0001F510 Lango la Malipo na Usajili Mteja \u2500\u2500\u25BA",
-    url=f"{APP_URL}/dashboard", type="primary",
-    use_container_width=True, key="client_dashboard_btn_v4")
-str_platform.sidebar.markdown(
-    "<p style='text-align: center; color: #64748B; font-size: 11px; margin-top: 6px;'>"
-    "\U0001F512 Malipo yanachakatwa salama na <b>Ourworthlinks Business</b> kupitia Pesapal.</p>",
-    unsafe_allow_html=True)
-str_platform.sidebar.write("---")
-str_platform.sidebar.link_button(
-    label="\U0001F39B\uFE0F Fungua Lango la Utawala (Admin) \u2500\u2500\u25BA",
-    url=f"{APP_URL}/admin", type="secondary",
-    use_container_width=True, key="admin_dashboard_btn_v4")
+# ------------------------------------------------------------------
+# 1. MIPANGILIO
+# ------------------------------------------------------------------
+GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
+GROQ_API_KEY = os.environ.get("GROQ_API_KEY")
+GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-3.8-flash")
+GEMINI_FALLBACK_MODEL = os.environ.get("GEMINI_FALLBACK_MODEL", "gemini-3.6-flash")  # akiba ya Gemini ikijaa
+GROQ_MODEL = os.environ.get("GROQ_MODEL", "openai/gpt-oss-120b")
+API_KEY_YA_HUDUMA = os.environ.get("API_KEY")
+ALLOWED_ORIGINS = os.environ.get("ALLOWED_ORIGINS", "*").strip()
+HATUA_MBILI = os.environ.get("HATUA_MBILI", "1") == "1"
+KAGUA_HATUA_MBILI = os.environ.get("KAGUA_HATUA_MBILI", "0") == "1"
+MAX_CHARS = int(os.environ.get("MAX_CHARS", "15000"))
+MAX_WORKERS = int(os.environ.get("MAX_WORKERS", "3"))
+GEMINI_PUMZIKO_SEKUNDE = int(os.environ.get("GEMINI_PUMZIKO_SEKUNDE", "120"))
+MAX_KIPANDE = 1200  # herufi kwa kipande kimoja cha aya ndefu
 
+# Gemini ikijaa kikomo (429), inarukwa hadi wakati huu (sekunde za time.time())
+_gemini_pumziko_hadi = 0.0
 
-def _futa_pc():
-    for k in [k for k in list(str_platform.session_state.keys()) if str(k).startswith("pc_")]:
-        del str_platform.session_state[k]
+app = Flask(__name__)
 
+if ALLOWED_ORIGINS == "*":
+    CORS(app, allow_headers=["Content-Type", "X-API-Key"])
+else:
+    CORS(
+        app,
+        origins=[o.strip() for o in ALLOWED_ORIGINS.split(",") if o.strip()],
+        allow_headers=["Content-Type", "X-API-Key"],
+    )
 
-def _fanya_tafsiri(maandishi_t, lugha_chanzo, lugha_lengwa, muktadha_chaguo):
-    maneno = hesabu_maneno(maandishi_t)
-    baki = max(0, 600 - str_platform.session_state["freemium_words_used"])
-    if maneno > baki:
-        str_platform.warning(
-            f"Maandishi yana maneno {maneno}, lakini salio lako ni {baki}. "
-            "Punguza maandishi au fungua Lango la Mteja.")
-        return
-    with str_platform.spinner("Processing..."):
-        try:
-            res = ubongo.chakata_tafsiri_pacha(maandishi_t, lugha_chanzo, lugha_lengwa, muktadha_chaguo)
-        except Exception as e:
-            res = None
-            onyesha_hitilafu("kutafsiri", e)
-    if res:
-        str_platform.session_state["freemium_words_used"] += maneno
-        str_platform.session_state["tafsiri_ya_mwisho"] = {
-            "chanzo": lugha_chanzo, "lengo": lugha_lengwa,
-            "asili": maandishi_t, "tafsiri": res,
-        }
-        str_platform.session_state.pop("tafsiri_sauti_lengo", None)
-        str_platform.session_state.pop("tafsiri_sauti_asili", None)
-        onyesha_rada()
+gemini_client = (
+    genai.Client(api_key=GEMINI_API_KEY, http_options=types.HttpOptions(timeout=45_000))
+    if GEMINI_API_KEY
+    else None
+)
+groq_client = Groq(api_key=GROQ_API_KEY, timeout=45.0) if GROQ_API_KEY else None
 
 
-def _pc_endelea(sahihisha):
-    pc = str_platform.session_state.pop("tafsiri_precheck", None)
-    if not pc:
-        return
-    text = pc["text"]
-    if sahihisha:
-        chaguliwa = {x["id"] for x in pc["issues"]
-                     if str_platform.session_state.get(f"pc_{x['id']}", True)}
-        text = mhariri.tumia_marekebisho(text, pc["issues"], chaguliwa)[:MAX_CHARS]
-        str_platform.session_state["trans_v14_clean_box"] = text
-    str_platform.session_state["tafsiri_inasubiri"] = {
-        "text": text, "chanzo": pc["chanzo"], "lengo": pc["lengo"], "muktadha": pc["muktadha"]}
-    _futa_pc()
+@app.before_request
+def angalia_ufunguo():
+    """Ikiwa API_KEY imewekwa kwenye Render, omba header ya X-API-Key."""
+    if not API_KEY_YA_HUDUMA:
+        return None
+    if request.method == "OPTIONS" or request.path in ("/", "/health", "/uchunguzi"):
+        return None
+    ulioletwa = request.headers.get("X-API-Key", "")
+    if not hmac.compare_digest(ulioletwa, API_KEY_YA_HUDUMA):
+        return jsonify({
+            "ok": False,
+            "kosa": "UFUNGUO_SIO_SAHIHI",   # extension inasoma 'kosa'
+            "error": "Huna ruhusa ya kutumia huduma hii.",
+        }), 401
+    return None
 
 
-def _pc_ghairi():
-    str_platform.session_state.pop("tafsiri_precheck", None)
-    _futa_pc()
+# ------------------------------------------------------------------
+# 2. KAMUSI YA ISTILAHI (kwa mipaka ya maneno, si kutafuta ndani ya maneno mengine)
+# ------------------------------------------------------------------
+KAMUSI_YA_ISTILAHI = {
+    # Kutoka kwenye kamusi yako ya awali
+    "local languages": "lugha za wenyeji (au lugha za asili)",
+    "fraudsters": "walaghai",
+    "renewable energy": "nishati jadidifu",
+    "market linkages": "miunganiko ya masoko",
+    "blue economy": "uchumi wa buluu",
+    "aquaculture": "ufugaji wa viumbe maji",
+    "coral reefs": "miamba ya matumbawe",
+    "mangrove": "mikoko",
+    "financial inclusion": "ushirikishwaji wa kifedha",
+    "creditworthiness": "ustahili wa mkopo",
+    "consumer protection": "ulinzi wa mlaji",
+    "signing on the dotted line": "kutia saini mkataba rasmi",
+    "work hand in hand": "kufanya kazi bega kwa bega",
+    "rock-bottom prices": "bei ya chini kabisa",
+    "not only": "si tu ... bali pia",
+    "backbone": "mhimili mkuu",
+    # Nyongeza (hakiki na mtaalamu wa lugha kabla ya kuziamini kikamilifu)
+    "climate change": "mabadiliko ya tabianchi",
+    "sustainable development": "maendeleo endelevu",
+    "food security": "usalama wa chakula",
+    "value chain": "mnyororo wa thamani",
+    "supply chain": "mnyororo wa ugavi",
+    "smallholder farmers": "wakulima wadogo",
+    "irrigation": "umwagiliaji",
+    "fertilizer": "mbolea",
+    "artificial intelligence": "akili bandia",
+    "cybersecurity": "usalama wa mtandao",
+    "interest rate": "kiwango cha riba",
+    "inflation": "mfumuko wa bei",
+    "stakeholders": "wadau",
+    "capacity building": "kujenga uwezo",
+    "human rights": "haki za binadamu",
+    "rule of law": "utawala wa sheria",
+    "public health": "afya ya umma",
+}
+
+# Funguo ndefu kwanza ili kuepuka mgongano (mfano "local languages" kabla ya "local")
+_KAMUSI_REGEX = [
+    (re.compile(r"\b" + re.escape(en) + r"s?\b", re.IGNORECASE), en, sw)
+    for en, sw in sorted(KAMUSI_YA_ISTILAHI.items(), key=lambda x: -len(x[0]))
+]
 
 
-def _onyesha_precheck(pc):
-    str_platform.markdown("---")
-    str_platform.warning(
-        f"Nimeona makosa {len(pc['issues'])} kwenye maandishi yako ya {pc['chanzo']} kabla ya kutafsiri. "
-        "Tafsiri haijaanza, na hakuna maneno yaliyokatwa bado.")
-    if pc.get("onyo"):
-        str_platform.caption(f"\u26A0\uFE0F {pc['onyo']}")
-    if not pc["ai"]:
-        str_platform.info("Ukaguzi wa msingi tu (AI haikupatikana kwa sasa).")
-    str_platform.markdown(
-        mhariri.html_ya_kuonyesha(pc["text"], pc["issues"], rtl=(pc.get("mwelekeo") == "rtl")),
-        unsafe_allow_html=True)
-    str_platform.markdown("**Chagua marekebisho ya kutumia kabla ya kutafsiri:**")
-    for x in pc["issues"]:
-        jina = mhariri.KATEGORIA.get(x["category"], ("Mengineyo", ""))[0]
-        lebo = (f'{jina}: "{_ep_md(x["original"])}" \u2192 "{_ep_md(x["suggestion"])}". '
-                f'{_ep_md(x["explanation"])}')
-        str_platform.checkbox(lebo, value=True, key=f"pc_{x['id']}")
-    c1, c2, c3 = str_platform.columns(3)
-    c1.button("Sahihisha kisha utafsiri", type="primary",
-              on_click=_pc_endelea, args=(True,), key="pc_btn_sahihisha")
-    c2.button("Tafsiri bila kusahihisha", on_click=_pc_endelea, args=(False,), key="pc_btn_bila")
-    c3.button("Ghairi (nitahariri mwenyewe)", on_click=_pc_ghairi, key="pc_btn_ghairi")
-
-
-if "mhariri" in chaguo_menyu:
-    str_platform.markdown(
-        "<h3 style='color: #D97706;'>\U0001F4DD Mhariri wa Kiswahili Sanifu Pro</h3>",
-        unsafe_allow_html=True)
-
-    if maneno_yaliyobaki <= 0:
-        str_platform.error("\U0001F512 Salio LIMEISHA! Tafadhali fungua Lango la Mteja kulipia.")
-    else:
-        try:
-            matokeo_pro = mhariri_pro_ui.onyesha_mhariri_pro(
-                kamusi=_pata_kamusi_set(),
-                piga_ai=_piga_ai,
-                piga_ai_kina=_piga_ai_kina if _UTHIBITISHO_WA_PRO else None,
-                max_chars=MAX_CHARS,
-                kikomo_maneno=maneno_yaliyobaki,
-            )
-            if (matokeo_pro and matokeo_pro.get("text_hash")
-                    and matokeo_pro.get("ai_imetumika")):
-                h = matokeo_pro["text_hash"]
-                if h != str_platform.session_state.get("mhariri_billed_hash"):
-                    str_platform.session_state["freemium_words_used"] += matokeo_pro["maneno"]
-                    str_platform.session_state["mhariri_billed_hash"] = h
-                    onyesha_rada()
-        except Exception as e:
-            onyesha_hitilafu("kuendesha Mhariri Pro", e)
-
-
-elif "mtafsiri" in chaguo_menyu:
-    str_platform.markdown(
-        "<h3 style='color: #D97706;'>\U0001F500 Mtafsiri wa Lugha & Muktadha Suite Pro</h3>",
-        unsafe_allow_html=True)
-
-    orodha_lugha = [
-        "Kiswahili", "Kiingereza (English)", "Kifaransa", "Kiarabu",
-        "Kichina (Mandarin)", "Kireno (Portugu\u00eas)", "Kizulu (isiZulu)", "Setswana (Botswana)",
-        "Kinyarwanda", "Kiganda (Luganda)", "Lingala", "Kichewa",
+def pata_vidokezo_vya_kamusi(maandishi: str) -> str:
+    vidokezo = [
+        f"- '{en}' itafsiriwe kama '{sw}'"
+        for rx, en, sw in _KAMUSI_REGEX
+        if rx.search(maandishi)
     ]
-    lugha_za_majaribio = {"Kizulu (isiZulu)", "Setswana (Botswana)", "Kinyarwanda",
-                          "Kiganda (Luganda)", "Lingala", "Kichewa"}
+    if vidokezo:
+        return "\nMWONGOZO WA ISTILAHI MAHUSUSI (ZINGATIA HIZI):\n" + "\n".join(vidokezo)
+    return ""
 
-    col1, col2 = str_platform.columns(2)
-    with col1:
-        lugha_chanzo = str_platform.selectbox("Kutoka Lugha:", orodha_lugha, index=1,
-                                              key="src_v14_clean")
-    with col2:
-        lugha_lengwa = str_platform.selectbox("Kwenda Lugha:", orodha_lugha, index=0,
-                                              key="trg_v14_clean")
-    if lugha_chanzo in lugha_za_majaribio or lugha_lengwa in lugha_za_majaribio:
-        str_platform.caption("\u26A0\uFE0F Tafsiri ya lugha hii ni ya majaribio (Beta). "
-                             "Ihakikiwe na mzungumzaji wa lugha hiyo kabla ya kutumika kwa kazi muhimu.")
-    muktadha_chaguo = str_platform.selectbox(
-        "\U0001F3AF Chagua Muktadha:",
-        ["Kawaida", "Kibiashara", "Kisheria", "Kitiba", "Kielimu", "Kidini", "Kilimo"],
-        key="context_v14_clean")
 
-    with str_platform.expander("\U0001F399\uFE0F Imla: Ongea badala ya kuandika (Dictation)"):
-        str_platform.caption(f"Ongea kwa {lugha_chanzo}. Maneno yataandikwa kwenye kisanduku cha maandishi hapa chini.")
-        if hasattr(str_platform, "audio_input"):
-            sauti_imla = str_platform.audio_input("Bonyeza kurekodi sauti yako:", key="imla_rekodi_v14")
-        else:
-            sauti_imla = str_platform.file_uploader("Pakia sauti (MP3, WAV, M4A):",
-                                                   type=["mp3", "wav", "m4a"], key="imla_pakia_v14")
-        _orodha_lahaja_imla = orodha_ya_lahaja(lugha_chanzo)
-        lahaja_imla = None
-        if len(_orodha_lahaja_imla) > 1:
-            lahaja_imla = str_platform.selectbox("Lahaja ya msemaji:", _orodha_lahaja_imla,
-                                                key=f"imla_lahaja_v14_{lugha_chanzo}")
-        sanifisha_imla = False
-        if lugha_chanzo == "Kiswahili":
-            sanifisha_imla = str_platform.checkbox(
-                "Andika kwa Kiswahili Sanifu (badilisha maneno ya lahaja)", key="imla_sanifisha_v14")
-        if sauti_imla is not None and str_platform.button("Andika Imla na Weka Kwenye Kisanduku",
-                                                         key="imla_btn_v14"):
-            with str_platform.spinner("Inasikiliza sauti yako..."):
-                try:
-                    imla_matini = ubongo.chakata_sauti_na_imla(
-                        sauti_imla, MISIMBO_YA_IMLA.get(lugha_chanzo, "sw"),
-                        lahaja=lahaja_imla, muktadha=muktadha_chaguo, sanifisha=sanifisha_imla,
-                    )
-                except Exception as e:
-                    imla_matini = None
-                    onyesha_hitilafu("kuandika imla", e)
-            if imla_matini:
-                str_platform.session_state["trans_v14_clean_box"] = imla_matini[:MAX_CHARS]
-                str_platform.success("\u2728 Imla imeandikwa. Pitia maandishi hapa chini kisha bonyeza Zindua Tafsiri Pro.")
+# ------------------------------------------------------------------
+# 3. CHUJIO SALAMA LA PYTHON
+#    Hurekebisha tu mambo yasiyo na utata. Ngeli na sarufi huachiwa AI.
+#    (Sheria mpya za Je/kionyeshi/tahajia ziko kwenye sheria_baada_ya_ai.py)
+# ------------------------------------------------------------------
+# Tahajia zilizothibitishwa. Ongeza mpya hapa baada ya kuzihakiki tu.
+_TAHAJIA = {
+    "serekali": "serikali",
+    "kwasababu": "kwa sababu",
+    "maswala": "masuala",
+    "wanyama pori": "wanyamapori",
+    "nguvu kazi": "nguvukazi",
+}
+_TAHAJIA_RX = re.compile(
+    r"\b(?:serekali|kwasababu|maswala|wanyama\s+pori|nguvu\s+kazi)\b", re.IGNORECASE
+)
 
-    maandishi_t = str_platform.text_area(
-        "Ingiza maandishi ya kutafsiri hapa:", key="trans_v14_clean_box",
-        height=150, max_chars=MAX_CHARS)
-    heabu_maneno_t = hesabu_maneno(maandishi_t)
+# Maneno ya kawaida pekee ndiyo yanaondolewa yakijirudia kwa bahati mbaya
+# (si "pole pole", "kidogo kidogo", "sana sana" n.k. ambayo ni halali).
+_MANENO_YA_KAWAIDA = (
+    "kuhusu", "na", "ya", "wa", "za", "kwa", "la", "cha", "vya", "katika", "pia", "kwamba",
+)
+_RUDIA_RX = re.compile(r"\b(" + "|".join(_MANENO_YA_KAWAIDA) + r")(?:\s+\1\b)+", re.IGNORECASE)
 
-    if maneno_yaliyobaki <= 0:
-        str_platform.error("\U0001F512 Salio LIMEISHA! Tafadhali fungua Lango la Mteja kulipia.")
+# Marekebisho ya ngeli yenye mipaka kali: yanashika tu maumbo mahususi yaliyothibitishwa kuwa makosa.
+# Hakuna "[^.?!]*?" inayoruka maneno ovyo, kwa hiyo sentensi sahihi hazigusiwi.
+_NGELI_MAUMBO_MAALUM = [
+    (re.compile(r"\bmashirika\s+madogomadogo\s+vya\b", re.IGNORECASE), "mashirika madogomadogo ya"),
+    (re.compile(r"\byamekuwa\s+vikichelewa\b", re.IGNORECASE), "yamekuwa yakichelewa"),
+    (re.compile(r"\byamekuwa\s+vikisuasua\b", re.IGNORECASE), "yamekuwa yakisuasua"),
+    (re.compile(r"\bmafanikio\s+kubwa\b", re.IGNORECASE), "mafanikio makubwa"),
+]
+
+# ukosefu/uhaba/upungufu (U-umoja) + "wa" + maneno 1-2 + "imekuwa"  ->  "umekuwa"
+# Kikomo cha maneno 1-2 na kutokuwepo kwa alama katikati huzuia kugusa "hali imekuwa", "serikali imekuwa".
+_NGELI_U_UMOJA = re.compile(
+    r"\b(ukosefu|uhaba|upungufu)(\s+wa\s+\w+(?:\s+\w+)?\s+)imekuwa\b", re.IGNORECASE
+)
+
+
+def _rekebisha_ngeli(maandishi: str) -> str:
+    for rx, sahihi in _NGELI_MAUMBO_MAALUM:
+        maandishi = rx.sub(
+            lambda m, s=sahihi: (s[0].upper() + s[1:]) if m.group(0)[:1].isupper() else s,
+            maandishi,
+        )
+    return _NGELI_U_UMOJA.sub(lambda m: m.group(1) + m.group(2) + "umekuwa", maandishi)
+
+
+def _badilisha_tahajia(m: "re.Match") -> str:
+    asili = m.group(0)
+    sahihi = _TAHAJIA[re.sub(r"\s+", " ", asili.lower())]
+    return sahihi.capitalize() if asili[:1].isupper() else sahihi
+
+
+def safisha_maandishi_sanifu(maandishi: str) -> str:
+    if not maandishi:
+        return ""
+
+    maandishi = _RUDIA_RX.sub(r"\1", maandishi)
+    maandishi = _TAHAJIA_RX.sub(_badilisha_tahajia, maandishi)
+    maandishi = _rekebisha_ngeli(maandishi)
+
+    maandishi = re.sub(r"[ \t]{2,}", " ", maandishi)              # nafasi mbili au zaidi
+    maandishi = re.sub(r"[ \t]+([,.;:!?])", r"\1", maandishi)     # nafasi kabla ya alama
+    maandishi = re.sub(r"(?<!\.)\.\.(?!\.)", ".", maandishi)      # ".." -> "." (nukta tatu zinabaki)
+    maandishi = maandishi.strip()
+    if maandishi.endswith(","):
+        maandishi = maandishi[:-1] + "."                          # mkato mwishoni -> nukta
+    return maandishi
+
+
+def _maliza_kwa_sheria(maandishi: str) -> str:
+    """
+    Hatua ya mwisho ya Python kwa kila kipande, baada ya AI:
+    nukuu zinalindwa -> 4B -> chujio salama -> sheria mpya -> nukuu zinarudishwa mahali pake.
+    Kila hatua ikiharibu alama za nukuu, hatua hiyo inarukwa (nukuu hazipotei kamwe).
+    """
+    ulinzi, nukuu = linda_nukuu_kabla_ya_ai(maandishi)
+    t = ondoa_kiingereza(ulinzi)
+    if not nukuu_zote_zipo(t, nukuu):
+        t = ulinzi
+    t2 = safisha_maandishi_sanifu(t)
+    if nukuu_zote_zipo(t2, nukuu):
+        t = t2
+    safi, _ = rekebisha_kiswahili_sanifu(t, nukuu)
+    return safi
+
+
+def _safisha_jibu_la_ai(maandishi: str) -> str:
+    """Huondoa uzio wa ``` au nukuu zilizozunguka jibu zima la AI."""
+    t = maandishi.strip()
+    t = re.sub(r"^```[a-zA-Z]*\s*\n?", "", t)
+    t = re.sub(r"\n?```$", "", t)
+    return t.strip()
+
+
+# ------------------------------------------------------------------
+# 4. MAELEKEZO YA AI
+# ------------------------------------------------------------------
+SYSTEM_PROMPT = """
+Wewe ni Mhariri Mkuu na Mtafsiri Bingwa wa Kiswahili Sanifu (AI Lingual Africa Sanifu).
+Fuata sheria hizi kali bila kukosea:
+1. NGELI ZA KISWAHILI:
+   - 'matumizi', 'mafanikio', 'maoni' (wingi) huchukua 'ya-' ('yamesababisha', 'yamekuwa'), KAMWE 'i-' wala 'vi-'.
+   - 'mtazamo', 'ukosefu', 'mkutano' (U-I umoja) huchukua 'u-' ('umekuwa') na 'm-' ('mkutano mfupi').
+   - 'kikwazo' (KI-VI umoja) huchukua 'ki-' ('kikwazo kikubwa').
+   - 'mashirika', 'majukwaa', 'mataifa' (wingi) huchukua 'ma-'/'ya-' ('mashirika madogomadogo', 'majukwaa yatakayotoa').
+   - Vitenzi-jina ('Kuwekeza...', 'Kupuuza...') hubaki na 'ku-' ('kukilinda', 'kunaweza').
+   - Kitenzi lazima kioane na nomino halisi inayotenda, si nomino iliyo karibu tu.
+   - Kivumishi '-ingi' huoana na ngeli ya nomino: A-WA 'wateja wengi', 'watu wengi'; U-I 'miti mingi'; LI-YA 'maji mengi', 'mambo mengi'; KI-VI 'vitu vingi'; I-ZI 'biashara nyingi', 'pesa nyingi'. 'wateja myingi' ni kosa; sahihi ni 'wateja wengi'. Usibadilishe 'myingi' kuwa 'mingi' bila kuangalia nomino.
+   - Nahau: 'akina mama wengi' (si 'mama wengi'). 'wakati mwingi' na 'muda mwingi' (si 'wakati mingi' wala 'muda mingi'), kwa sababu 'wakati' na 'muda' huchukua 'mwingi'.
+   - 'akina' hutumika mbele ya nomino za umoja za watu: 'akina mama wengi', 'akina baba wengi'. Nomino ya wingi haipewi 'akina': 'watoto wengi' (si 'akina watoto wengi').
+2. KIVUMISHI 'KILA': Sentensi ikianza na 'Kila' + nomino ya umoja ('Kila mkulima'), vitenzi VYOTE na viwakilishi VYOTE viwe UMOJA.
+3. SHAMIRISHO NA WAKATI: 'anapojali afya' (siyo 'anapowajali afya'). Kitenzi kikuu baada ya kitenzi-jina kichukue wakati ujao ('kutasaidia') au mazoea ('husaidia').
+4. UAMINIFU: Usiongeze sentensi wala maneno mapya (isipokuwa maneno sanifu yanayochukua nafasi ya Kiingereza kwa sheria 4B). Usibadilishe maneno ambayo tayari ni sahihi.
+4A. MARUDIO HALALI: 'wadogo wadogo', 'madogomadogo', 'polepole', 'haraka haraka', 'kidogo kidogo', 'mara kwa mara', 'kimya kimya', 'sawa sawa' ni sahihi na hutoa msisitizo. Usiyaondoe. Usibadilishe 'na', 'ya', 'wa', 'kwa' kuwa maneno mengine (mfano 'na' kuwa 'dhidi ya') isipokuwa kosa liko wazi bila shaka.
+4B. UKALI WA KUONDOA KIINGEREZA (STRICT NO CODE-SWITCHING):
+   - Unapohariri Kiswahili, ondoa kila neno la Kiingereza lililochanganywa katikati ya sentensi ya Kiswahili, pamoja na miundo ya kiambishi + '-' + kitenzi cha Kiingereza (mfano: 'ku-launch', 'ana-post', 'nime-manage'). Badilisha kwa neno sanifu la Kiswahili lenye maana ileile, kisha hakikisha ngeli na viambishi vinaoana na neno jipya.
+   - Mifano: ku-launch -> kuanzisha; ku-post -> kuchapisha; ku-attract -> kuvutia; ku-manage -> kusimamia; ku-build brand -> kujenga chapa; capital -> mtaji; platforms -> majukwaa; transactions -> miamala; online -> mtandaoni; business plan -> mpango wa biashara; records -> kumbukumbu; loans -> mikopo; digital marketing -> masoko ya kidijitali.
+   - USIBADILISHE: majina maalum ya watu, chapa, kampuni na bidhaa (Facebook, WhatsApp, Pesapal); URL na barua pepe; msimbo; nukuu ndani ya alama za nukuu; sentensi zilizoandikwa kwa Kiingereza kikamilifu kwa makusudi.
+   - Katika tafsiri (EN -> SW), matokeo yote yawe Kiswahili; usiache neno la Kiingereza isipokuwa jina maalum.
+5. TAFSIRI (EN -> SW): Tafsiri maana halisi na misemo kwa ufasaha (si neno kwa neno). Tunza msisitizo wa 'not only... but also' ('si tu... bali pia').
+6. MUUNDO: Dumisha vichwa vya habari, orodha na namba kama zilivyo. Hifadhi majina ya watu, vifupisho na nambari.
+7. MATOKEO: Toa matokeo yaliyohaririwa/kutafsiriwa PEKEE, bila maelezo ya ziada, bila nukuu, bila alama za ```.
+8. NUKUU ZILIZOHIFADHIWA: Alama kama [[NUKUU_0]], [[NUKUU_1]] ni nukuu za watu zilizohifadhiwa. Ziache KAMA ZILIVYO, mahali pale pale, na kila moja mara moja tu. Usizitafsiri, usizibadilishe, usiziondoe, wala usiongeze alama mpya.
+"""
+
+SYSTEM_UKAGUZI = """
+Wewe ni Mkaguzi wa Kiswahili Sanifu. Utapewa maandishi ya Kiswahili yaliyokwisha haririwa/tafsiriwa.
+Kazi yako ni kurekebisha TU makosa ya wazi ya: ngeli (makubaliano ya nomino na kitenzi/kivumishi), tahajia,
+wakati wa kitenzi, na alama za uandishi.
+Sheria:
+- USIBADILISHE maana, mpangilio wa mawazo, wala msamiati ulio sahihi. Usiongeze wala kupunguza sentensi.
+- Kama hakuna kosa, rudisha maandishi yaleyale bila mabadiliko yoyote.
+- 'matumizi', 'mafanikio', 'maoni' huchukua 'ya-'; 'kila' + nomino ya umoja huhitaji vitenzi vya umoja.
+- Mifano ya makosa ya kurekebisha (kosa -> sahihi):
+  * 'mashirika madogomadogo vya wakulima' -> 'mashirika madogomadogo ya wakulima' (mashirika huchukua 'ya')
+  * 'malipo yamekuwa vikichelewa' -> 'malipo yamekuwa yakichelewa'
+  * 'maendeleo yamekuwa vikisuasua' -> 'maendeleo yamekuwa yakisuasua'
+  * 'ukosefu wa ajira imekuwa tatizo' -> 'ukosefu wa ajira umekuwa tatizo' (ukosefu, uhaba, upungufu huchukua 'u-')
+- Kama maandishi yana neno la Kiingereza lililochanganywa na Kiswahili (mfano 'ku-launch', 'online'), libadilishe na neno sanifu la Kiswahili, na ulinde majina maalum, URL, barua pepe na nukuu.
+- Kitenzi huoana na nomino inayotenda, si nomino iliyo karibu: 'ukosefu wa ajira umeongezeka, na hali imekuwa mbaya' ni SAHIHI (usibadilishe 'hali imekuwa').
+- Alama kama [[NUKUU_0]] ni nukuu zilizohifadhiwa: ziache kama zilivyo, mahali pale pale, mara moja tu kila moja.
+- '-ingi' huoana na ngeli: 'wateja wengi', 'miti mingi', 'maji mengi', 'vitu vingi', 'biashara nyingi'. Usibadilishe 'wateja myingi' kuwa 'wateja mingi'; sahihi ni 'wateja wengi'.
+- Marudio kama 'wadogo wadogo', 'sawa sawa', 'kidogo kidogo' ni sahihi; usiyaondoe.
+- Nahau: 'akina mama wengi' (si 'mama wengi'); 'wakati mwingi', 'muda mwingi' (si 'wakati mingi', 'muda mingi').
+- 'akina mama wengi', 'akina baba wengi' (si 'mama wengi', 'baba wengi'); 'watoto wengi' ni sahihi, usiongeze 'akina' mbele ya wingi.
+- Toa maandishi yaliyokaguliwa PEKEE, bila maelezo, bila nukuu, bila alama za ```.
+"""
+
+
+# ------------------------------------------------------------------
+# 5. KUITA AI (Gemini kwanza, Groq akiba)
+# ------------------------------------------------------------------
+def _ni_kosa_la_muda(e: Exception) -> bool:
+    """429/500/503/504 au tatizo la mtandao: inafaa kujaribu tena. 400/401/403/404: usijaribu tena."""
+    code = getattr(e, "code", None)
+    return code is None or code in (429, 500, 502, 503, 504)
+
+
+def _ita_gemini(system: str, ujumbe: str):
+    global _gemini_pumziko_hadi
+    if not gemini_client:
+        print("Gemini: GEMINI_API_KEY haijawekwa kwenye Render.")
+        return None
+    if time.time() < _gemini_pumziko_hadi:
+        return None  # kikomo kimejaa hivi karibuni: nenda moja kwa moja kwa Groq
+
+    modeli = [GEMINI_MODEL]
+    if GEMINI_FALLBACK_MODEL and GEMINI_FALLBACK_MODEL != GEMINI_MODEL:
+        modeli.append(GEMINI_FALLBACK_MODEL)
+
+    zote_ni_429 = True
+    for modeli_jina in modeli:
+        for jaribio in range(2):
+            try:
+                jibu = gemini_client.models.generate_content(
+                    model=modeli_jina,
+                    contents=ujumbe,
+                    config=types.GenerateContentConfig(system_instruction=system, temperature=0.0),
+                )
+                if jibu and jibu.text:
+                    return jibu.text.strip()
+                print(f"Gemini ({modeli_jina}): jibu tupu (huenda limezuiwa).")
+                zote_ni_429 = False
+                break  # jibu tupu (mf. limezuiwa): jaribu modeli inayofuata
+            except Exception as e:
+                print(f"Hitilafu ya Gemini ({modeli_jina}, jaribio {jaribio + 1}): {e}")
+                if getattr(e, "code", None) == 429:
+                    break  # kikomo cha matumizi: kusubiri hakusaidii, jaribu modeli inayofuata
+                zote_ni_429 = False
+                if not _ni_kosa_la_muda(e):
+                    break  # mf. modeli haipo (404): nenda modeli inayofuata mara moja
+                time.sleep(1.5 * (jaribio + 1))
+
+    if zote_ni_429:
+        _gemini_pumziko_hadi = time.time() + GEMINI_PUMZIKO_SEKUNDE
+        print(f"Gemini: kikomo kimejaa (429). Inarukwa kwa sekunde {GEMINI_PUMZIKO_SEKUNDE}.")
+    return None
+
+
+def _ita_groq(system: str, ujumbe: str):
+    if not groq_client:
+        print("Groq: GROQ_API_KEY haijawekwa kwenye Render.")
+        return None
+    try:
+        chat = groq_client.chat.completions.create(
+            model=GROQ_MODEL,
+            temperature=0.0,
+            messages=[
+                {"role": "system", "content": system},
+                {"role": "user", "content": ujumbe},
+            ],
+        )
+        maudhui = chat.choices[0].message.content  # choices ni orodha
+        return maudhui.strip() if maudhui else None
+    except Exception as e:
+        print(f"Hitilafu ya Groq: {e}")
+        return None
+
+
+def ita_ai(system: str, ujumbe: str):
+    """Hurudisha (maandishi, injini). Kama zote zimeshindwa: (None, None)."""
+    jibu = _ita_gemini(system, ujumbe)
+    if jibu:
+        return _safisha_jibu_la_ai(jibu), "gemini"
+    jibu = _ita_groq(system, ujumbe)
+    if jibu:
+        return _safisha_jibu_la_ai(jibu), "groq"
+    return None, None
+
+
+# ------------------------------------------------------------------
+# 6. UCHAKATAJI WA KIPANDE KIMOJA (HATUA YA 1 + HATUA YA 2 + ULINZI)
+# ------------------------------------------------------------------
+def _ina_herufi(s: str) -> bool:
+    return bool(re.search(r"[^\W\d_]", s))
+
+
+def _uwiano_unakubalika(asili: str, matokeo: str, kitendo: str) -> bool:
+    """Ulinzi dhidi ya AI kuongeza maelezo au kukata maneno."""
+    if not matokeo.strip():
+        return False
+    ratio = len(matokeo) / max(len(asili), 1)
+    if kitendo == "tafsiri":
+        return 0.3 <= ratio <= 3.0
+    return 0.6 <= ratio <= 1.8
+
+
+def chakata_kipande(kipande: str, kitendo: str, hatua_mbili=None) -> dict:
+    if hatua_mbili is None:
+        hatua_mbili = HATUA_MBILI
+
+    # --- Maandalizi: nukuu zinalindwa kwenye uhariri (si kwenye tafsiri, ambako nukuu nazo hutafsiriwa) ---
+    nukuu = []
+    if kitendo == "tafsiri":
+        msingi = kipande
+        vidokezo = pata_vidokezo_vya_kamusi(kipande)
+        ujumbe = f"Tafsiri aya hii kwenda Kiswahili Sanifu fasaha:{vidokezo}\n\n{kipande}"
     else:
-        kagua_kwanza = str_platform.checkbox(
-            "Kagua makosa kwenye maandishi kabla ya kutafsiri", value=True, key="tr_precheck_v15",
-            help="Mfumo hukagua maandishi ya lugha ya chanzo kwanza. Ukipata makosa, utachagua kuyasahihisha kabla ya tafsiri kuanza.")
-        if str_platform.button("Zindua Tafsiri Pro", key="v14_btn_tr_clean"):
-            str_platform.session_state.pop("tafsiri_precheck", None)
-            _futa_pc()
-            if not maandishi_t.strip():
-                str_platform.warning("Tafadhali ingiza maandishi ya kutafsiri kwanza.")
-            elif heabu_maneno_t > maneno_yaliyobaki:
-                str_platform.warning(
-                    f"Maandishi yana maneno {heabu_maneno_t}, lakini salio lako ni {maneno_yaliyobaki}. "
-                    "Punguza maandishi au fungua Lango la Mteja.")
-            elif not kagua_kwanza:
-                _fanya_tafsiri(maandishi_t, lugha_chanzo, lugha_lengwa, muktadha_chaguo)
-            else:
-                pk = None
-                with str_platform.spinner("Nakagua makosa kwenye maandishi kabla ya kutafsiri..."):
-                    try:
-                        pk = sarufi_bridge.kagua_pamoja(
-                            maandishi_t, piga_ai=_piga_ai,
-                            piga_ai_kina=_piga_ai_kina if _UTHIBITISHO_WA_PRO else None,
-                            lugha=lugha_chanzo)
-                    except Exception as e:
-                        print(f"[tafsiri] ukaguzi wa awali umeshindwa: {type(e).__name__}")
-                if pk and pk["issues"]:
-                    str_platform.session_state["tafsiri_precheck"] = {
-                        "text": maandishi_t, "chanzo": lugha_chanzo, "lengo": lugha_lengwa,
-                        "muktadha": muktadha_chaguo,
-                        "issues": pk["issues"], "ai": pk["ai_imetumika"],
-                        "mwelekeo": pk.get("mwelekeo", "ltr"), "onyo": pk.get("onyo_la_lugha"),
-                    }
-                else:
-                    _fanya_tafsiri(maandishi_t, lugha_chanzo, lugha_lengwa, muktadha_chaguo)
+        msingi, nukuu = linda_nukuu_kabla_ya_ai(kipande)
+        if nukuu and not _ina_herufi(bila_nukuu(msingi)):
+            # Kipande chote ni nukuu: hakuna cha kuhariri, usipoteze ombi la AI.
+            return {"text": kipande, "ok": True, "injini": None, "hatua2": False}
+        # Sheria 4B: ondoa Kiingereza kabla ya AI (nje ya nukuu), ili AI ione Kiswahili na irekebishe ngeli.
+        kipande_cha_ai = ondoa_kiingereza(msingi)
+        if not nukuu_zote_zipo(kipande_cha_ai, nukuu):
+            kipande_cha_ai = msingi
+        ujumbe = (
+            "Hariri sarufi, ngeli, tahajia, na alama za uandishi za aya hii ya Kiswahili, "
+            "ukiondoa maneno ya Kiingereza yaliyochanganywa (sheria 4B), "
+            f"bila kuongeza maneno mengine mapya:\n\n{kipande_cha_ai}"
+        )
 
-    _inasubiri = str_platform.session_state.pop("tafsiri_inasubiri", None)
-    if _inasubiri:
-        _fanya_tafsiri(_inasubiri["text"], _inasubiri["chanzo"],
-                       _inasubiri["lengo"], _inasubiri["muktadha"])
-    _pc = str_platform.session_state.get("tafsiri_precheck")
-    if _pc:
-        if (_pc["text"], _pc["chanzo"], _pc["lengo"]) != (maandishi_t, lugha_chanzo, lugha_lengwa):
-            str_platform.session_state.pop("tafsiri_precheck", None)
-            _futa_pc()
+    # --- Hatua ya 1: kuhariri / kutafsiri ---
+    hatua1, injini = ita_ai(SYSTEM_PROMPT, ujumbe)
+    if not hatua1:
+        print(f"Kipande kimeshindwa: Gemini na Groq hazikujibu (herufi {len(kipande)}).")
+        return {"text": kipande, "ok": False, "injini": None, "hatua2": False}
+
+    if not nukuu_zote_zipo(hatua1, nukuu):
+        # AI imepoteza/kubadilisha alama za nukuu: rudisha asili, usipoteze nukuu yoyote.
+        print(f"Kipande kimekataliwa: {injini} imepoteza alama za nukuu. Jibu: {hatua1[:120]!r}")
+        return {"text": kipande, "ok": False, "injini": injini, "hatua2": False}
+
+    if not _uwiano_unakubalika(msingi, hatua1, kitendo):
+        # AI imeongeza/kupunguza kupita kiasi: kwenye uhariri tunarudi kwenye asili
+        if kitendo != "tafsiri":
+            print(f"Kipande kimekataliwa na kinga ya urefu: asili={len(msingi)}, jibu la {injini}={len(hatua1)}. Jibu: {hatua1[:120]!r}")
+            return {"text": kipande, "ok": False, "injini": injini, "hatua2": False}
+
+    matokeo, ilitumia_hatua2 = hatua1, False
+
+    # --- Hatua ya 2: ukaguzi wa ngeli/sarufi bila kubadilisha maana ---
+    if hatua_mbili:
+        if kitendo == "tafsiri":
+            ujumbe2 = (
+                f"Maandishi asili (Kiingereza), kwa kumbukumbu ya maana tu:\n{kipande}\n\n"
+                f"Tafsiri ya Kiswahili ya kukagua:\n{hatua1}"
+            )
         else:
-            _onyesha_precheck(_pc)
+            ujumbe2 = f"Maandishi ya kukagua:\n{hatua1}"
+        hatua2, _ = ita_ai(SYSTEM_UKAGUZI, ujumbe2)
+        # Kubali ukaguzi tu ikiwa nukuu zote zipo na haujabadilisha urefu sana
+        if hatua2 and nukuu_zote_zipo(hatua2, nukuu) and 0.8 <= len(hatua2) / max(len(hatua1), 1) <= 1.25:
+            matokeo, ilitumia_hatua2 = hatua2, True
 
-    _t_mwisho = str_platform.session_state.get("tafsiri_ya_mwisho")
-    if _t_mwisho:
-        onyesha_jibu(_t_mwisho["tafsiri"], border_color="rgba(255,255,255,0.1)",
-                     bg="rgba(255,255,255,0.02)")
-        str_platform.caption("\U0001F50A Sikiliza jinsi maandishi yanavyotamkwa:")
-        with str_platform.expander("\u2699\uFE0F Mipangilio ya Matamshi (lahaja, sauti, kasi)"):
-            _lh_lengo = orodha_ya_lahaja(_t_mwisho["lengo"])
-            _lh_asili = orodha_ya_lahaja(_t_mwisho["chanzo"])
-            mk1, mk2 = str_platform.columns(2)
-            with mk1:
-                lahaja_lengo = (str_platform.selectbox("Lahaja ya tafsiri:", _lh_lengo,
-                                                       key=f"lahaja_lengo_{_t_mwisho['lengo']}")
-                                if len(_lh_lengo) > 1 else None)
-                sauti_chaguo = str_platform.selectbox("Sauti:", SAUTI_ZA_GEMINI,
-                                                     key="sauti_chaguo_tafsiri")
-            with mk2:
-                lahaja_asili = (str_platform.selectbox("Lahaja ya maandishi asili:", _lh_asili,
-                                                       key=f"lahaja_asili_{_t_mwisho['chanzo']}")
-                                if len(_lh_asili) > 1 else None)
-                kasi_chaguo = str_platform.selectbox("Kasi:", list(KASI_ZA_SAUTI.keys()),
-                                                    key="kasi_chaguo_tafsiri")
-        sc1, sc2 = str_platform.columns(2)
-        with sc1:
-            if str_platform.button(f"\U0001F50A Sikiliza Tafsiri ({_t_mwisho['lengo']})",
-                                   key="sikiliza_tafsiri_btn"):
-                with str_platform.spinner("Inazalisha sauti..."):
-                    try:
-                        str_platform.session_state["tafsiri_sauti_lengo"] = ubongo.zindua_jifunze_lugha_audio(
-                            _t_mwisho["tafsiri"], _t_mwisho["lengo"], lahaja=lahaja_lengo,
-                            sauti=sauti_chaguo, kasi=kasi_chaguo)
-                    except Exception as e:
-                        onyesha_hitilafu("kuzalisha sauti ya tafsiri", e)
-        with sc2:
-            if str_platform.button(f"\U0001F50A Sikiliza Maandishi Asili ({_t_mwisho['chanzo']})",
-                                   key="sikiliza_asili_btn"):
-                with str_platform.spinner("Inazalisha sauti..."):
-                    try:
-                        str_platform.session_state["tafsiri_sauti_asili"] = ubongo.zindua_jifunze_lugha_audio(
-                            _t_mwisho["asili"], _t_mwisho["chanzo"], lahaja=lahaja_asili,
-                            sauti=sauti_chaguo, kasi=kasi_chaguo)
-                    except Exception as e:
-                        onyesha_hitilafu("kuzalisha sauti ya maandishi asili", e)
-        if str_platform.session_state.get("tafsiri_sauti_lengo"):
-            str_platform.caption(f"Matamshi ya tafsiri ({_t_mwisho['lengo']}):")
-            str_platform.audio(str_platform.session_state["tafsiri_sauti_lengo"], format="audio/wav")
-        if str_platform.session_state.get("tafsiri_sauti_asili"):
-            str_platform.caption(f"Matamshi ya maandishi asili ({_t_mwisho['chanzo']}):")
-            str_platform.audio(str_platform.session_state["tafsiri_sauti_asili"], format="audio/wav")
+    # Rudisha nukuu mahali pake kabla ya kutoka kwenye kipande hiki.
+    return {
+        "text": rudisha_nukuu(matokeo, nukuu),
+        "ok": True,
+        "injini": injini,
+        "hatua2": ilitumia_hatua2,
+    }
 
 
-elif "kamusi" in chaguo_menyu:
-    str_platform.markdown(
-        "<h3 style='color: #D97706;'>\U0001F4DA Maktaba ya Msamiati na Kamusi Kuu</h3>",
-        unsafe_allow_html=True)
-    msamiati = str_platform.text_input("Andika neno la Kiswahili hapa:",
-                                       key="kamusi_input_v14_clean", max_chars=100)
-    if str_platform.button("Tafuta Kwenye Kamusi Kuu", key="v14_btn_kam_clean"):
-        if msamiati.strip() != "":
-            matokeo_csv, kosa_csv = tafuta_kwenye_kamusi_csv(msamiati)
-            if kosa_csv and str(_secret("KAMUSI_DEBUG") or "").strip().lower() in ("1", "true", "yes", "ndiyo"):
-                _njia = os.path.join(os.path.dirname(os.path.abspath(__file__)), KAMUSI_CSV_FILE)
-                str_platform.warning(
-                    f"[uchunguzi] kosa: {kosa_csv} | KAMUSI_CSV_URL imewekwa: {bool(KAMUSI_CSV_URL)} | "
-                    f"token imewekwa: {bool(KAMUSI_GITHUB_TOKEN)} (urefu: {len(KAMUSI_GITHUB_TOKEN)}, "
-                    f"inaanza na github_pat_: {KAMUSI_GITHUB_TOKEN.startswith('github_pat_')}) | "
-                    f"faili {KAMUSI_CSV_FILE} kwenye repo: {os.path.exists(_njia)}")
-            if matokeo_csv is not None and not matokeo_csv.empty:
-                str_platform.caption("Chanzo: Kamusi ya Lingual Africa")
-                onyesha_matokeo_ya_kamusi(matokeo_csv)
-            else:
-                if kosa_csv:
-                    str_platform.info("Kamusi ya Lingual Africa haipatikani kwa sasa. "
-                                      "Hapa chini ni pendekezo la AI (halijahakikiwa).")
-                else:
-                    str_platform.warning("Neno hilo halijapatikana kwenye Kamusi ya Lingual Africa. "
-                                        "Hapa chini ni pendekezo la AI (halijahakikiwa).")
-                with str_platform.spinner("Searching..."):
-                    try:
-                        res = ubongo.chakata_kamusi_kuu(msamiati, database)
-                    except Exception as e:
-                        res = None
-                        onyesha_hitilafu("kutafuta kwenye kamusi", e)
-                if res:
-                    onyesha_jibu(res, border_color="#D97706", bg="rgba(255,255,255,0.02)")
-
-
-elif "sauti" in chaguo_menyu:
-    str_platform.markdown(
-        "<h3 style='color: #D97706;'>\U0001F399\uFE0F Roboti wa Sauti, Imla (Transcription) & Jifunze Lugha Suite</h3>",
-        unsafe_allow_html=True)
-    t_imla, t_jifunze = str_platform.tabs([
-        "\U0001F399\uFE0F Imla na Nakala (Transcription)",
-        "\U0001F50A Jifunze Lugha kwa Sauti"])
-
-    with t_imla:
-        _lugha_imla_tab = str_platform.selectbox("Lugha ya sauti:",
-                                                 list(MISIMBO_YA_IMLA.keys()),
-                                                 key="sauti_imla_lugha")
-        _lh_imla_tab = orodha_ya_lahaja(_lugha_imla_tab)
-        lahaja_imla_tab = (str_platform.selectbox("Lahaja ya msemaji:", _lh_imla_tab,
-                                                  key=f"sauti_imla_lahaja_{_lugha_imla_tab}")
-                           if len(_lh_imla_tab) > 1 else None)
-        sanifisha_imla_tab = False
-        if _lugha_imla_tab == "Kiswahili":
-            sanifisha_imla_tab = str_platform.checkbox(
-                "Andika kwa Kiswahili Sanifu (badilisha maneno ya lahaja)",
-                key="sauti_imla_sanifisha")
-        boresha_kwa_mbali = str_platform.checkbox(
-            "Ongeza nguvu ya sauti hafifu (msemaji aliye mbali, semina)",
-            value=True, key="sauti_imla_boresha")
-        str_platform.markdown("**\U0001F399\uFE0F Rekodi moja kwa moja (bonyeza maikrofoni, ongea, kisha simamisha):**")
-        if hasattr(str_platform, "audio_input"):
-            sauti_iliyorekodiwa = str_platform.audio_input("Bonyeza kuanza kurekodi:",
-                                                          key="sauti_imla_rekodi_tab")
+# ------------------------------------------------------------------
+# 7. KUGAWA MAANDISHI (hudumisha mistari, orodha na vichwa)
+# ------------------------------------------------------------------
+def _gawa_mstari_mrefu(mstari: str) -> list:
+    if len(mstari) <= MAX_KIPANDE:
+        return [mstari]
+    sentensi = re.split(r"(?<=[.!?])\s+", mstari)
+    vipande, sasa = [], ""
+    for s in sentensi:
+        if sasa and len(sasa) + len(s) + 1 > MAX_KIPANDE:
+            vipande.append(sasa)
+            sasa = s
         else:
-            sauti_iliyorekodiwa = None
-            str_platform.warning("Toleo la Streamlit ni la zamani. Weka streamlit>=1.40.0 kwenye "
-                                 "requirements.txt ili kurekodi moja kwa moja.")
-        str_platform.markdown("**\U0001F4C1 Au pakia faili la sauti:**")
-        sauti_iliyopakiwa = str_platform.file_uploader(
-            "Pakia Faili la Sauti (MP3, WAV, M4A):", type=["mp3", "wav", "m4a"],
-            key="whisper_audio_uploader")
-        str_platform.caption(
-            "Kwa semina: weka simu au maikrofoni karibu na msemaji, rekodi kwa Voice Recorder (M4A/WAV), "
-            "kisha ipakie hapa. Mbali na msemaji, sauti hupungua sana na programu haiwezi kurudisha maneno yaliyopotea.")
-
-        audio_file = sauti_iliyorekodiwa if sauti_iliyorekodiwa is not None else sauti_iliyopakiwa
-        if audio_file is not None:
-            aina_sauti = getattr(audio_file, "type", None) or "audio/wav"
-            str_platform.audio(audio_file.getvalue(), format=aina_sauti)
-            if str_platform.button("Zindua Whisper-v3 Imla Pro", key="zindua_whisper_v3_btn"):
-                res_sauti = None
-                try:
-                    data_sauti = audio_file.getvalue()
-                    jina_sauti = getattr(audio_file, "name", "sauti.wav") or "sauti.wav"
-                    ni_wav = jina_sauti.lower().endswith(".wav") or "wav" in aina_sauti.lower()
-                    if ni_wav:
-                        if boresha_kwa_mbali:
-                            data_sauti, db_zilizoongezwa = boresha_sauti_wav(data_sauti)
-                            if db_zilizoongezwa > 0:
-                                str_platform.info(f"Sauti hafifu imeongezwa nguvu kwa takriban {db_zilizoongezwa:.0f} dB.")
-                        vipande = gawa_wav_vipande(data_sauti)
-                    else:
-                        vipande = [data_sauti]
-                    matini_zote = []
-                    upau = str_platform.progress(0.0, text="Auditory Cortex inasoma sauti...")
-                    for n, kipande in enumerate(vipande, start=1):
-                        faili_kipande = _FailiLaSauti(
-                            kipande,
-                            jina_sauti if len(vipande) == 1 else f"sauti_{n}.wav",
-                            aina_sauti if len(vipande) == 1 else "audio/wav")
-                        matini_zote.append(ubongo.chakata_sauti_na_imla(
-                            faili_kipande, MISIMBO_YA_IMLA.get(_lugha_imla_tab, "sw"),
-                            lahaja=lahaja_imla_tab, sanifisha=sanifisha_imla_tab))
-                        upau.progress(n / len(vipande),
-                                     text=f"Kipande {n} kati ya {len(vipande)} kimekamilika")
-                    upau.empty()
-                    res_sauti = "\n\n".join(m for m in matini_zote if m)
-                except Exception as e:
-                    res_sauti = None
-                    onyesha_hitilafu("kuandika imla", e)
-                if res_sauti:
-                    str_platform.success("\u2728 Imla Imekamilika!")
-                    onyesha_jibu(res_sauti)
-                    str_platform.download_button("Pakua Notes (.txt)", res_sauti,
-                                                file_name="imla_notes.txt", key="pakua_imla_notes")
-
-    with t_jifunze:
-        maandishi_sauti = str_platform.text_area(
-            "Ingiza maandishi unayotaka kusikia:",
-            value="Karibu kwenye chombo cha Ourworthlinks Business.",
-            key="tts_input_box", max_chars=MAX_CHARS)
-        lugha_tutorial = str_platform.selectbox(
-            "Lugha ya Matamshi:",
-            ["Kiswahili", "Kiingereza", "Kifaransa", "Kiarabu", "Kireno", "Kichina"],
-            key="tts_lang_select")
-        _lh_tts = orodha_ya_lahaja(lugha_tutorial)
-        tc1, tc2, tc3 = str_platform.columns(3)
-        with tc1:
-            lahaja_tts = (str_platform.selectbox("Lahaja:", _lh_tts,
-                                                key=f"tts_lahaja_{lugha_tutorial}")
-                          if len(_lh_tts) > 1 else None)
-        with tc2:
-            sauti_tts = str_platform.selectbox("Sauti:", SAUTI_ZA_GEMINI, key="tts_sauti_select")
-        with tc3:
-            kasi_tts = str_platform.selectbox("Kasi:", list(KASI_ZA_SAUTI.keys()),
-                                              key="tts_kasi_select")
-        if str_platform.button("Zalisha Sauti Pro", key="zalisha_tts_btn"):
-            with str_platform.spinner("Generating..."):
-                try:
-                    audio_bytes = ubongo.zindua_jifunze_lugha_audio(
-                        maandishi_sauti, lugha_tutorial, lahaja=lahaja_tts,
-                        sauti=sauti_tts, kasi=kasi_tts)
-                except Exception as e:
-                    audio_bytes = None
-                    onyesha_hitilafu("kuzalisha sauti", e)
-            if audio_bytes:
-                str_platform.audio(audio_bytes, format="audio/wav")
-                _injini = getattr(ubongo, "injini_ya_sauti", None)
-                if _injini:
-                    str_platform.caption(f"Injini ya sauti iliyotumika: {_injini}")
+            sasa = f"{sasa} {s}".strip()
+    if sasa:
+        vipande.append(sasa)
+    return vipande
 
 
-str_platform.write("---")
-skin_appearance.render_bottom_revenue_banner()
+# ------------------------------------------------------------------
+# 8. MSINGI WA UCHAKATAJI (unatumiwa na /hariri, /tafsiri, /pendekezo na /v1/kagua)
+# ------------------------------------------------------------------
+def chakata_maandishi(maandishi: str, kitendo: str, hatua_mbili=None) -> dict:
+    """
+    Hugawa maandishi kwa mistari, huchakata kwa sambamba, na kurudisha kila mstari
+    pamoja na nafasi yake (mwanzo) kwenye maandishi ya awali.
+    """
+    mistari = maandishi.split("\n")
+    muundo, vipande, mwanzo = [], [], 0
+    for mstari in mistari:
+        if not mstari.strip() or not _ina_herufi(mstari):
+            muundo.append(("kama_ilivyo", 0, mwanzo, mstari))
+        else:
+            sehemu = _gawa_mstari_mrefu(mstari.strip())
+            muundo.append(("chakata", len(sehemu), mwanzo, mstari))
+            vipande.extend(sehemu)
+        mwanzo += len(mstari) + 1
+
+    majibu = []
+    if vipande:
+        with ThreadPoolExecutor(max_workers=MAX_WORKERS) as mtambo:
+            majibu = list(mtambo.map(lambda k: chakata_kipande(k, kitendo, hatua_mbili), vipande))
+
+    mistari_matokeo, idx = [], 0
+    for aina, idadi, mwanzo_m, asili_m in muundo:
+        if aina == "kama_ilivyo":
+            matokeo_m = asili_m
+        else:
+            # Hatua ya mwisho ya Python (hata kama AI imeshindwa): nukuu zinalindwa,
+            # 4B + chujio salama + sheria mpya zinatumika, kisha nukuu zinarudi.
+            safi = [_maliza_kwa_sheria(majibu[idx + i]["text"]) for i in range(idadi)]
+            idx += idadi
+            kichwani = asili_m[: len(asili_m) - len(asili_m.lstrip())]   # hifadhi nafasi za mwanzo (indent)
+            mkiani = asili_m[len(asili_m.rstrip()):]
+            matokeo_m = kichwani + " ".join(safi) + mkiani
+        mistari_matokeo.append(
+            {"aina": aina, "asili": asili_m, "matokeo": matokeo_m, "mwanzo": mwanzo_m}
+        )
+
+    return {
+        "mistari": mistari_matokeo,
+        "majibu": majibu,
+        "matokeo": "\n".join(m["matokeo"] for m in mistari_matokeo),
+    }
+
+
+def muhtasari_wa_majibu(majibu: list) -> dict:
+    return {
+        "jumla": len(majibu),
+        "zilizoshindwa": sum(1 for j in majibu if not j["ok"]),
+        "injini": sorted({j["injini"] for j in majibu if j["injini"]}),
+        "hatua2": sum(1 for j in majibu if j["hatua2"]),
+    }
+
+
+# ------------------------------------------------------------------
+# 9. MAPENDEKEZO YA KUBALI / PUUZA (kama Grammarly)
+#    Tunalinganisha maandishi asili na yaliyohaririwa neno kwa neno, kisha kila
+#    tofauti inakuwa pendekezo lenye nafasi kamili (mwanzo, mwisho) kwenye maandishi asili.
+# ------------------------------------------------------------------
+_TOKENI_RX = re.compile(r"(\s*)(\w+|[^\w\s])", re.UNICODE)
+_NENO_RX = re.compile(r"\w+", re.UNICODE)
+
+
+def _tokeni(s: str) -> list:
+    tokeni = []
+    for m in _TOKENI_RX.finditer(s):
+        tokeni.append({
+            "t": m.group(2),
+            "s": m.start(2),                                   # mwanzo wa neno
+            "e": m.end(2),                                     # mwisho wa neno
+            "ws": m.start(1) if m.group(1) else m.start(2),    # mwanzo ikijumuisha nafasi iliyotangulia
+            "pengo": bool(m.group(1)),                         # kuna nafasi kabla ya neno?
+        })
+    return tokeni
+
+
+def _ni_ngeli(a: str, b: str) -> bool:
+    """Maneno mawili yenye mwisho mmoja mrefu na viambishi tofauti vifupi (mf. imekuwa -> umekuwa)."""
+    if a.lower() == b.lower():
+        return False
+    n = 0
+    while n < min(len(a), len(b)) and a[-1 - n].lower() == b[-1 - n].lower():
+        n += 1
+    return n >= 4 and (len(a) - n) <= 4 and (len(b) - n) <= 4
+
+
+def _aina_na_maelezo(asili: str, mpya: str):
+    kawaida = re.sub(r"\s+", " ", asili.lower()).strip()
+    if kawaida in _TAHAJIA:
+        return "tahajia", f"Tahajia sahihi ni '{_TAHAJIA[kawaida]}'."
+
+    if ina_kiingereza(asili) and not ina_kiingereza(mpya):
+        return "kiingereza", "Neno la Kiingereza limebadilishwa na neno sanifu la Kiswahili."
+
+    wa, wb = _NENO_RX.findall(asili), _NENO_RX.findall(mpya)
+    if wa == wb:
+        if re.sub(r"\s+", "", asili) == re.sub(r"\s+", "", mpya):
+            return "nafasi", "Nafasi kabla au baada ya alama za uandishi zimerekebishwa."
+        if asili.rstrip().endswith(".") and mpya.rstrip().endswith("?"):
+            return "alama", "Sentensi inayoanza na 'Je,' ni swali, kwa hiyo huishia na alama ya kuuliza (?)."
+        return "alama", "Alama za uandishi zimerekebishwa."
+    if [w.lower() for w in wa] == [w.lower() for w in wb]:
+        return "herufi", "Herufi kubwa au ndogo zimerekebishwa."
+
+    # Maneno yaleyale kwa mpangilio tofauti (mf. "hii sekta" -> "sekta hii")
+    if len(wa) == len(wb) >= 2 and sorted(w.lower() for w in wa) == sorted(w.lower() for w in wb):
+        return "mpangilio", "Kionyeshi kinakaa baada ya nomino kwa Kiswahili sanifu (mf. 'sekta hii'). Ni pendekezo la mtindo."
+
+    bila_kurudia = [w for i, w in enumerate(wa) if i == 0 or w.lower() != wa[i - 1].lower()]
+    if len(wa) > len(wb) and bila_kurudia == wb:
+        return "kujirudia", "Neno limejirudia bila sababu; limeondolewa."
+
+    if len(wa) == len(wb):
+        tofauti = [(x, y) for x, y in zip(wa, wb) if x != y]
+        if tofauti and all(_ni_ngeli(x, y) for x, y in tofauti):
+            x, y = tofauti[0]
+            return "ngeli", f"Kiambishi cha ngeli kimerekebishwa ('{x}' -> '{y}') ili kioane na nomino husika."
+        if len(wa) == 1:
+            if difflib.SequenceMatcher(None, wa[0].lower(), wb[0].lower()).ratio() >= 0.75:
+                return "tahajia", f"Tahajia imerekebishwa ('{wa[0]}' -> '{wb[0]}')."
+            return "msamiati", f"Neno limebadilishwa kwa msamiati unaofaa zaidi ('{wa[0]}' -> '{wb[0]}')."
+    elif difflib.SequenceMatcher(None, "".join(wa).lower(), "".join(wb).lower()).ratio() >= 0.85:
+        # Maneno yameunganishwa au kutenganishwa (mf. "mwana inchi" -> "mwananchi")
+        return "tahajia", f"Tahajia imerekebishwa ('{asili.strip()}' -> '{mpya.strip()}')."
+    return "sarufi", "Sentensi imerekebishwa kisarufi au kimtindo."
+
+
+def _tengeneza_mapendekezo(asili: str, mpya: str, mwanzo_wa_asili: int = 0) -> list:
+    ta, tb = _tokeni(asili), _tokeni(mpya)
+    sm = difflib.SequenceMatcher(
+        a=[(t["t"], t["pengo"]) for t in ta],
+        b=[(t["t"], t["pengo"]) for t in tb],
+        autojunk=False,
+    )
+
+    spans = []
+    for tag, i1, i2, j1, j2 in sm.get_opcodes():
+        if tag == "equal":
+            continue
+        # Kufuta neno lililorudiwa: onyesha maneno yote mawili
+        if j1 == j2 and i2 < len(ta) and j1 < len(tb) and ta[i2]["t"].lower() == ta[i2 - 1]["t"].lower():
+            i2, j2 = i2 + 1, j2 + 1
+        # Kuongeza/kufuta tupu: panua kwa neno jirani ili pendekezo liwe na msingi
+        elif i1 == i2 or j1 == j2:
+            if i1 > 0 and j1 > 0:
+                i1, j1 = i1 - 1, j1 - 1
+            elif i2 < len(ta) and j2 < len(tb):
+                i2, j2 = i2 + 1, j2 + 1
+        # "." -> "?" (swali la "Je,"): jumuisha neno la mwisho ili pendekezo lieleweke
+        elif (i2 - i1 == 1 and j2 - j1 == 1 and ta[i1]["t"] == "." and tb[j1]["t"] == "?"
+              and i1 > 0 and j1 > 0):
+            i1, j1 = i1 - 1, j1 - 1
+
+        a_s = ta[i1]["s"] if i1 < len(ta) else len(asili)
+        b_s = tb[j1]["s"] if j1 < len(tb) else len(mpya)
+        if i1 < len(ta) and j1 < len(tb) and ta[i1]["pengo"] != tb[j1]["pengo"]:
+            a_s, b_s = ta[i1]["ws"], tb[j1]["ws"]          # badiliko la nafasi mwanzoni mwa pendekezo
+        a_e = ta[i2 - 1]["e"] if i2 > i1 else a_s
+        b_e = tb[j2 - 1]["e"] if j2 > j1 else b_s
+        spans.append([a_s, a_e, b_s, b_e])
+
+    # Unganisha mapendekezo yanayogusana ili nafasi zisigongane
+    zilizounganishwa = []
+    for sp in spans:
+        if zilizounganishwa and (sp[0] <= zilizounganishwa[-1][1] or sp[2] <= zilizounganishwa[-1][3]):
+            zilizounganishwa[-1][1] = max(zilizounganishwa[-1][1], sp[1])
+            zilizounganishwa[-1][3] = max(zilizounganishwa[-1][3], sp[3])
+        else:
+            zilizounganishwa.append(sp)
+
+    matokeo = []
+    for a_s, a_e, b_s, b_e in zilizounganishwa:
+        sa, sb = asili[a_s:a_e], mpya[b_s:b_e]
+        if sa == sb:
+            continue
+        aina, maelezo = _aina_na_maelezo(sa, sb)
+        matokeo.append({
+            "mwanzo": mwanzo_wa_asili + a_s,
+            "mwisho": mwanzo_wa_asili + a_e,
+            "asili": sa,                 # ni hasa maandishi yaliyo kati ya mwanzo na mwisho
+            "pendekezo": sb,             # yanachukua nafasi ya "asili"
+            "kutoka": sa.strip(),        # kwa kuonyesha kwenye pop-up
+            "kuwa": sb.strip(),
+            "aina": aina,
+            "maelezo": maelezo,
+        })
+    return matokeo
+
+
+def mapendekezo_ya_maandishi(mistari: list) -> list:
+    yote = []
+    for m in mistari:
+        if m["aina"] != "chakata" or m["asili"].strip() == m["matokeo"].strip():
+            continue
+        asili = m["asili"]
+        kichwani = len(asili) - len(asili.lstrip())
+        yote.extend(
+            _tengeneza_mapendekezo(asili.strip(), m["matokeo"].strip(), m["mwanzo"] + kichwani)
+        )
+    for i, p in enumerate(yote):
+        p["id"] = i
+    return yote
+
+
+def tumia_mapendekezo(maandishi: str, mapendekezo: list, ids=None) -> str:
+    """Tumia mapendekezo yote (Kubali yote) au yale ya ids pekee. Hufanya kazi kutoka mwisho kwenda mwanzo."""
+    chaguo = [m for m in mapendekezo if ids is None or m["id"] in ids]
+    for m in sorted(chaguo, key=lambda x: x["mwanzo"], reverse=True):
+        maandishi = maandishi[: m["mwanzo"]] + m["pendekezo"] + maandishi[m["mwisho"]:]
+    return maandishi
+
+
+# ------------------------------------------------------------------
+# 9B. MUUNDO WA CHROME EXTENSION (/v1/kagua)
+#     Extension inatarajia: {ok, ai, issues:[{original, suggestion, start, end, label, explanation, hiari}]}
+#     start/end ni nafasi za UTF-16 kwenye maandishi yaliyotumwa (lingual_utils.js inazihitaji).
+# ------------------------------------------------------------------
+_LEBO_ZA_AINA = {
+    "tahajia": "Tahajia",
+    "ngeli": "Ngeli",
+    "kiingereza": "Kiingereza",
+    "nafasi": "Nafasi",
+    "alama": "Alama za uandishi",
+    "herufi": "Herufi kubwa/ndogo",
+    "kujirudia": "Neno limejirudia",
+    "mpangilio": "Mpangilio wa maneno",
+    "msamiati": "Msamiati",
+    "sarufi": "Sarufi",
+}
+# Mapendekezo ya mtindo/msamiati/mpangilio ni ya hiari (hayajumuishwi kwenye "Kubali yote")
+_AINA_ZA_HIARI = {"msamiati", "sarufi", "mpangilio"}
+
+# Marudio halali ya Kiswahili: pendekezo la kuyaondoa halifiki kwa kiendelezi.
+_MARUDIO_HALALI = {
+    "wadogo", "wakubwa", "vidogo", "vikubwa", "kidogo", "haraka", "polepole", "taratibu",
+    "mbali", "sawa", "kimya", "vizuri", "moja", "mmoja", "pole", "mara", "madogomadogo",
+}
+
+
+def _u16(s: str, i: int) -> int:
+    """Nafasi ya code points (Python) -> nafasi ya UTF-16 (JavaScript). Tofauti hutokea kwa emoji."""
+    return len(s[:i].encode("utf-16-le", "surrogatepass")) // 2
+
+
+def _kwa_extension(maandishi: str, mapendekezo: list) -> list:
+    """
+    Hubadilisha mapendekezo kuwa muundo wa extension. Kila kosa lina start/end (UTF-16) kwenye
+    maandishi yaliyotumwa; lingual_utils.js (hifadhiMajibu) inazihitaji kupanga makosa kwa sentensi.
+    """
+    issues = []
+    for p in mapendekezo:
+        original, suggestion = p["kutoka"], p["kuwa"]
+        if p["aina"] == "kujirudia":
+            _w = original.lower().split()
+            if len(_w) == 2 and _w[0] == _w[1] and _w[0] in _MARUDIO_HALALI:
+                continue   # marudio halali (mf. "wadogo wadogo"): si kosa
+        if not original or not suggestion or original == suggestion:
+            continue
+        anza = p["mwanzo"] + (len(p["asili"]) - len(p["asili"].lstrip()))
+        mwisho = anza + len(original)
+        if maandishi[anza:mwisho] != original:   # kinga: nafasi lazima ilingane na maandishi
+            continue
+        issues.append({
+            "original": original,
+            "suggestion": suggestion,
+            "start": _u16(maandishi, anza),
+            "end": _u16(maandishi, mwisho),
+            "label": _LEBO_ZA_AINA.get(p["aina"], "Mengineyo"),
+            "explanation": p["maelezo"],
+            "hiari": p["aina"] in _AINA_ZA_HIARI,
+        })
+    return issues
+
+
+# ------------------------------------------------------------------
+# 10. NJIA (ROUTES)
+# ------------------------------------------------------------------
+def _soma_ombi():
+    data = request.get_json(silent=True) or {}
+    maandishi = data.get("text") or data.get("maandishi") or ""
+    kitendo = str(data.get("mode") or data.get("kitendo") or "hariri").lower()
+    return maandishi, kitendo
+
+
+def _kagua_maandishi(maandishi):
+    if not isinstance(maandishi, str) or not maandishi.strip():
+        return jsonify({"ok": False, "kosa": "MAANDISHI_TUPU",
+                        "error": "Tafadhali weka maandishi kwanza."}), 400
+    if len(maandishi) > MAX_CHARS:
+        return jsonify({
+            "ok": False,
+            "kosa": "MAANDISHI_MAREFU",
+            "error": f"Maandishi ni marefu mno (herufi {len(maandishi)}). Kikomo ni {MAX_CHARS}. Yagawe sehemu sehemu.",
+        }), 413
+    if not any(_ina_herufi(m) for m in maandishi.split("\n")):
+        return jsonify({"ok": False, "kosa": "MAANDISHI_TUPU",
+                        "error": "Hakuna maandishi ya kuchakata."}), 400
+    return None
+
+
+def _ai_hazipatikani():
+    return jsonify({
+        "ok": False,
+        "kosa": "AI_HAZIPATIKANI",
+        "error": "Huduma za AI hazipatikani kwa sasa. Jaribu tena baadaye.",
+        "imechakatwa": False,
+    }), 502
+
+
+@app.route("/api/chakata", methods=["POST"])
+@app.route("/hariri", methods=["POST"])
+@app.route("/tafsiri", methods=["POST"])
+def huduma_ya_lugha():
+    maandishi, kitendo = _soma_ombi()
+    if request.path.endswith("/tafsiri") or kitendo in ("tafsiri", "translate"):
+        kitendo = "tafsiri"
+    else:
+        kitendo = "hariri"
+
+    kosa = _kagua_maandishi(maandishi)
+    if kosa:
+        return kosa
+
+    r = chakata_maandishi(maandishi, kitendo)
+    muh = muhtasari_wa_majibu(r["majibu"])
+    if muh["zilizoshindwa"] == muh["jumla"]:
+        return _ai_hazipatikani()
+
+    return jsonify({
+        "ok": True,
+        "matokeo": r["matokeo"],
+        "result": r["matokeo"],
+        "imechakatwa": muh["zilizoshindwa"] == 0,   # false = baadhi ya vipande vimerudishwa kama vilivyo
+        "vipande_vilivyoshindwa": muh["zilizoshindwa"],
+        "vipande_jumla": muh["jumla"],
+        "injini_iliyotumika": muh["injini"],
+        "ukaguzi_wa_pili": muh["hatua2"],
+    })
+
+
+@app.route("/pendekezo", methods=["POST"])
+@app.route("/api/pendekezo", methods=["POST"])
+def huduma_ya_mapendekezo():
+    """
+    Hurudisha mapendekezo ya Kubali / Puuza. Kila pendekezo:
+      {id, mwanzo, mwisho, asili, pendekezo, kutoka, kuwa, aina, maelezo}
+    mwanzo/mwisho ni nafasi (code points) kwenye maandishi yaliyotumwa; maandishi[mwanzo:mwisho] == asili.
+    "Kubali" = badilisha asili kwa pendekezo. "Kubali yote" = tumia maandishi_yaliyohaririwa.
+    """
+    maandishi, _ = _soma_ombi()
+    kosa = _kagua_maandishi(maandishi)
+    if kosa:
+        return kosa
+
+    r = chakata_maandishi(maandishi, "hariri")
+    muh = muhtasari_wa_majibu(r["majibu"])
+    if muh["zilizoshindwa"] == muh["jumla"]:
+        return _ai_hazipatikani()
+
+    mapendekezo = mapendekezo_ya_maandishi(r["mistari"])
+    return jsonify({
+        "ok": True,
+        "mapendekezo": mapendekezo,
+        "idadi": len(mapendekezo),
+        "maandishi_yaliyohaririwa": r["matokeo"],
+        "imechakatwa": muh["zilizoshindwa"] == 0,
+        "vipande_vilivyoshindwa": muh["zilizoshindwa"],
+        "injini_iliyotumika": muh["injini"],
+        "ukaguzi_wa_pili": muh["hatua2"],
+    })
+
+
+@app.route("/v1/kagua", methods=["POST"])
+@app.route("/api/kagua", methods=["POST"])
+@app.route("/kagua", methods=["POST"])
+def huduma_ya_extension():
+    """
+    Njia ya Chrome extension ya Lingual Sanifu (background.js).
+    Ombi:  {"text": "..."}  + header X-API-Key
+    Jibu:  {"ok": true, "ai": true, "issues": [{original, suggestion, start, end, label, explanation, hiari}]}
+    Kwa kasi, hatua ya pili ya ukaguzi imezimwa hapa kwa chaguo-msingi (KAGUA_HATUA_MBILI=0).
+
+    Ikiwa AI zote zimeshindwa lakini sheria za Python (nukuu salama, Je/?, tahajia, n.k.) zimepata
+    makosa, makosa hayo yanarudishwa na ai=false (extension haitayahifadhi kwenye akiba) na
+    onyo="AI_HAZIPATIKANI". Bila makosa yoyote, kosa la kawaida la 502 linarudishwa kama zamani.
+    """
+    maandishi, _ = _soma_ombi()
+    kosa = _kagua_maandishi(maandishi)
+    if kosa:
+        return kosa
+
+    r = chakata_maandishi(maandishi, "hariri", hatua_mbili=KAGUA_HATUA_MBILI)
+    muh = muhtasari_wa_majibu(r["majibu"])
+    ai_zote_zimeshindwa = muh["zilizoshindwa"] == muh["jumla"]
+
+    issues = _kwa_extension(maandishi, mapendekezo_ya_maandishi(r["mistari"]))
+    if ai_zote_zimeshindwa and not issues:
+        return _ai_hazipatikani()
+
+    jibu = {
+        "ok": True,
+        # ai=false ikiwa baadhi ya vipande vimeshindwa: extension isihifadhi jibu hili kwenye akiba
+        "ai": muh["zilizoshindwa"] == 0,
+        "issues": issues,
+        "idadi": len(issues),
+        "injini_iliyotumika": muh["injini"],
+    }
+    if ai_zote_zimeshindwa:
+        jibu["onyo"] = "AI_HAZIPATIKANI"
+    return jsonify(jibu)
+
+
+@app.route("/uchunguzi", methods=["GET"])
+def uchunguzi():
+    """
+    Hujaribu Gemini na Groq kwa ombi dogo na kuonyesha kosa halisi (bila kuonyesha funguo).
+    Fungua kwenye kivinjari: /uchunguzi  (au /uchunguzi?ufunguo=API_KEY yako, ikiwa umeweka API_KEY).
+    Pia inaonyesha kama Gemini iko kwenye pumziko (baada ya 429).
+    """
+    if API_KEY_YA_HUDUMA and not hmac.compare_digest(request.args.get("ufunguo", ""), API_KEY_YA_HUDUMA):
+        return jsonify({"ok": False, "error": "Weka ?ufunguo=<API_KEY> mwishoni mwa anwani."}), 401
+
+    def jaribu(fn):
+        t0 = time.time()
+        try:
+            out = fn()
+            return {"ok": bool(out), "sekunde": round(time.time() - t0, 1), "jibu": (out or "")[:80]}
+        except Exception as e:  # noqa: BLE001
+            return {"ok": False, "sekunde": round(time.time() - t0, 1),
+                    "kosa": f"{type(e).__name__}: {str(e)[:300]}", "code": getattr(e, "code", None)}
+
+    ujumbe = "Jibu kwa neno moja tu: sawa"
+    matokeo = {"gemini": {}, "groq": None,
+               "gemini_pumziko_sekunde_zilizobaki": max(0, round(_gemini_pumziko_hadi - time.time()))}
+
+    if gemini_client:
+        for jina in dict.fromkeys([GEMINI_MODEL, GEMINI_FALLBACK_MODEL]):
+            if not jina:
+                continue
+            matokeo["gemini"][jina] = jaribu(
+                lambda j=jina: gemini_client.models.generate_content(model=j, contents=ujumbe).text
+            )
+    else:
+        matokeo["gemini"] = {"kosa": "GEMINI_API_KEY haijawekwa kwenye Render"}
+
+    if groq_client:
+        matokeo["groq"] = {GROQ_MODEL: jaribu(
+            lambda: groq_client.chat.completions.create(
+                model=GROQ_MODEL, messages=[{"role": "user", "content": ujumbe}]
+            ).choices[0].message.content
+        )}
+    else:
+        matokeo["groq"] = {"kosa": "GROQ_API_KEY haijawekwa kwenye Render"}
+
+    return jsonify(matokeo)
+
+
+@app.route("/health", methods=["GET"])
+def afya_nyepesi():
+    """Nyepesi sana: extension huitumia kuamsha seva ya Render iliyolala."""
+    return jsonify({"status": "ok"})
+
+
+@app.route("/", methods=["GET"])
+def afya_ya_seva():
+    return jsonify({
+        "status": "Live",
+        "mfumo": "AI Lingual Africa Sanifu API v3.4.2",
+        "injini": f"{GEMINI_MODEL} (akiba: {GEMINI_FALLBACK_MODEL}) + Groq {GROQ_MODEL} + Ukaguzi wa Pili + Chujio salama + Sheria baada ya AI",
+        "njia": ["/api/chakata", "/hariri", "/tafsiri", "/pendekezo", "/v1/kagua", "/health"],
+        "gemini": bool(gemini_client),
+        "groq": bool(groq_client),
+        "hatua_mbili": HATUA_MBILI,
+        "kagua_hatua_mbili": KAGUA_HATUA_MBILI,
+    })
+
+
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 10000))
+    app.run(host="0.0.0.0", port=port)
