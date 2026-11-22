@@ -1,9 +1,13 @@
 """
-sheria_baada_ya_ai.py  (v2)
+sheria_baada_ya_ai.py  (v2.1)
 Sheria za kurekebisha Kiswahili baada ya AI kutoa jibu (Lingual Africa Sanifu).
 
 Inatumiwa na api_server.py (v3.4+): kiendelezi cha Chrome na tovuti hupata marekebisho
 haya kupitia /v1/kagua, /hariri na /pendekezo.
+
+Mabadiliko v2.1:
+- Sheria pana ya "inchi" -> "nchi" imeondolewa, kwa sababu "inchi" pia ni kipimo
+  (mf. "televisheni ya inchi 55"). Zimebaki sheria mahususi za "mwana inchi" na "wana inchi".
 
 Mabadiliko v2:
 - _JE inashika pia sentensi zenye nukuu zilizolindwa ([[NUKUU_n]] ina tarakimu)
@@ -88,7 +92,6 @@ _MAKOSA = [
     (r"\bmyingi\b", "mingi"),
     (r"\bmwana[ \t]+inchi\b", "mwananchi"),
     (r"\bwana[ \t]+inchi\b", "wananchi"),
-    (r"\binchi\b", "nchi"),
     # Sentensi mahususi pekee. Sheria pana ya "faili za" -> "mafaili ya" imeondolewa
     # kwa sababu inavunja mwafaka wa kisarufi.
     (
