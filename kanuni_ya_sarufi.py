@@ -2,6 +2,18 @@
 kanuni_ya_sarufi.py — Injini Kuu ya Sheria na Kanuni za Sarufi ya Kiswahili Sanifu (BAKITA).
 Inatumiwa na cerebral_cortex.py, mhariri_pro.py na app.py kwa tafsiri za AI Lingual na uhakiki wa maandishi.
 
+Toleo 2.9 (marekebisho ya makosa kurudiwa/kuharibiwa + kanuni za ziada):
+- Mpya: rekebisha_tafsiri() — ilikuwa inaitwa na sanifu_editor.py lakini haikuwepo (marekebisho hayakutumika kamwe).
+- Mpya: 'Je,' (swali): sentensi ikiisha kwa nukta, pendekeza '?' (inaruka nukuu, 'Dkt.', '3.5', '...').
+- Mpya: nomino ambatani: 'mwana nchi/inchi' -> 'mwananchi', 'mwana ume' -> 'mwanamume', 'mwana mke' -> 'mwanamke'
+        (nukuu zinalindwa kwa kanuni za maneno ambata).
+- Mpya: '-ingi' huungana na kiambishi: 'mifumo myingi' -> 'mingi', 'wageni wingi' -> 'wengi', 'vitabu vyingi' -> 'vingi',
+        'kitu chingi' -> 'kingi'. Marekebisho: _umbo_la_kivumishi() ilitoa 'wingi/vyingi/myingi/chingi' na ilipendekeza
+        'mifumo mingi' -> 'myingi' (kinyume).
+- Marekebisho: 'Akina mama wengi' haigeuki tena kuwa 'Akina akina mama wengi' (herufi kubwa).
+- Marekebisho: Yambiwa haikosei vitenzi 'ingia', 'tokea', 'pokea', 'potea' ('Alitokea mtu', 'Alipokea wageni').
+- Marekebisho: kagua_msamiati() inahifadhi herufi kubwa ya mwanzo ('Lugha za kienyeji' -> 'Lugha za wenyeji').
+
 Toleo 2.8 (sheria kutoka safisha_maandishi_sanifu):
 - Mpya: upatanisho wa kiima na kitenzi kwa nomino za ma-/mi- ('Matumizi mabaya ya mifereji imesababisha' ->
         'yamesababisha'; 'mifano vinaonyesha' -> 'inaonyesha'), hata kukiwa na nomino nyingine katikati.
@@ -352,6 +364,9 @@ class GenericObjectConcordRule:
         )
 
         self.vitenzi_vya_kuachwa = {"kuwa", "kulia", "kushoto", "kwenda", "kuja", "kufika", "kukaa", "kutumia"}
+        # Vitenzi vinavyofuatwa na kiima kilichogeuzwa mahali ("Alitokea mtu", "Aliingia mtoto") au visivyo na kiambishi
+        # cha shamirisho ("Alipokea wageni"): si makosa ya Yambiwa.
+        self.shina_za_kuachwa = {"ingia", "tokea", "pokea", "potea"}
 
     def kagua(self, sentensi: str) -> List[Kosa]:
         makosa = []
@@ -372,7 +387,7 @@ class GenericObjectConcordRule:
                 continue
 
             p = m.groupdict()
-            if p["obj"]:
+            if p["obj"] or p["stem"] in self.shina_za_kuachwa:
                 continue
 
             prefix = p["prefix"] or ""
@@ -434,7 +449,24 @@ MARUDIO_YA_KUUNGANISHA = {"sawa"}   # "vidogo/ndogo/midogo" hushughulikiwa na _k
 MANENO_AMBATA = [
     (r"\bwanyama\s+pori\b", "wanyamapori"),
     (r"\bnguvu\s+kazi\b", "nguvukazi"),
+    # v2.9: nomino ambatani (herufi kubwa inahifadhiwa na _ambata_kwa_herufi; nukuu zinalindwa)
+    (r"\bmwana\s+i?nchi\b", "mwananchi"),
+    (r"\bwana\s+inchi\b", "wananchi"),
+    (r"\bmwana\s+ume\b", "mwanamume"),
+    (r"\bmwana\s+mke\b", "mwanamke"),
 ]
+
+# v2.9: maandishi yaliyo ndani ya nukuu ("..." au “...”, mstari mmoja) hayabadilishwi na kanuni za ambata.
+_NUKUU_RX = re.compile(r'"[^"\n]*"|\u201c[^\u201d\n]*\u201d')
+_CHANZO_ZENYE_KINGA_YA_NUKUU = {"kanuni_ambata"}
+
+
+def _spans_za_nukuu(s: str) -> list:
+    return [(m.start(), m.end()) for m in _NUKUU_RX.finditer(s)]
+
+
+def _ndani_ya_nukuu(a: int, b: int, spans: list) -> bool:
+    return any(x <= a and b <= y for x, y in spans)
 
 MSAMIATI_WA_KIINGEREZA = [
     {"jina": "productivity -> tija", "chanzo": r"\bproductivity\b",
@@ -668,6 +700,10 @@ class MkaguziSarufi:
     def _umbo_la_kivumishi(ngeli: str, mzizi: str) -> Optional[str]:
         """Umbo sahihi la kivumishi kwa ngeli; None kama halina kanuni rahisi (mfano I-ZI)."""
         vokali = mzizi[0] in "aeiou"
+        if mzizi == "ingi":
+            # v2.9: '-ingi' huungana na kiambishi: wa+ingi=wengi, mi+ingi=mingi, vi+ingi=vingi, ki+ingi=kingi.
+            return {"A-WA_SG": "mwingi", "U-I_SG": "mwingi", "A-WA_PL": "wengi", "KI-VI_SG": "kingi",
+                    "KI-VI_PL": "vingi", "U-I_PL": "mingi", "LI-YA_PL": "mengi"}.get(ngeli)
         if ngeli in ("A-WA_SG", "U-I_SG"):
             return ("mw" if vokali else "m") + mzizi
         if ngeli == "A-WA_PL":
@@ -718,6 +754,19 @@ class MkaguziSarufi:
                         break
                     continue
                 kiambishi, mzizi = g
+                if mzizi == "ingi" and j == i + 1:
+                    # v2.9: 'myingi', 'vyingi', 'chingi', 'wingi' si sahihi; 'mingi', 'vingi', 'kingi', 'wengi' ni sahihi.
+                    sahihi_ingi = self._umbo_la_kivumishi(ngeli, mzizi)
+                    if sahihi_ingi:
+                        if tok[0].lower() == sahihi_ingi:
+                            break                            # tayari sahihi
+                        if tok[0][0].isupper():
+                            sahihi_ingi = sahihi_ingi[0].upper() + sahihi_ingi[1:]
+                        makosa.append(self._kosa_la_tokeni(
+                            s, tok, "NGELI",
+                            f"Kivumishi '{tok[0]}' si sahihi kwa nomino '{neno}' ({ngeli}); tumia '{sahihi_ingi}'.",
+                            [sahihi_ingi], "ngeli_matrix"))
+                        break
                 if kiambishi in ruhusa:
                     break
                 sahihi = self._umbo_la_kivumishi(ngeli, mzizi)
@@ -936,6 +985,39 @@ class MkaguziSarufi:
         return makosa
 
     # ------------------------------------------------------------
+    # v2.9: 'Je,' ni swali -> alama ya kuuliza
+    # ------------------------------------------------------------
+    _VIFUPISHO_VYA_NUKTA = {"dkt", "bw", "bi", "mf", "nk", "km", "mh", "prof", "mb", "mhe"}
+
+    def _kagua_swali_je(self, s: str) -> List[Kosa]:
+        """Sentensi inayoanza na 'Je,' ni swali: ikiisha kwa nukta pendekeza '?'. Nukuu zinalindwa."""
+        makosa = []
+        nukuu = _spans_za_nukuu(s)
+        for m in re.finditer(r"\bJe,", s):
+            if _ndani_ya_nukuu(m.start(), m.end(), nukuu):
+                continue
+            k = m.end()
+            while k < len(s) and s[k] not in ".?!\n":
+                k += 1
+            if k >= len(s) or s[k] != ".":
+                continue                                   # tayari ina '?', '!' au haina nukta
+            if _ndani_ya_nukuu(k, k + 1, nukuu):
+                continue
+            baada = s[k + 1:]
+            if baada and baada[0] not in "\n \t":
+                continue                                   # '...', '3.5', 'k.m.' n.k.
+            if baada and baada[0] in " \t" and not re.match(r"[ \t]+[\"\u201c(\[]?[A-Z0-9]", baada):
+                continue                                   # nukta ikifuatiwa na herufi ndogo: huenda ni kifupisho
+            neno_kabla = re.search(r"([A-Za-z]+)$", s[:k])
+            if neno_kabla and neno_kabla.group(1).lower() in self._VIFUPISHO_VYA_NUKTA:
+                continue
+            makosa.append(Kosa(
+                aina="ALAMA", neno=".", nafasi=k, urefu=1,
+                ujumbe="Sentensi inayoanza na 'Je,' ni swali; huisha kwa alama ya kuuliza (?).",
+                mapendekezo=["?"], chanzo="kanuni_je"))
+        return makosa
+
+    # ------------------------------------------------------------
     # Usambamba wa vitenzi (v2.6 Bug 4: tokens[j+1:i], si tokens[j+1] pekee)
     # ------------------------------------------------------------
     def _kagua_usambamba_wa_vitenzi(self, s: str, tokens: list) -> List[Kosa]:
@@ -1038,7 +1120,7 @@ class MkaguziSarufi:
             (re.compile(r"\b[Ww]akati\s+([A-Za-z']+)\s+([A-Za-z']*?(?:na|li|me|ta)po[A-Za-z']*)"),
              "Kanuni 11: kishazi cha wakati chenye '-po-' huanza na 'Pale', si 'Wakati'.",
              "kanuni_l", _pale_kwa_herufi),
-            (re.compile(r"(?<!akina )\b([Mm]ama|[Bb]aba|[Dd]ada|[Kk]aka|[Bb]ibi|[Bb]abu|[Ss]hangazi|[Mm]jomba)"
+            (re.compile(r"(?<![Aa]kina )\b([Mm]ama|[Bb]aba|[Dd]ada|[Kk]aka|[Bb]ibi|[Bb]abu|[Ss]hangazi|[Mm]jomba)"
                         r"\s+(wengi|wote|wengine|wapendwa|wajawazito|wawili|watatu|wazuri)\b"),
              "Kanuni 9/12: wingi wa jamaa na heshima hutumia 'akina' (mfano 'akina mama wajawazito').",
              "kanuni_m", _akina_moja),
@@ -1098,8 +1180,11 @@ class MkaguziSarufi:
 
     def _kagua_mtindo(self, s: str) -> List[Kosa]:
         makosa = []
+        nukuu = _spans_za_nukuu(s)
         for muundo, ujumbe, chanzo, kitendo in self._kanuni_za_mtindo:
             for m in muundo.finditer(s):
+                if chanzo in _CHANZO_ZENYE_KINGA_YA_NUKUU and _ndani_ya_nukuu(m.start(), m.end(), nukuu):
+                    continue
                 neno = m.group(0)
                 pendekezo = kitendo(m) if kitendo else None
                 if pendekezo is not None and pendekezo == neno:
@@ -1119,9 +1204,12 @@ class MkaguziSarufi:
                 continue
             for muundo, badala in kanuni["makosa"]:
                 for m in re.finditer(muundo, kiswahili or "", re.IGNORECASE):
+                    pendekezo = m.expand(badala)
+                    if m.group(0)[:1].isupper():          # v2.9: hifadhi herufi kubwa ya mwanzo ('Lugha za kienyeji')
+                        pendekezo = pendekezo[:1].upper() + pendekezo[1:]
                     makosa.append(Kosa(
                         aina="MSAMIATI", neno=m.group(0), nafasi=m.start(), urefu=len(m.group(0)),
-                        ujumbe=kanuni["ujumbe"], mapendekezo=[m.expand(badala)],
+                        ujumbe=kanuni["ujumbe"], mapendekezo=[pendekezo],
                         chanzo="msamiati"))
         return makosa
 
@@ -1145,6 +1233,7 @@ class MkaguziSarufi:
             lambda: self._kagua_kiima_cha_ma_mi(sentensi, tokens),
             lambda: self._kagua_dogodogo(sentensi, tokens),
             lambda: self._kagua_alama_nyingine(sentensi),
+            lambda: self._kagua_swali_je(sentensi),
         ]
         if kagua_alama:
             ukaguzi.append(lambda: self._kagua_uandishi(sentensi))
@@ -1204,6 +1293,36 @@ class KanuniZaSarufiKiswahili:
         if not ni_jozi_ya_kiingereza_kiswahili(lugha_chanzo):
             return []
         return [k.to_dict() for k in self.mkaguzi.kagua_msamiati(chanzo, tafsiri)]
+
+    # --- v2.9: marekebisho ya moja kwa moja (inaitwa na sanifu_editor._hariri_mara_moja) ---
+    # Vyanzo vya makadirio na aina zisizo salama kutumika bila mtu kuona.
+    _CHANZO_CHA_MAKADIRIO = ("ngeli_matrix", "kiima_kitenzi")
+    _AINA_ZISIZO_SALAMA = ("TAWALI",)      # marudio na herufi kubwa: yanaweza kuharibu marudio halali
+
+    def rekebisha_tafsiri(self, lugha_chanzo: str, chanzo: str, tafsiri: str, awamu: int = 3) -> Dict[str, Any]:
+        """Tumia marekebisho ya kanuni yenye uhakika kwenye `tafsiri` (hadi `awamu` mara).
+        Husimama pale hakuna la kurekebisha, au maandishi yanaporudi kuwa yale yaliyokwisha kuonekana (kuyumba).
+        Hurudisha {"maandishi": str, "mabadiliko": [ {kabla, baada, aina, sababu} ]}."""
+        sasa = tafsiri or ""
+        ameonekana = {sasa}
+        mabadiliko: List[Dict[str, Any]] = []
+        kiingereza = chanzo if (chanzo and lugha_chanzo and ni_jozi_ya_kiingereza_kiswahili(lugha_chanzo)) else None
+        for _ in range(max(1, awamu)):
+            makosa = self.mkaguzi.kagua(sasa, kagua_alama=False)
+            if kiingereza:
+                makosa += self.mkaguzi.kagua_msamiati(kiingereza, sasa)
+            salama = [k for k in makosa
+                      if k.mapendekezo and k.aina not in self._AINA_ZISIZO_SALAMA
+                      and k.chanzo not in self._CHANZO_CHA_MAKADIRIO]
+            if not salama:
+                break
+            mpya, hatua = _tumia_makosa(sasa, salama)
+            if mpya == sasa or mpya in ameonekana:
+                break
+            mabadiliko += hatua
+            sasa = mpya
+            ameonekana.add(sasa)
+        return {"maandishi": sasa, "mabadiliko": mabadiliko}
 
     # Majina mbadala kwa upatanifu
     kagua = kagua_sentensi_nzima
