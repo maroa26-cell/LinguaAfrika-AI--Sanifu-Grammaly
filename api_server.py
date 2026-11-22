@@ -1,9 +1,11 @@
 """
-AI Lingual Africa Sanifu API v3.4.1
+AI Lingual Africa Sanifu API v3.4.2
 Gemini (kuu) + Groq (akiba) + Hatua ya Pili ya Ukaguzi + Chujio salama la Python
 + Sheria ya 4B (chujio_4b.py): kuondoa Kiingereza kilichochanganywa kwenye Kiswahili
 + v3.4: sheria_baada_ya_ai.py -> ulinzi wa nukuu na sheria mpya za Kiswahili
-+ MPYA v3.4.1: Gemini ikitoa 429 (kikomo kimejaa), inarukwa kwa muda na Groq inatumika mara moja
++ v3.4.1: Gemini ikitoa 429 (kikomo kimejaa), inarukwa kwa muda na Groq inatumika mara moja
++ MPYA v3.4.2: kanuni za ngeli ya -ingi, marudio halali, "akina mama/baba wengi" na "wakati/muda mwingi"
+  kwenye prompt za AI; kichujio cha marudio halali kwenye /v1/kagua; ulinganisho salama wa ufunguo (hmac)
 
 Njia zilezile: /api/chakata, /hariri, /tafsiri  (extension ya zamani haihitaji kubadilishwa)
 Njia za mapendekezo: /pendekezo (au /api/pendekezo) -> orodha ya mapendekezo yenye nafasi (offsets)
@@ -11,6 +13,14 @@ Kwa Chrome extension ya Lingual Sanifu:
   GET  /health      -> {"status":"ok"}  (kuamsha seva ya Render; haihitaji ufunguo)
   POST /v1/kagua    -> {"ok":true,"ai":true,"issues":[{original,suggestion,start,end,label,explanation,hiari}]}
                        (pia: /api/kagua na /kagua)
+
+MABADILIKO v3.4.2:
+  1. SYSTEM_PROMPT na SYSTEM_UKAGUZI: kanuni za '-ingi' kwa ngeli, marudio halali ('wadogo wadogo'),
+     'akina mama/baba wengi' (si 'akina watoto'), 'wakati mwingi' na 'muda mwingi'.
+  2. _MARUDIO_HALALI + kichujio kwenye _kwa_extension: pendekezo la kuondoa marudio halali
+     (mf. 'wadogo wadogo') halifiki tena kwa kiendelezi.
+  3. hmac.compare_digest sasa inapokea bytes (UTF-8), kwa hiyo ufunguo wenye herufi zisizo za ASCII
+     hautoi tena kosa 500; unarudisha 401 kama kawaida.
 
 MABADILIKO v3.4.1:
   Gemini ikijibu 429 RESOURCE_EXHAUSTED (kikomo cha matumizi), kusubiri hakusaidii. Sasa modeli zote
@@ -32,11 +42,13 @@ Environment Variables (Render):
   ALLOWED_ORIGINS  (hiari) -> mfano: chrome-extension://abcdef...,https://tovuti-yako.com  (chaguo-msingi: *)
   HATUA_MBILI      (hiari) -> "1" (chaguo-msingi) au "0" kuzima ukaguzi wa pili (kwa /hariri, /tafsiri, /pendekezo)
   KAGUA_HATUA_MBILI (hiari) -> "0" (chaguo-msingi) kwa /v1/kagua ili ukaguzi wa kuandika uwe wa haraka; "1" kuwasha
-  SHERIA_ZA_MAJARIBIO (hiari) -> "0" (chaguo-msingi). "1" huwasha sheria za "bwana shamba/afya" (thibitisha BAKITA kwanza)
   MAX_CHARS        (hiari) -> kikomo cha herufi, chaguo-msingi 15000
   MAX_WORKERS      (hiari) -> uchakataji sambamba, chaguo-msingi 3
   GEMINI_PUMZIKO_SEKUNDE (hiari) -> sekunde za kuruka Gemini baada ya 429, chaguo-msingi 120
   GEMINI_MODEL, GEMINI_FALLBACK_MODEL, GROQ_MODEL (hiari) -> majina ya modeli; badilisha hapa modeli ikistaafishwa
+
+Start Command ya Render:
+  gunicorn api_server:app --workers 1 --threads 4 --timeout 120
 """
 import os
 import re
@@ -99,6 +111,14 @@ gemini_client = (
 groq_client = Groq(api_key=GROQ_API_KEY, timeout=45.0) if GROQ_API_KEY else None
 
 
+def _ufunguo_ni_sahihi(ulioletwa: str) -> bool:
+    """Ulinganisho salama wa ufunguo (bytes za UTF-8, ili herufi zisizo za ASCII zisilete kosa 500)."""
+    return hmac.compare_digest(
+        (ulioletwa or "").encode("utf-8"),
+        (API_KEY_YA_HUDUMA or "").encode("utf-8"),
+    )
+
+
 @app.before_request
 def angalia_ufunguo():
     """Ikiwa API_KEY imewekwa kwenye Render, omba header ya X-API-Key."""
@@ -107,7 +127,7 @@ def angalia_ufunguo():
     if request.method == "OPTIONS" or request.path in ("/", "/health", "/uchunguzi"):
         return None
     ulioletwa = request.headers.get("X-API-Key", "")
-    if not hmac.compare_digest(ulioletwa, API_KEY_YA_HUDUMA):
+    if not _ufunguo_ni_sahihi(ulioletwa):
         return jsonify({
             "ok": False,
             "kosa": "UFUNGUO_SIO_SAHIHI",   # extension inasoma 'kosa'
@@ -285,9 +305,13 @@ Fuata sheria hizi kali bila kukosea:
    - 'mashirika', 'majukwaa', 'mataifa' (wingi) huchukua 'ma-'/'ya-' ('mashirika madogomadogo', 'majukwaa yatakayotoa').
    - Vitenzi-jina ('Kuwekeza...', 'Kupuuza...') hubaki na 'ku-' ('kukilinda', 'kunaweza').
    - Kitenzi lazima kioane na nomino halisi inayotenda, si nomino iliyo karibu tu.
+   - Kivumishi '-ingi' huoana na ngeli ya nomino: A-WA 'wateja wengi', 'watu wengi'; U-I 'miti mingi'; LI-YA 'maji mengi', 'mambo mengi'; KI-VI 'vitu vingi'; I-ZI 'biashara nyingi', 'pesa nyingi'. 'wateja myingi' ni kosa; sahihi ni 'wateja wengi'. Usibadilishe 'myingi' kuwa 'mingi' bila kuangalia nomino.
+   - Nahau: 'akina mama wengi' (si 'mama wengi'). 'wakati mwingi' na 'muda mwingi' (si 'wakati mingi' wala 'muda mingi'), kwa sababu 'wakati' na 'muda' huchukua 'mwingi'.
+   - 'akina' hutumika mbele ya nomino za umoja za watu: 'akina mama wengi', 'akina baba wengi'. Nomino ya wingi haipewi 'akina': 'watoto wengi' (si 'akina watoto wengi').
 2. KIVUMISHI 'KILA': Sentensi ikianza na 'Kila' + nomino ya umoja ('Kila mkulima'), vitenzi VYOTE na viwakilishi VYOTE viwe UMOJA.
 3. SHAMIRISHO NA WAKATI: 'anapojali afya' (siyo 'anapowajali afya'). Kitenzi kikuu baada ya kitenzi-jina kichukue wakati ujao ('kutasaidia') au mazoea ('husaidia').
 4. UAMINIFU: Usiongeze sentensi wala maneno mapya (isipokuwa maneno sanifu yanayochukua nafasi ya Kiingereza kwa sheria 4B). Usibadilishe maneno ambayo tayari ni sahihi.
+4A. MARUDIO HALALI: 'wadogo wadogo', 'madogomadogo', 'polepole', 'haraka haraka', 'kidogo kidogo', 'mara kwa mara', 'kimya kimya', 'sawa sawa' ni sahihi na hutoa msisitizo. Usiyaondoe. Usibadilishe 'na', 'ya', 'wa', 'kwa' kuwa maneno mengine (mfano 'na' kuwa 'dhidi ya') isipokuwa kosa liko wazi bila shaka.
 4B. UKALI WA KUONDOA KIINGEREZA (STRICT NO CODE-SWITCHING):
    - Unapohariri Kiswahili, ondoa kila neno la Kiingereza lililochanganywa katikati ya sentensi ya Kiswahili, pamoja na miundo ya kiambishi + '-' + kitenzi cha Kiingereza (mfano: 'ku-launch', 'ana-post', 'nime-manage'). Badilisha kwa neno sanifu la Kiswahili lenye maana ileile, kisha hakikisha ngeli na viambishi vinaoana na neno jipya.
    - Mifano: ku-launch -> kuanzisha; ku-post -> kuchapisha; ku-attract -> kuvutia; ku-manage -> kusimamia; ku-build brand -> kujenga chapa; capital -> mtaji; platforms -> majukwaa; transactions -> miamala; online -> mtandaoni; business plan -> mpango wa biashara; records -> kumbukumbu; loans -> mikopo; digital marketing -> masoko ya kidijitali.
@@ -315,6 +339,10 @@ Sheria:
 - Kama maandishi yana neno la Kiingereza lililochanganywa na Kiswahili (mfano 'ku-launch', 'online'), libadilishe na neno sanifu la Kiswahili, na ulinde majina maalum, URL, barua pepe na nukuu.
 - Kitenzi huoana na nomino inayotenda, si nomino iliyo karibu: 'ukosefu wa ajira umeongezeka, na hali imekuwa mbaya' ni SAHIHI (usibadilishe 'hali imekuwa').
 - Alama kama [[NUKUU_0]] ni nukuu zilizohifadhiwa: ziache kama zilivyo, mahali pale pale, mara moja tu kila moja.
+- '-ingi' huoana na ngeli: 'wateja wengi', 'miti mingi', 'maji mengi', 'vitu vingi', 'biashara nyingi'. Usibadilishe 'wateja myingi' kuwa 'wateja mingi'; sahihi ni 'wateja wengi'.
+- Marudio kama 'wadogo wadogo', 'sawa sawa', 'kidogo kidogo' ni sahihi; usiyaondoe.
+- Nahau: 'akina mama wengi' (si 'mama wengi'); 'wakati mwingi', 'muda mwingi' (si 'wakati mingi', 'muda mingi').
+- 'akina mama wengi', 'akina baba wengi' (si 'mama wengi', 'baba wengi'); 'watoto wengi' ni sahihi, usiongeze 'akina' mbele ya wingi.
 - Toa maandishi yaliyokaguliwa PEKEE, bila maelezo, bila nukuu, bila alama za ```.
 """
 
@@ -737,6 +765,12 @@ _LEBO_ZA_AINA = {
 # Mapendekezo ya mtindo/msamiati/mpangilio ni ya hiari (hayajumuishwi kwenye "Kubali yote")
 _AINA_ZA_HIARI = {"msamiati", "sarufi", "mpangilio"}
 
+# Marudio halali ya Kiswahili: pendekezo la kuyaondoa halifiki kwa kiendelezi.
+_MARUDIO_HALALI = {
+    "wadogo", "wakubwa", "vidogo", "vikubwa", "kidogo", "haraka", "polepole", "taratibu",
+    "mbali", "sawa", "kimya", "vizuri", "moja", "mmoja", "pole", "mara", "madogomadogo",
+}
+
 
 def _u16(s: str, i: int) -> int:
     """Nafasi ya code points (Python) -> nafasi ya UTF-16 (JavaScript). Tofauti hutokea kwa emoji."""
@@ -751,6 +785,10 @@ def _kwa_extension(maandishi: str, mapendekezo: list) -> list:
     issues = []
     for p in mapendekezo:
         original, suggestion = p["kutoka"], p["kuwa"]
+        if p["aina"] == "kujirudia":
+            _w = original.lower().split()
+            if len(_w) == 2 and _w[0] == _w[1] and _w[0] in _MARUDIO_HALALI:
+                continue   # marudio halali (mf. "wadogo wadogo"): si kosa
         if not original or not suggestion or original == suggestion:
             continue
         anza = p["mwanzo"] + (len(p["asili"]) - len(p["asili"].lstrip()))
@@ -914,7 +952,7 @@ def uchunguzi():
     Fungua kwenye kivinjari: /uchunguzi  (au /uchunguzi?ufunguo=API_KEY yako, ikiwa umeweka API_KEY).
     Pia inaonyesha kama Gemini iko kwenye pumziko (baada ya 429).
     """
-    if API_KEY_YA_HUDUMA and not hmac.compare_digest(request.args.get("ufunguo", ""), API_KEY_YA_HUDUMA):
+    if API_KEY_YA_HUDUMA and not _ufunguo_ni_sahihi(request.args.get("ufunguo", "")):
         return jsonify({"ok": False, "error": "Weka ?ufunguo=<API_KEY> mwishoni mwa anwani."}), 401
 
     def jaribu(fn):
@@ -962,7 +1000,7 @@ def afya_nyepesi():
 def afya_ya_seva():
     return jsonify({
         "status": "Live",
-        "mfumo": "AI Lingual Africa Sanifu API v3.4.1",
+        "mfumo": "AI Lingual Africa Sanifu API v3.4.2",
         "injini": f"{GEMINI_MODEL} (akiba: {GEMINI_FALLBACK_MODEL}) + Groq {GROQ_MODEL} + Ukaguzi wa Pili + Chujio salama + Sheria baada ya AI",
         "njia": ["/api/chakata", "/hariri", "/tafsiri", "/pendekezo", "/v1/kagua", "/health"],
         "gemini": bool(gemini_client),
