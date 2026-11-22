@@ -2,6 +2,13 @@
 kanuni_ya_sarufi.py — Injini Kuu ya Sheria na Kanuni za Sarufi ya Kiswahili Sanifu (BAKITA).
 Inatumiwa na cerebral_cortex.py, mhariri_pro.py na app.py kwa tafsiri za AI Lingual na uhakiki wa maandishi.
 
+Toleo 2.10:
+- Mpya: 'tabia nchi' -> 'tabianchi'; 'mwenye kiti wa' -> 'mwenyekiti wa' (si 'mwenye kiti cha enzi'); 'ovyo' -> 'hovyo';
+        'kushirikiana kwa pamoja' -> 'kushirikiana' (nukuu zinalindwa).
+- Chaguo (zimezimwa): SHERIA_ZA_MAJARIBIO=1 (bwana shamba -> bwanashamba), KANUNI_VIONYESHI=1 ('hii sekta' -> 'sekta hii').
+- Imeachwa kwa makusudi: 'mitaala'->'mitalaa', 'makampuni'->'kampuni', 'songosongo', na kugawanya 'vidogovidogo'
+  (inapingana na kanuni ya 'dogodogo' na ingezunguka bila mwisho).
+
 Toleo 2.9 (marekebisho ya makosa kurudiwa/kuharibiwa + kanuni za ziada):
 - Mpya: rekebisha_tafsiri() — ilikuwa inaitwa na sanifu_editor.py lakini haikuwepo (marekebisho hayakutumika kamwe).
 - Mpya: 'Je,' (swali): sentensi ikiisha kwa nukta, pendekeza '?' (inaruka nukuu, 'Dkt.', '3.5', '...').
@@ -440,6 +447,7 @@ MAKOSA_YA_TAHAJIA = {
     "maswala": "masuala",
     "kwasababu": "kwa sababu",
     "kikipuuzia": "kikipuuza",
+    "ovyo": "hovyo",
 }
 
 # Marudio yanayopaswa kuandikwa kama neno moja (v2.7): "sawa sawa" -> "sawasawa".
@@ -454,11 +462,27 @@ MANENO_AMBATA = [
     (r"\bwana\s+inchi\b", "wananchi"),
     (r"\bmwana\s+ume\b", "mwanamume"),
     (r"\bmwana\s+mke\b", "mwanamke"),
+    # v2.10: 'mwenye kiti wa kamati' -> 'mwenyekiti wa kamati'. Inakamata tu kabla ya 'wa' (kiti huchukua 'cha', kwa hiyo
+    # 'mwenye kiti cha enzi' ni msemo halali na haiguswi).
+    (r"\bmwenye\s+kiti(?=\s+wa\b)", "mwenyekiti"),
+    (r"\btabia\s+nchi\b", "tabianchi"),
 ]
+
+# v2.10: kanuni za majaribio (ZIMEZIMWA kwa chaguo-msingi). Washa kwa Render/mazingira: SHERIA_ZA_MAJARIBIO=1
+# baada ya kuthibitisha na Kamusi ya Kiswahili Sanifu (TUKI/BAKITA) kwamba 'bwanashamba' huandikwa kama neno moja.
+KANUNI_ZA_MAJARIBIO = os.environ.get("SHERIA_ZA_MAJARIBIO", "0") == "1"
+if KANUNI_ZA_MAJARIBIO:
+    MANENO_AMBATA += [
+        (r"\bmabwana\s+shamba\b", "mabwanashamba"),
+        (r"\bbwana\s+shamba\b", "bwanashamba"),
+    ]
+
+# v2.10: 'hii sekta' -> 'sekta hii' ni suala la mtindo (si kosa): IMEZIMWA kwa chaguo-msingi. Washa kwa KANUNI_VIONYESHI=1.
+BADILI_VIONYESHI = os.environ.get("KANUNI_VIONYESHI", "0") == "1"
 
 # v2.9: maandishi yaliyo ndani ya nukuu ("..." au “...”, mstari mmoja) hayabadilishwi na kanuni za ambata.
 _NUKUU_RX = re.compile(r'"[^"\n]*"|\u201c[^\u201d\n]*\u201d')
-_CHANZO_ZENYE_KINGA_YA_NUKUU = {"kanuni_ambata"}
+_CHANZO_ZENYE_KINGA_YA_NUKUU = {"kanuni_ambata", "kanuni_pamoja", "kanuni_kionyeshi"}
 
 
 def _spans_za_nukuu(s: str) -> list:
@@ -1171,6 +1195,31 @@ class MkaguziSarufi:
              "Kanuni 19: kichwa cha barua rasmi huandikwa kwa HERUFI KUBWA ZOTE.",
              "kanuni_kichwa", lambda m: m.group(0).upper()),
         ]
+        # --- v2.10 ---
+        # 'kushirikiana kwa pamoja' -> 'kushirikiana' ('kushirikiana' tayari lina maana ya 'kwa pamoja').
+        kanuni.append((
+            re.compile(r"\b([A-Za-z]*shirikiana)\s+kwa\s+pamoja\b", re.IGNORECASE),
+            "Kanuni 18: 'kushirikiana' tayari lina maana ya 'kwa pamoja'; ondoa 'kwa pamoja'.",
+            "kanuni_pamoja", lambda m: m.group(1)))
+        if BADILI_VIONYESHI:
+            # Hubadilisha mpangilio TU kama maneno yanayofuata ni alama ya kituo, mwisho wa maandishi, au kiunganishi
+            # (ili kivumishi kisitenganishwe na nomino: 'hii sekta muhimu' haiguswi).
+            baada = r"(?=\s*(?:[,.;:!?)]|$)|\s+(?:ni|ya|za|wa|la|cha|vya|pa|kwa|na|au)\b)"
+
+            def _kionyeshi_baada(m):
+                kionyeshi, jina = m.group(1), m.group(2)
+                if kionyeshi[0].isupper():
+                    return f"{jina[0].upper()}{jina[1:]} {kionyeshi.lower()}"
+                return f"{jina} {kionyeshi}"
+
+            for vionyeshi, nomino in (
+                ("hii|ile|hizi|zile", "sekta|nchi|nyumba|barabara|taasisi|kampuni"),
+                ("hawa|wale", "watu|wananchi|wavuvi|wakulima|vijana|wanafunzi"),
+            ):
+                kanuni.append((
+                    re.compile(rf"\b({vionyeshi})[ \t]+({nomino})\b{baada}", re.IGNORECASE | re.MULTILINE),
+                    "Kanuni (mtindo): kionyeshi hukaa baada ya nomino kwa Kiswahili sanifu ('sekta hii'). Ni pendekezo la mtindo.",
+                    "kanuni_kionyeshi", _kionyeshi_baada))
         for muundo, umbo in MANENO_AMBATA:
             kanuni.append((
                 re.compile(muundo, re.IGNORECASE),
