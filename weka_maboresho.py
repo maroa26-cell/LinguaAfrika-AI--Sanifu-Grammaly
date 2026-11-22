@@ -1,104 +1,97 @@
-
-#!/usr/bin/env python3
 """
-weka_maboresho.py: huweka maboresho ya v2.9 kwenye kanuni_ya_sarufi.py
-  1. 'tabia nchi' -> 'tabianchi'  (MANENO_AMBATA, huhifadhi herufi kubwa)
-  2. 'vikundi vya ... wanakabiliwa' -> 'vinakabiliwa' (njia mpya _kagua_kiima_vikundi)
+weka_marekebisho.py - Huweka marekebisho ya prompt na kichujio kwenye faili la seva (app.py / api_server.py).
 
-Matumizi:   python weka_maboresho.py kanuni_ya_sarufi.py
-Nakala ya akiba huhifadhiwa kama kanuni_ya_sarufi.py.bak
+Matumizi (kwenye folda ya seva):
+    python weka_marekebisho.py app.py
+(au jina la faili lako lenye "/v1/kagua", mfano api_server.py)
+
+Inatengeneza nakala ya akiba (jina.bak) kwanza. Kila marekebisho yakikosa mahali pa kuingia,
+inakuambia na haibadilishi chochote. Inaweza kuendeshwa tena bila kudubu.
 """
+import pathlib
 import shutil
 import sys
 
-NJIA = sys.argv[1] if len(sys.argv) > 1 else "kanuni_ya_sarufi.py"
+njia = pathlib.Path(sys.argv[1] if len(sys.argv) > 1 else "app.py")
+if not njia.is_file():
+    sys.exit(f"Faili halipo: {njia}")
 
-NJIA_MPYA = '''    # ------------------------------------------------------------
-    # v2.9: 'vikundi vya ... wanakabiliwa' -> 'vinakabiliwa'
-    # ------------------------------------------------------------
-    _MIPAKA_YA_VIKUNDI = {"na", "ambao", "ambavyo", "vilivyo", "vinavyo", "wenye",
-                          "kwa", "hata", "au", "kama", "ni", "katika", "kwenye"}
-    UMBALI_WA_VIKUNDI = 5
+ghafi = njia.read_bytes().decode("utf-8")
+crlf = "\r\n" in ghafi
+t = ghafi.replace("\r\n", "\n")
 
-    def _kagua_kiima_vikundi(self, s: str, tokens: list) -> List[Kosa]:
-        """'Vikundi vya wanawake wajasiriamali wanakabiliwa' -> 'vinakabiliwa' (kiima ni 'vikundi', KI-VI)."""
-        makosa = []
-        for i in range(len(tokens) - 1):
-            if tokens[i][0].lower() != "vikundi" or tokens[i + 1][0].lower() != "vya":
-                continue
-            if not self._hakuna_alama(s, tokens, i, i + 1):
-                continue
-            for j in range(i + 2, min(i + 2 + self.UMBALI_WA_VIKUNDI, len(tokens))):
-                if not self._hakuna_alama(s, tokens, j - 1, j):
-                    break
-                tok = tokens[j]
-                w = tok[0].lower()
-                if w == "wanakabiliwa":
-                    pendekezo = "vinakabiliwa"
-                    if tok[0][0].isupper():
-                        pendekezo = pendekezo.capitalize()
-                    makosa.append(self._kosa_la_tokeni(
-                        s, tok, "UPATANISHO",
-                        f"Kitenzi '{tok[0]}' hakipatani na kiima '{tokens[i][0]}' (KI-VI); tumia '{pendekezo}'.",
-                        [pendekezo], "kiima_vikundi"))
-                    break
-                if w in self._MIPAKA_YA_VIKUNDI:
-                    break
-        return makosa
+SEHEMU_YA_PROMPT_KUU = """   - Kivumishi '-ingi' huoana na ngeli ya nomino: A-WA 'wateja wengi', 'watu wengi'; U-I 'miti mingi'; LI-YA 'maji mengi', 'mambo mengi'; KI-VI 'vitu vingi'; I-ZI 'biashara nyingi', 'pesa nyingi'. 'wateja myingi' ni kosa; sahihi ni 'wateja wengi'. Usibadilishe 'myingi' kuwa 'mingi' bila kuangalia nomino.
+"""
+SHERIA_4A = """4A. MARUDIO HALALI: 'wadogo wadogo', 'madogomadogo', 'polepole', 'haraka haraka', 'kidogo kidogo', 'mara kwa mara', 'kimya kimya', 'sawa sawa' ni sahihi na hutoa msisitizo. Usiyaondoe. Usibadilishe 'na', 'ya', 'wa', 'kwa' kuwa maneno mengine (mfano 'na' kuwa 'dhidi ya') isipokuwa kosa liko wazi bila shaka.
+"""
+UKAGUZI = """- '-ingi' huoana na ngeli: 'wateja wengi', 'miti mingi', 'maji mengi', 'vitu vingi', 'biashara nyingi'. Usibadilishe 'wateja myingi' kuwa 'wateja mingi'; sahihi ni 'wateja wengi'.
+- Marudio kama 'wadogo wadogo', 'sawa sawa', 'kidogo kidogo' ni sahihi; usiyaondoe.
+"""
+SEHEMU_YA_MARUDIO = '''_MARUDIO_HALALI = {
+    "wadogo", "wakubwa", "vidogo", "vikubwa", "kidogo", "haraka", "polepole", "taratibu",
+    "mbali", "sawa", "kimya", "vizuri", "moja", "mmoja", "pole", "mara", "madogomadogo",
+}
+
 
 '''
+PROMPT_NAHAU = """   - Nahau: 'akina mama wengi' (si 'mama wengi'). 'wakati mwingi' na 'muda mwingi' (si 'wakati mingi' wala 'muda mingi'), kwa sababu 'wakati' na 'muda' huchukua 'mwingi'.
+"""
+UKAGUZI_NAHAU = """- Nahau: 'akina mama wengi' (si 'mama wengi'); 'wakati mwingi', 'muda mwingi' (si 'wakati mingi', 'muda mingi').
+"""
+PROMPT_BABA = """   - 'akina' hutumika mbele ya nomino za umoja za watu: 'akina mama wengi', 'akina baba wengi'. Nomino ya wingi haipewi 'akina': 'watoto wengi' (si 'akina watoto wengi').
+"""
+UKAGUZI_BABA = """- 'akina mama wengi', 'akina baba wengi' (si 'mama wengi', 'baba wengi'); 'watoto wengi' ni sahihi, usiongeze 'akina' mbele ya wingi.
+"""
+KICHUJIO = '''        if p["aina"] == "kujirudia":
+            _w = original.lower().split()
+            if len(_w) == 2 and _w[0] == _w[1] and _w[0] in _MARUDIO_HALALI:
+                continue   # marudio halali (mf. "wadogo wadogo"): si kosa
+'''
 
-ANCHOR_YA_ALAMA = ("    # ------------------------------------------------------------\n"
-                   "    # v2.8: alama za uandishi")
-
-MABADILIKO = [
-    ("maneno ambata",
-     '    (r"\\bnguvu\\s+kazi\\b", "nguvukazi"),\n]',
-     '    (r"\\bnguvu\\s+kazi\\b", "nguvukazi"),\n    (r"\\btabia\\s+nchi\\b", "tabianchi"),\n]'),
-    ("njia mpya ya vikundi",
-     ANCHOR_YA_ALAMA,
-     NJIA_MPYA + ANCHOR_YA_ALAMA),
-    ("usajili kwenye kagua()",
-     "            lambda: self._kagua_dogodogo(sentensi, tokens),\n",
-     "            lambda: self._kagua_dogodogo(sentensi, tokens),\n"
-     "            lambda: self._kagua_kiima_vikundi(sentensi, tokens),   # v2.9\n"),
-    ("maelekezo ya AI (kanuni 18)",
-     "'nguvukazi', 'vidogovidogo'",
-     "'nguvukazi', 'tabianchi', 'vidogovidogo'"),
-    ("maelezo ya toleo",
-     "Toleo 2.8 (sheria kutoka safisha_maandishi_sanifu):",
-     "Toleo 2.9:\n"
-     "- Mpya: 'tabia nchi' -> 'tabianchi' (maneno ambata, herufi kubwa huhifadhiwa).\n"
-     "- Mpya: 'vikundi vya ... wanakabiliwa' -> 'vinakabiliwa' (_kagua_kiima_vikundi; hubadilisha kitenzi pekee).\n\n"
-     "Toleo 2.8 (sheria kutoka safisha_maandishi_sanifu):"),
+# (jina, alama, maandishi_mapya, mahali, kitambulisho_cha_kuzuia_kurudia)
+MAREKEBISHO = [
+    ("Prompt kuu: ngeli ya -ingi",
+     "   - Kitenzi lazima kioane na nomino halisi inayotenda, si nomino iliyo karibu tu.\n",
+     SEHEMU_YA_PROMPT_KUU, "baada", "Kivumishi '-ingi' huoana"),
+    ("Prompt kuu: sheria 4A (marudio)",
+     "4B. UKALI WA KUONDOA KIINGEREZA", SHERIA_4A, "kabla", "4A. MARUDIO HALALI"),
+    ("Prompt ya ukaguzi wa pili",
+     "- Toa maandishi yaliyokaguliwa PEKEE", UKAGUZI, "kabla", "'-ingi' huoana na ngeli: 'wateja wengi'"),
+    ("Orodha ya marudio halali",
+     "def _u16(s: str, i: int) -> int:", SEHEMU_YA_MARUDIO, "kabla", "_MARUDIO_HALALI = {"),
+    ("Kichujio cha marudio halali",
+     '        original, suggestion = p["kutoka"], p["kuwa"]\n', KICHUJIO, "baada", "_MARUDIO_HALALI:"),
+    ("Prompt kuu: akina mama, wakati/muda mwingi",
+     "Usibadilishe 'myingi' kuwa 'mingi' bila kuangalia nomino.\n", PROMPT_NAHAU, "baada",
+     "Nahau: 'akina mama wengi' (si 'mama wengi'). 'wakati mwingi'"),
+    ("Prompt ya ukaguzi: akina mama, wakati/muda mwingi",
+     "- Marudio kama 'wadogo wadogo', 'sawa sawa', 'kidogo kidogo' ni sahihi; usiyaondoe.\n", UKAGUZI_NAHAU, "baada",
+     "Nahau: 'akina mama wengi' (si 'mama wengi'); 'wakati mwingi'"),
+    ("Prompt kuu: akina baba, watoto wengi",
+     "huchukua 'mwingi'.\n", PROMPT_BABA, "baada", "'akina' hutumika mbele ya nomino za umoja za watu"),
+    ("Prompt ya ukaguzi: akina baba, watoto wengi",
+     "(si 'wakati mingi', 'muda mingi').\n", UKAGUZI_BABA, "baada", "'akina baba wengi' (si 'mama wengi', 'baba wengi')"),
 ]
 
+jumla_ya_mabadiliko = 0
+kushindwa = []
+for jina, alama, mpya, mahali, kitambulisho in MAREKEBISHO:
+    if kitambulisho in t:
+        print(f"IMESHAWEKWA  {jina}")
+        continue
+    if t.count(alama) != 1:
+        print(f"SHIDA        {jina}: mahali pa kuingia hapakupatikana mara moja (zilizopatikana: {t.count(alama)})")
+        kushindwa.append(jina)
+        continue
+    t = t.replace(alama, mpya + alama if mahali == "kabla" else alama + mpya)
+    jumla_ya_mabadiliko += 1
+    print(f"IMEWEKWA     {jina}")
 
-def main():
-    with open(NJIA, encoding="utf-8", newline="") as f:
-        asili = f.read()
-    crlf = "\r\n" in asili
-    maandishi = asili.replace("\r\n", "\n")
-
-    if "_kagua_kiima_vikundi" in maandishi or "tabianchi\"),\n]" in maandishi:
-        print("Maboresho yanaonekana kuwepo tayari; sibadilishi chochote.")
-        return 0
-
-    for jina, zamani, mpya in MABADILIKO:
-        n = maandishi.count(zamani)
-        if n != 1:
-            print(f"KOSA: sehemu '{jina}' imepatikana mara {n} (inatakiwa mara 1). Hakuna kilichobadilishwa.")
-            return 1
-    for jina, zamani, mpya in MABADILIKO:
-        maandishi = maandishi.replace(zamani, mpya, 1)
-
-    compile(maandishi, NJIA, "exec")           # hakikisha msimbo bado ni sahihi kabla ya kuandika
-    shutil.copyfile(NJIA, NJIA + ".bak")
-    with open(NJIA, "w", encoding="utf-8", newline="") as f:
-        f.write(maandishi.replace("\n", "\r\n") if crlf else maandishi)
-    print(f"Imekamilika: sehemu {len(MABADILIKO)} zimewekwa. Nakala ya akiba: {NJIA}.bak")
-    return 0
-
-
-if __name__ == "__main__":
-    sys.exit(main())
+if kushindwa:
+    sys.exit("\\nBaadhi hazikuwekwa; hakuna faili lililobadilishwa. Nitumie matokeo haya.")
+if jumla_ya_mabadiliko:
+    shutil.copyfile(njia, str(njia) + ".bak")
+    njia.write_bytes((t.replace("\n", "\r\n") if crlf else t).encode("utf-8"))
+    print(f"\nImekamilika. Nakala ya akiba: {njia}.bak")
+else:
+    print("\nHakuna cha kubadilisha.")
