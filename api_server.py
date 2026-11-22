@@ -1,8 +1,9 @@
 """
-AI Lingual Africa Sanifu API v3.4
+AI Lingual Africa Sanifu API v3.4.1
 Gemini (kuu) + Groq (akiba) + Hatua ya Pili ya Ukaguzi + Chujio salama la Python
 + Sheria ya 4B (chujio_4b.py): kuondoa Kiingereza kilichochanganywa kwenye Kiswahili
-+ MPYA v3.4: sheria_baada_ya_ai.py -> ulinzi wa nukuu na sheria mpya za Kiswahili
++ v3.4: sheria_baada_ya_ai.py -> ulinzi wa nukuu na sheria mpya za Kiswahili
++ MPYA v3.4.1: Gemini ikitoa 429 (kikomo kimejaa), inarukwa kwa muda na Groq inatumika mara moja
 
 Njia zilezile: /api/chakata, /hariri, /tafsiri  (extension ya zamani haihitaji kubadilishwa)
 Njia za mapendekezo: /pendekezo (au /api/pendekezo) -> orodha ya mapendekezo yenye nafasi (offsets)
@@ -11,11 +12,16 @@ Kwa Chrome extension ya Lingual Sanifu:
   POST /v1/kagua    -> {"ok":true,"ai":true,"issues":[{original,suggestion,start,end,label,explanation,hiari}]}
                        (pia: /api/kagua na /kagua)
 
+MABADILIKO v3.4.1:
+  Gemini ikijibu 429 RESOURCE_EXHAUSTED (kikomo cha matumizi), kusubiri hakusaidii. Sasa modeli zote
+  mbili zikitoa 429, Gemini inarukwa kwa GEMINI_PUMZIKO_SEKUNDE (chaguo-msingi sekunde 120) na maombi
+  yanakwenda moja kwa moja kwa Groq. Hii inaondoa ucheleweshaji wa takriban sekunde 9 kwa kila ombi.
+
 MABADILIKO v3.4 (kiendelezi kinanufaika kupitia /v1/kagua):
   1. Nukuu ("..." na “...”) zinalindwa kwa alama [[NUKUU_n]] wakati wa kuhariri: AI na chujio la 4B
      havizigusi. Alama zikipotea, kipande kinarudishwa kama kilivyo (hakuna nukuu inayopotea).
   2. Sheria mpya baada ya AI: "Je, ..." huisha na "?", kionyeshi baada ya nomino
-     ("hii sekta" -> "sekta hii", pendekezo la hiari), tahajia (myingi, mwananchi, nchi).
+     ("hii sekta" -> "sekta hii", pendekezo la hiari), tahajia (myingi, mwananchi, wananchi).
   3. /v1/kagua: AI ikishindwa lakini sheria za Python zimepata makosa, makosa hayo yanarudishwa
      (ai=false, onyo=AI_HAZIPATIKANI) badala ya kosa la 502.
 
@@ -29,6 +35,7 @@ Environment Variables (Render):
   SHERIA_ZA_MAJARIBIO (hiari) -> "0" (chaguo-msingi). "1" huwasha sheria za "bwana shamba/afya" (thibitisha BAKITA kwanza)
   MAX_CHARS        (hiari) -> kikomo cha herufi, chaguo-msingi 15000
   MAX_WORKERS      (hiari) -> uchakataji sambamba, chaguo-msingi 3
+  GEMINI_PUMZIKO_SEKUNDE (hiari) -> sekunde za kuruka Gemini baada ya 429, chaguo-msingi 120
   GEMINI_MODEL, GEMINI_FALLBACK_MODEL, GROQ_MODEL (hiari) -> majina ya modeli; badilisha hapa modeli ikistaafishwa
 """
 import os
@@ -67,7 +74,11 @@ HATUA_MBILI = os.environ.get("HATUA_MBILI", "1") == "1"
 KAGUA_HATUA_MBILI = os.environ.get("KAGUA_HATUA_MBILI", "0") == "1"
 MAX_CHARS = int(os.environ.get("MAX_CHARS", "15000"))
 MAX_WORKERS = int(os.environ.get("MAX_WORKERS", "3"))
+GEMINI_PUMZIKO_SEKUNDE = int(os.environ.get("GEMINI_PUMZIKO_SEKUNDE", "120"))
 MAX_KIPANDE = 1200  # herufi kwa kipande kimoja cha aya ndefu
+
+# Gemini ikijaa kikomo (429), inarukwa hadi wakati huu (sekunde za time.time())
+_gemini_pumziko_hadi = 0.0
 
 app = Flask(__name__)
 
@@ -318,13 +329,18 @@ def _ni_kosa_la_muda(e: Exception) -> bool:
 
 
 def _ita_gemini(system: str, ujumbe: str):
+    global _gemini_pumziko_hadi
     if not gemini_client:
         print("Gemini: GEMINI_API_KEY haijawekwa kwenye Render.")
         return None
+    if time.time() < _gemini_pumziko_hadi:
+        return None  # kikomo kimejaa hivi karibuni: nenda moja kwa moja kwa Groq
+
     modeli = [GEMINI_MODEL]
     if GEMINI_FALLBACK_MODEL and GEMINI_FALLBACK_MODEL != GEMINI_MODEL:
         modeli.append(GEMINI_FALLBACK_MODEL)
 
+    zote_ni_429 = True
     for modeli_jina in modeli:
         for jaribio in range(2):
             try:
@@ -336,12 +352,20 @@ def _ita_gemini(system: str, ujumbe: str):
                 if jibu and jibu.text:
                     return jibu.text.strip()
                 print(f"Gemini ({modeli_jina}): jibu tupu (huenda limezuiwa).")
+                zote_ni_429 = False
                 break  # jibu tupu (mf. limezuiwa): jaribu modeli inayofuata
             except Exception as e:
                 print(f"Hitilafu ya Gemini ({modeli_jina}, jaribio {jaribio + 1}): {e}")
+                if getattr(e, "code", None) == 429:
+                    break  # kikomo cha matumizi: kusubiri hakusaidii, jaribu modeli inayofuata
+                zote_ni_429 = False
                 if not _ni_kosa_la_muda(e):
                     break  # mf. modeli haipo (404): nenda modeli inayofuata mara moja
                 time.sleep(1.5 * (jaribio + 1))
+
+    if zote_ni_429:
+        _gemini_pumziko_hadi = time.time() + GEMINI_PUMZIKO_SEKUNDE
+        print(f"Gemini: kikomo kimejaa (429). Inarukwa kwa sekunde {GEMINI_PUMZIKO_SEKUNDE}.")
     return None
 
 
@@ -888,6 +912,7 @@ def uchunguzi():
     """
     Hujaribu Gemini na Groq kwa ombi dogo na kuonyesha kosa halisi (bila kuonyesha funguo).
     Fungua kwenye kivinjari: /uchunguzi  (au /uchunguzi?ufunguo=API_KEY yako, ikiwa umeweka API_KEY).
+    Pia inaonyesha kama Gemini iko kwenye pumziko (baada ya 429).
     """
     if API_KEY_YA_HUDUMA and not hmac.compare_digest(request.args.get("ufunguo", ""), API_KEY_YA_HUDUMA):
         return jsonify({"ok": False, "error": "Weka ?ufunguo=<API_KEY> mwishoni mwa anwani."}), 401
@@ -902,7 +927,8 @@ def uchunguzi():
                     "kosa": f"{type(e).__name__}: {str(e)[:300]}", "code": getattr(e, "code", None)}
 
     ujumbe = "Jibu kwa neno moja tu: sawa"
-    matokeo = {"gemini": {}, "groq": None}
+    matokeo = {"gemini": {}, "groq": None,
+               "gemini_pumziko_sekunde_zilizobaki": max(0, round(_gemini_pumziko_hadi - time.time()))}
 
     if gemini_client:
         for jina in dict.fromkeys([GEMINI_MODEL, GEMINI_FALLBACK_MODEL]):
@@ -936,7 +962,7 @@ def afya_nyepesi():
 def afya_ya_seva():
     return jsonify({
         "status": "Live",
-        "mfumo": "AI Lingual Africa Sanifu API v3.4",
+        "mfumo": "AI Lingual Africa Sanifu API v3.4.1",
         "injini": f"{GEMINI_MODEL} (akiba: {GEMINI_FALLBACK_MODEL}) + Groq {GROQ_MODEL} + Ukaguzi wa Pili + Chujio salama + Sheria baada ya AI",
         "njia": ["/api/chakata", "/hariri", "/tafsiri", "/pendekezo", "/v1/kagua", "/health"],
         "gemini": bool(gemini_client),
