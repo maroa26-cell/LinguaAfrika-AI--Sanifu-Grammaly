@@ -1,9 +1,24 @@
 """
-sheria_baada_ya_ai.py  (v2.1)
+sheria_baada_ya_ai.py  (v2.4)
 Sheria za kurekebisha Kiswahili baada ya AI kutoa jibu (Lingual Africa Sanifu).
 
 Inatumiwa na api_server.py (v3.4+): kiendelezi cha Chrome na tovuti hupata marekebisho
 haya kupitia /v1/kagua, /hariri na /pendekezo.
+
+Mabadiliko v2.4:
+- "baba wengi" -> "akina baba wengi" (kama mama). "watoto wengi" haiguswi: "watoto" ni wingi tayari,
+  kwa hiyo "akina" haitumiki.
+
+Mabadiliko v2.3:
+- "mama wengi" -> "akina mama wengi" (haiguswi ikiwa "akina" ipo tayari).
+- "wakati/muda" + mingi/myingi/wengi/mengi... -> "wakati mwingi", "muda mwingi".
+
+Mabadiliko v2.2:
+- Sheria ya zamani "myingi" -> "mingi" imeondolewa: ilikuwa inabadilisha kila "myingi" bila
+  kuangalia nomino ("wateja myingi" ikawa "wateja mingi", kosa jipya). Badala yake kuna sheria
+  ya ngeli (_INGI_RX): kiambishi cha "-ingi" kinachaguliwa kwa nomino inayotangulia
+  (wa- -> wengi, vi-/vy- -> vingi, ma- -> mengi, mi-/my- -> mingi, nomino za N -> nyingi).
+  Nomino isiyotambulika haiguswi (inaachiwa AI).
 
 Mabadiliko v2.1:
 - Sheria pana ya "inchi" -> "nchi" imeondolewa, kwa sababu "inchi" pia ni kipimo
@@ -87,9 +102,63 @@ def _geuza_kionyeshi(m):
     return f"{nomino} {kionyeshi}"
 
 
-# (c) Makosa ya tahajia/ngeli/nomino ambatani. Sheria maalum kwanza.
+# (b2) Ngeli ya "-ingi": "wateja myingi" -> "wateja wengi", "vitu mingi" -> "vitu vingi".
+#      Inashika tu "myingi"/"mingi" baada ya nomino inayotambulika kwa kiambishi chake.
+#      Nomino isiyotambulika, au iliyo sahihi tayari, haiguswi.
+_INGI_RX = re.compile(r"\b([^\W\d_]+)([ \t]+)(myingi|mingi)\b", re.IGNORECASE)
+_NOMINO_ZA_N = {  # ngeli ya I-ZI (N): nyingi
+    "biashara", "pesa", "nchi", "fursa", "changamoto", "huduma", "taarifa", "kazi", "siku",
+    "sekta", "jamii", "shule", "familia", "habari", "faida", "hasara", "benki", "kampuni",
+    "taasisi", "bidhaa", "sababu", "nafasi", "njia", "ndege", "ng'ombe", "mbuzi", "kuku",
+}
+_NOMINO_ZISIZO_NGELI_YAKE = {  # zinaanza na "wa" lakini si wingi wa watu
+    "wakati", "wali", "wazo", "wasiwasi", "wanja", "wavu", "waya", "wadi",
+}
+
+
+def _ingi_kwa_ngeli(m):
+    nomino, pengo, sasa = m.group(1).lower(), m.group(2), m.group(3)
+    if nomino in _NOMINO_ZISIZO_NGELI_YAKE:
+        return m.group(0)
+    if nomino in _NOMINO_ZA_N:
+        sahihi = "nyingi"
+    elif nomino.startswith("wa"):
+        sahihi = "wengi"
+    elif nomino.startswith(("vi", "vy")):
+        sahihi = "vingi"
+    elif nomino.startswith("ma"):
+        sahihi = "mengi"
+    elif nomino.startswith(("mi", "my")):
+        sahihi = "mingi"
+    else:
+        return m.group(0)
+    if sahihi == sasa.lower():
+        return m.group(0)
+    return m.group(1) + pengo + _linda_herufi_kubwa(sasa, sahihi)
+
+
+# (b3) Nahau: "mama/baba wengi" -> "akina mama/baba wengi" (haiguswi ikiwa "akina" ipo tayari).
+_AKINA_MAMA_RX = re.compile(r"(?<![Aa]kina )\b(mama|baba)([ \t]+)(wengi)\b", re.IGNORECASE)
+
+
+def _akina_mama(m):
+    akina = "Akina" if m.group(1)[:1].isupper() else "akina"
+    return f"{akina} {m.group(1).lower()}{m.group(2)}{m.group(3)}"
+
+
+# (b4) "wakati mwingi", "muda mwingi" (si "wakati mingi", "muda mingi").
+_MUDA_RX = re.compile(
+    r"\b(wakati|muda)([ \t]+)(myingi|mingi|wengi|mengi|vingi|nyingi)\b", re.IGNORECASE
+)
+
+
+def _muda_mwingi(m):
+    return m.group(1) + m.group(2) + _linda_herufi_kubwa(m.group(3), "mwingi")
+
+
+# (c) Makosa ya tahajia/nomino ambatani. Sheria maalum kwanza.
+#     ("myingi" -> "mingi" imeondolewa v2.2: ngeli inashughulikiwa na _INGI_RX hapo juu.)
 _MAKOSA = [
-    (r"\bmyingi\b", "mingi"),
     (r"\bmwana[ \t]+inchi\b", "mwananchi"),
     (r"\bwana[ \t]+inchi\b", "wananchi"),
     # Sentensi mahususi pekee. Sheria pana ya "faili za" -> "mafaili ya" imeondolewa
@@ -133,6 +202,9 @@ def rekebisha_kiswahili_sanifu(matokeo_ya_ai: str, nukuu: list = None):
 
     tumia("Je -> ?", _JE, r"\1?")
     tumia("kionyeshi baada ya nomino", _KIONYESHI_KWANZA, _geuza_kionyeshi)
+    tumia("akina mama wengi", _AKINA_MAMA_RX, _akina_mama)
+    tumia("wakati/muda mwingi", _MUDA_RX, _muda_mwingi)
+    tumia("-ingi kwa ngeli", _INGI_RX, _ingi_kwa_ngeli)
     for regex, sahihi in _MAKOSA_ILIYOANDALIWA:
         tumia(
             regex.pattern,
