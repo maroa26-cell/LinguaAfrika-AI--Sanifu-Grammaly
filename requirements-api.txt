@@ -1,8 +1,18 @@
-build(deps): requirements.txt kwa Streamlit pekee
 
-- Ondoa flask, flask-cors na gunicorn: app.py na moduli zake
-  hazizitumii; API inatumia requirements-api.txt
-- Baki na vifurushi 13: streamlit, pandas, numpy, pyarrow<25, openai,
-  google-genai, groq, psycopg[binary], PyGithub, requests, bcrypt,
-  segno, reportlab
-- Panga kwa makundi yenye maelezo (Streamlit, AI, hifadhidata, nyingine)
+# ==========================================
+# LINGUAAFRIKA AI — SANIFU GRAMMALY
+# API Dependencies — Render
+# ==========================================
+
+# 1. API SERVER
+flask>=3.0.0
+flask-cors>=4.0.0
+gunicorn>=22.0.0
+
+# 2. AI ENGINES
+google-genai>=1.0.0
+groq>=0.11.0
+
+# ==========================================
+# ONLY FIVE PACKAGES REQUIRED
+# ==========================================
