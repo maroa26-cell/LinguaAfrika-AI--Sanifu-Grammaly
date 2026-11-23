@@ -1,5 +1,21 @@
-flask
-flask-cors
-google-genai
-groq
-gunicorn
+# requirements-api.txt — kwa api_server.py pekee (Render)
+#
+# Vifurushi vitano pekee ndivyo api_server.py inahitaji:
+#   flask, flask-cors      -> seva
+#   google-genai           -> Gemini (kuu)
+#   groq                   -> Groq (akiba)
+#   gunicorn               -> start command ya Render
+#
+# HAKUNA requests: api_server.py hai-import. (google-genai na groq hutumia
+# httpx, si requests.) Kama chujio_4b.py au sheria_baada_ya_ai.py zina
+# import ya maktaba nyingine yoyote, iongeze hapa — pip haiweki vifurushi
+# visivyoandikwa.
+#
+# Matumizi: Build Command kwenye Render iwe
+#   pip install --upgrade pip && pip install -r requirements-api.txt
+
+flask>=3.0.0
+flask-cors>=4.0.0
+google-genai>=1.0.0
+groq>=0.11.0
+gunicorn>=22.0.0
