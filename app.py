@@ -63,10 +63,8 @@ def weka_seo_schema():
         f"s.text={js_literal};d.head.appendChild(s);}}catch(e){{}}}})();</script>"
     )
     try:
-        if hasattr(str_platform, "iframe"):
-            str_platform.iframe(kodi_html, height=1)
-        else:
-            components.html(kodi_html, height=0)
+        # components.html pekee: haiachi kipande kinachoonekana kama st.iframe(height=1)
+        components.html(kodi_html, height=0)
     except Exception as e:
         print(f"[seo] imeshindwa kuweka JSON-LD: {type(e).__name__}: {e}")
 
@@ -279,8 +277,15 @@ def onyesha_matokeo_ya_kamusi(matokeo):
         str_platform.markdown("---")
 
 
-try:
+# --- Hifadhidata: inaanzishwa MARA MOJA kwa kila mchakato wa seva (si kila bonyezo) ---
+@str_platform.cache_resource(show_spinner=False)
+def _anzisha_db():
     database.anzisha_hifadhidata_ya_chuma()
+    return True
+
+
+try:
+    _anzisha_db()
 except Exception as exc:
     str_platform.error("Imeshindikana kuanzisha hifadhidata. Kagua usanidi wa database kisha jaribu tena.")
     print(f"Database initialization failed: {type(exc).__name__}: {exc}")
@@ -288,13 +293,18 @@ except Exception as exc:
 
 skin_appearance.inject_premium_glassmorphic_skin()
 
-api_key_source = os.environ.get("OPENAI_API_KEY") or _secret("OPENAI_API_KEY")
-client = None
-if isinstance(api_key_source, str) and api_key_source.strip():
-    client = OpenAI(api_key=api_key_source.strip())
-ubongo = CerebralCortex(client)
+# --- CerebralCortex: inaundwa MARA MOJA kwa kila kipindi cha mtumiaji (si kila bonyezo) ---
+if "_ubongo_kipindi" not in str_platform.session_state:
+    api_key_source = os.environ.get("OPENAI_API_KEY") or _secret("OPENAI_API_KEY")
+    client = None
+    if isinstance(api_key_source, str) and api_key_source.strip():
+        client = OpenAI(api_key=api_key_source.strip())
+    str_platform.session_state["_ubongo_kipindi"] = CerebralCortex(client)
+ubongo = str_platform.session_state["_ubongo_kipindi"]
 
 if not (ubongo.gemini_client or ubongo.groq_client or ubongo.openai_client):
+    # Usihifadhi ubongo usio na funguo: mtumiaji akiongeza Secrets ajaribu tena upya
+    str_platform.session_state.pop("_ubongo_kipindi", None)
     str_platform.error("\U0001F512 secrets error! Weka angalau ufunguo mmoja kwenye Secrets: "
                        "GEMINI_API_KEY, GROQ_API_KEY au OPENAI_API_KEY.")
     str_platform.stop()
