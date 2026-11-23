@@ -17,6 +17,7 @@ import mhariri
 import mhariri_pro_ui
 import sarufi_bridge
 import skin_appearance
+import ukaguzi_wa_pili
 from cerebral_cortex import CerebralCortex, orodha_ya_lahaja, SAUTI_ZA_GEMINI, KASI_ZA_SAUTI
 
 muda_mwanzo = time.time()
@@ -482,6 +483,7 @@ if "mhariri" in chaguo_menyu:
         str_platform.error("\U0001F512 Salio LIMEISHA! Tafadhali fungua Lango la Mteja kulipia.")
     else:
         try:
+            # Ukaguzi wa pili (kabla ya kunakili) umo ndani ya mhariri_pro_ui
             matokeo_pro = mhariri_pro_ui.onyesha_mhariri_pro(
                 kamusi=_pata_kamusi_set(),
                 piga_ai=_piga_ai,
@@ -617,6 +619,20 @@ elif "mtafsiri" in chaguo_menyu:
     if _t_mwisho:
         onyesha_jibu(_t_mwisho["tafsiri"], border_color="rgba(255,255,255,0.1)",
                      bg="rgba(255,255,255,0.02)")
+
+        # === UKAGUZI WA PILI === (baada ya tafsiri, kabla mwenye ujumbe hajanakili)
+        # Hurudisha tafsiri ya sasa ya mwisho (huenda imesahihishwa); ndiyo inayotumika kwa matamshi.
+        _tafsiri_ya_kusema = ukaguzi_wa_pili.onyesha_ukaguzi_wa_pili(
+            chanzo=_t_mwisho["asili"],
+            matokeo=_t_mwisho["tafsiri"],
+            aina="tafsiri",
+            lugha=_t_mwisho["lengo"],
+            piga_ai=_piga_ai,
+            piga_ai_kina=_piga_ai_kina if _UTHIBITISHO_WA_PRO else None,
+            ufunguo="tafsiri",
+            auto_awali=True,
+        )
+
         str_platform.caption("\U0001F50A Sikiliza jinsi maandishi yanavyotamkwa:")
         with str_platform.expander("\u2699\uFE0F Mipangilio ya Matamshi (lahaja, sauti, kasi)"):
             _lh_lengo = orodha_ya_lahaja(_t_mwisho["lengo"])
@@ -641,7 +657,7 @@ elif "mtafsiri" in chaguo_menyu:
                 with str_platform.spinner("Inazalisha sauti..."):
                     try:
                         str_platform.session_state["tafsiri_sauti_lengo"] = ubongo.zindua_jifunze_lugha_audio(
-                            _t_mwisho["tafsiri"], _t_mwisho["lengo"], lahaja=lahaja_lengo,
+                            _tafsiri_ya_kusema, _t_mwisho["lengo"], lahaja=lahaja_lengo,
                             sauti=sauti_chaguo, kasi=kasi_chaguo)
                     except Exception as e:
                         onyesha_hitilafu("kuzalisha sauti ya tafsiri", e)
