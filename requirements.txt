@@ -1,16 +1,38 @@
-# Vifurushi vinavyohitajika na app.py, pesapal_core.py, admin.py, dashboard.py, database.py, risiti.py
+# requirements.txt — Streamlit Community Cloud
+#
+# Inatumikwa na: app.py, dashboard.py, admin.py, database.py, risiti.py,
+# mhariri.py, mhariri_pro_ui.py, cerebral_cortex.py, sarufi_bridge.py,
+# pesapal_core.py, skin_appearance.py
+#
+# API (flask, gunicorn) imeondolewa hapa — iko kwenye requirements-api.txt
+# kwa ajili ya Render.
+
+# ---------------------------------------------------------------------------
+# Mfumo wa Streamlit
+# ---------------------------------------------------------------------------
 streamlit>=1.40.0
+pandas>=2.2.0
+numpy>=1.26.0
+pyarrow<25
+
+# ---------------------------------------------------------------------------
+# AI — cerebral_cortex.py (OpenAI), mhariri (Gemini + Groq)
+# ---------------------------------------------------------------------------
 openai>=1.40.0
 google-genai>=1.0.0
 groq>=0.11.0
+
+# ---------------------------------------------------------------------------
+# Hifadhidata — database.py (Render Postgres)
+# ---------------------------------------------------------------------------
+psycopg[binary]>=3.1
+
+# ---------------------------------------------------------------------------
+# Nyingine — kamusi (GitHub), risiti (PDF/QR), uthibitisho wa watumiaji,
+# malipo (Pesapal)
+# ---------------------------------------------------------------------------
 PyGithub>=2.1.0
 requests>=2.31.0
-pandas>=2.2.0
-numpy>=1.26.0
 bcrypt>=4.0.0
 segno>=1.6.0
-psycopg[binary]>=3.1
 reportlab>=4.0.0
-flask>=3.0.0
-flask-cors>=4.0.0
-pyarrow<25
