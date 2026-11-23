@@ -1,0 +1,427 @@
+"""
+ukaguzi_wa_tafsiri.py (v1.0)
+Mfumo wa kukagua tafsiri BAADA ya tafsiri kufanyika: unalinganisha CHANZO na TAFSIRI.
+
+Hatua mbili:
+  A. Kanuni za Python (haraka, hazitumii AI, hazikosei kwa nambari/viungo):
+     - nambari zilizopotea au kuongezwa
+     - URL na barua pepe zilizobadilishwa
+     - majina maalum yaliyopotea
+     - idadi ya aya/mistari, aya fupi au ndefu kupita kiasi
+     - sentensi zilizobaki bila kutafsiriwa
+     - istilahi za kamusi zisizotumika
+  B. Ukaguzi wa AI (maana potofu, vilivyoachwa, vilivyoongezwa, istilahi, sarufi, mtindo).
+     AI inatoa JSON; kila kipande kinachotajwa lazima kipatikane kwenye tafsiri, vinginevyo
+     hakipewi nafasi (start/end = None) ili kiendelezi kisiangaze mahali pasipo sahihi.
+
+Moduli hii ni safi (haigusi Flask). Inapokea ita_ai(system, ujumbe) -> (maandishi, injini) kutoka app.py.
+"""
+import json
+import re
+from collections import Counter
+from concurrent.futures import ThreadPoolExecutor
+
+UKALI = ("juu", "kati", "chini")
+_UZITO = {"juu": 15, "kati": 6, "chini": 2}
+AINA_ZA_AI = ("maana", "kuacha", "kuongeza", "istilahi", "sarufi", "mtindo")
+LEBO = {
+    "maana": "Maana potofu",
+    "kuacha": "Kimeachwa",
+    "kuongeza": "Kimeongezwa",
+    "istilahi": "Istilahi",
+    "sarufi": "Sarufi",
+    "mtindo": "Mtindo",
+    "nambari": "Nambari",
+    "kiungo": "Kiungo / barua pepe",
+    "jina": "Jina maalum",
+    "muundo": "Muundo wa aya",
+    "urefu": "Urefu",
+    "haijatafsiriwa": "Haijatafsiriwa",
+    "kiingereza": "Kiingereza kimebaki",
+    "mengineyo": "Mengineyo",
+}
+
+
+def _tatizo(aina, ukali, maelezo, original="", suggestion="", start=None, end=None,
+            chanzo_kipande="", na="kanuni"):
+    return {
+        "aina": aina,
+        "lebo": LEBO.get(aina, "Mengineyo"),
+        "ukali": ukali,
+        "maelezo": maelezo,
+        "original": original,          # kipande cha TAFSIRI chenye tatizo
+        "suggestion": suggestion,      # pendekezo (linaweza kuwa tupu)
+        "start": start,                # nafasi kwenye tafsiri (code points), au None
+        "end": end,
+        "chanzo_kipande": chanzo_kipande,   # kipande husika cha CHANZO
+        "na": na,                      # "kanuni" au "ai"
+    }
+
+
+def _sentensi(text):
+    """[(start, end, maandishi)] kwa kila sentensi/mstari, nafasi zikiwa za maandishi yote."""
+    out = []
+    for m in re.finditer(r"[^.!?\n]+[.!?\u2026]*", text):
+        s, e = m.start(), m.end()
+        seg = text[s:e]
+        s += len(seg) - len(seg.lstrip())
+        e -= len(seg) - len(seg.rstrip())
+        if e > s:
+            out.append((s, e, text[s:e]))
+    return out
+
+
+def _norm(t):
+    return re.sub(r"\s+", " ", re.sub(r"[^\w\s]", "", t.lower())).strip()
+
+
+# ---------------------------------------------------------------------------
+# A. KANUNI ZA PYTHON
+# ---------------------------------------------------------------------------
+_NAMBARI_RX = re.compile(r"\d+(?:[.,]\d+)*")
+_URL_RX = re.compile(r"(?:https?://|www\.)[^\s)>\]]+", re.IGNORECASE)
+_BARUA_RX = re.compile(r"[\w.+-]+@[\w-]+(?:\.[\w-]+)+")
+
+
+def _kawaida_nambari(s):
+    return re.sub(r"[.,]", "", s)   # "1,000" na "1.000" ni sawa; "2,5" na "2.5" ni sawa
+
+
+def _nambari(chanzo, tafsiri):
+    out = []
+    cs = [m.group(0) for m in _NAMBARI_RX.finditer(chanzo)]
+    ts = [(m.group(0), m.start(), m.end()) for m in _NAMBARI_RX.finditer(tafsiri)]
+    cn = Counter(_kawaida_nambari(x) for x in cs)
+    tn = Counter(_kawaida_nambari(x[0]) for x in ts)
+    pungufu, ziada = cn - tn, tn - cn
+    for n in cs:
+        k = _kawaida_nambari(n)
+        if pungufu.get(k, 0) > 0:
+            pungufu[k] -= 1
+            out.append(_tatizo(
+                "nambari", "kati",
+                f"Nambari '{n}' iliyo kwenye chanzo haipatikani kwenye tafsiri "
+                "(huenda imeandikwa kwa maneno, au imeachwa).",
+                chanzo_kipande=n))
+    for tok, s, e in ts:
+        k = _kawaida_nambari(tok)
+        if ziada.get(k, 0) > 0:
+            ziada[k] -= 1
+            out.append(_tatizo(
+                "nambari", "juu",
+                f"Nambari '{tok}' haipo kwenye chanzo. Hakikisha haikubadilishwa kimakosa.",
+                original=tok, start=s, end=e))
+    return out
+
+
+def _viungo(chanzo, tafsiri):
+    out, ona = [], set()
+    low = tafsiri.lower()
+    for rx in (_URL_RX, _BARUA_RX):
+        for m in rx.finditer(chanzo):
+            v = m.group(0).rstrip(".,;:!?)")
+            if v.lower() in ona:
+                continue
+            ona.add(v.lower())
+            if v.lower() not in low:
+                out.append(_tatizo(
+                    "kiungo", "juu",
+                    f"'{v}' iliyo kwenye chanzo haipo kwenye tafsiri kama ilivyo. "
+                    "URL na barua pepe hazibadilishwi.",
+                    chanzo_kipande=v))
+    return out
+
+
+_SI_MAJINA = {
+    "The", "And", "But", "For", "With", "This", "That", "These", "Those", "They", "She", "His",
+    "Her", "Our", "Your", "Its", "You", "Are", "Was", "Were", "Not", "All", "Any", "Can", "May",
+    "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday",
+    "January", "February", "March", "April", "June", "July", "August", "September",
+    "October", "November", "December", "English", "French", "African", "Africa", "Swahili",
+}
+
+
+def _majina(chanzo, tafsiri):
+    out, ona = [], set()
+    for _, _, txt in _sentensi(chanzo):
+        toks = list(re.finditer(r"[A-Za-z][A-Za-z'\u2019\-]*", txt))
+        for i, m in enumerate(toks):
+            w = m.group(0)
+            if i == 0 or len(w) < 3 or not w[0].isupper() or w in _SI_MAJINA or w.lower() in ona:
+                continue
+            ona.add(w.lower())
+            if not re.search(r"(?<!\w)" + re.escape(w) + r"(?!\w)", tafsiri, re.IGNORECASE):
+                out.append(_tatizo(
+                    "jina", "chini",
+                    f"'{w}' liko kwenye chanzo lakini halipo kwenye tafsiri. "
+                    "Kama ni jina maalum (mtu, chapa, mahali), libaki kama lilivyo.",
+                    chanzo_kipande=w))
+                if len(out) >= 6:
+                    return out
+    return out
+
+
+def _mistari(chanzo, tafsiri):
+    out = []
+    cl = [l for l in chanzo.split("\n") if l.strip()]
+    tl = [l for l in tafsiri.split("\n") if l.strip()]
+    if len(cl) != len(tl):
+        out.append(_tatizo(
+            "muundo", "kati",
+            f"Idadi ya aya/mistari hailingani: chanzo ina {len(cl)}, tafsiri ina {len(tl)}. "
+            "Huenda aya imeachwa au kuunganishwa."))
+        return out
+    nafasi, pos = [], 0
+    for l in tafsiri.split("\n"):
+        if l.strip():
+            nafasi.append((pos + len(l) - len(l.lstrip()), pos + len(l.rstrip())))
+        pos += len(l) + 1
+    for i, (c, t) in enumerate(zip(cl, tl)):
+        lc, lt = len(c.strip()), len(t.strip())
+        if lc < 40:
+            continue
+        r = lt / lc
+        s, e = nafasi[i]
+        if r < 0.45:
+            out.append(_tatizo(
+                "urefu", "kati",
+                f"Aya/mstari wa {i + 1} wa tafsiri ni mfupi sana ukilinganishwa na chanzo; huenda sehemu imeachwa.",
+                original=tafsiri[s:e], start=s, end=e, chanzo_kipande=c.strip()[:120]))
+        elif r > 3.0:
+            out.append(_tatizo(
+                "urefu", "kati",
+                f"Aya/mstari wa {i + 1} wa tafsiri ni mrefu sana ukilinganishwa na chanzo; huenda maelezo yameongezwa.",
+                original=tafsiri[s:e], start=s, end=e, chanzo_kipande=c.strip()[:120]))
+    return out
+
+
+def _hazijatafsiriwa(chanzo, tafsiri, lugha_chanzo, lugha_lengwa, ina_kiingereza):
+    out, zilizoonekana = [], set()
+    if lugha_chanzo != lugha_lengwa:
+        cs = {_norm(t) for _, _, t in _sentensi(chanzo) if len(t) >= 25}
+        for s, e, t in _sentensi(tafsiri):
+            if len(t) >= 25 and _norm(t) in cs:
+                zilizoonekana.add(s)
+                out.append(_tatizo(
+                    "haijatafsiriwa", "juu",
+                    "Sentensi hii ni nakala ya chanzo; haijatafsiriwa.",
+                    original=t, start=s, end=e, chanzo_kipande=t[:120]))
+    if ina_kiingereza and lugha_lengwa.startswith("sw"):
+        for s, e, t in _sentensi(tafsiri):
+            if s in zilizoonekana or len(t) < 20:
+                continue
+            try:
+                kiingereza = bool(ina_kiingereza(t))
+            except Exception:  # noqa: BLE001
+                kiingereza = False
+            if kiingereza:
+                out.append(_tatizo(
+                    "kiingereza", "kati",
+                    "Sentensi ina neno la Kiingereza lililobaki kwenye tafsiri ya Kiswahili "
+                    "(majina maalum na chapa ni sawa).",
+                    original=t, start=s, end=e))
+    return out
+
+
+def _istilahi(chanzo, tafsiri, kamusi):
+    out, low = [], tafsiri.lower()
+    for en, sw in (kamusi or {}).items():
+        if "..." in sw or not re.search(r"\b" + re.escape(en) + r"s?\b", chanzo, re.IGNORECASE):
+            continue
+        wagombea = [w.strip().lower() for w in re.split(r"\s*\(au\s+|\)", sw) if w.strip()]
+        if wagombea and not any(w in low for w in wagombea):
+            out.append(_tatizo(
+                "istilahi", "chini",
+                f"'{en}' kwa kawaida hutafsiriwa '{sw}'. Hakikisha neno ulilotumia ni sahihi kwa muktadha.",
+                suggestion=wagombea[0], chanzo_kipande=en))
+    return out
+
+
+def kagua_kwa_kanuni(chanzo, tafsiri, lugha_chanzo="en", lugha_lengwa="sw", kamusi=None, ina_kiingereza=None):
+    return (
+        _viungo(chanzo, tafsiri)
+        + _nambari(chanzo, tafsiri)
+        + _mistari(chanzo, tafsiri)
+        + _hazijatafsiriwa(chanzo, tafsiri, lugha_chanzo, lugha_lengwa, ina_kiingereza)
+        + _majina(chanzo, tafsiri)
+        + _istilahi(chanzo, tafsiri, kamusi)
+    )
+
+
+# ---------------------------------------------------------------------------
+# B. UKAGUZI WA AI
+# ---------------------------------------------------------------------------
+SYSTEM_UKAGUZI_TAFSIRI = """
+Wewe ni Mkaguzi wa Tafsiri. Utapewa CHANZO (maandishi asili) na TAFSIRI yake. Kazi yako ni kulinganisha
+maana na kutafuta TU matatizo halisi ya aina hizi:
+- maana: tafsiri imepotosha maana ya chanzo.
+- kuacha: chanzo kina wazo, jina au nambari ambayo tafsiri imeiacha.
+- kuongeza: tafsiri imeongeza wazo lisilokuwa kwenye chanzo.
+- istilahi: neno la kitaalamu limetafsiriwa vibaya au kwa neno lisilokubalika.
+- sarufi: kosa la wazi la sarufi/ngeli/tahajia/alama za uandishi katika lugha ya tafsiri.
+- mtindo: tafsiri ya neno kwa neno inayosikika isiyo ya asili (tumia mara chache).
+
+SHERIA:
+1. Usibadilishe mapendeleo ya kimtindo yaliyo sahihi. Tafsiri nzuri tofauti na uliyoitarajia si kosa.
+2. Usitoe matatizo yasiyo na uhakika wa angalau 80%. Tafsiri sahihi irudishe {"matatizo": []}.
+3. Matatizo yasizidi 15, ukianza na yale mazito zaidi.
+4. 'kipande_cha_tafsiri' lazima kiwe nakala KAMILI, herufi kwa herufi, ya maandishi yaliyo kwenye TAFSIRI
+   (neno hadi sentensi moja). Kwa aina 'kuacha' kiwe "" (tupu).
+5. 'kipande_cha_chanzo' ni kipande husika cha CHANZO (kifupi).
+6. 'pendekezo' ni maandishi yanayochukua nafasi ya 'kipande_cha_tafsiri' (au "" ikiwa hakuna pendekezo la moja kwa moja).
+7. 'ukali': "juu" (maana imepotoshwa/imeachwa), "kati" (kosa linalosumbua), "chini" (dogo).
+8. Alama kama [[NUKUU_0]] ziache kama zilivyo.
+9. Toa JSON PEKEE, bila maelezo mengine, bila alama za ```, kwa muundo huu hasa:
+{"matatizo":[{"aina":"maana","ukali":"juu","kipande_cha_tafsiri":"...","kipande_cha_chanzo":"...","pendekezo":"...","maelezo":"..."}]}
+"""
+
+
+def _toa_json(jibu):
+    t = (jibu or "").strip()
+    t = re.sub(r"^```[a-zA-Z]*\s*", "", t)
+    t = re.sub(r"\s*```$", "", t).strip()
+    for jaribio in (t, (re.search(r"\{.*\}", t, re.S) or [None])[0] if re.search(r"\{.*\}", t, re.S) else None):
+        if not jaribio:
+            continue
+        try:
+            return json.loads(jaribio)
+        except (ValueError, TypeError):
+            continue
+    return None
+
+
+def _tafuta(t, kipande):
+    """Tafuta kipande kwenye t (hata nafasi zikitofautiana). Rudisha (start, end) au None."""
+    i = t.find(kipande)
+    if i >= 0:
+        return i, i + len(kipande)
+    neno = kipande.split()
+    if not neno:
+        return None
+    m = re.search(r"\s+".join(re.escape(w) for w in neno), t)
+    return (m.start(), m.end()) if m else None
+
+
+def _gawa_jozi(chanzo, tafsiri, max_herufi=3000):
+    """Hurudisha ([(chanzo, tafsiri, mwanzo_wa_tafsiri)], kamilifu)."""
+    if len(chanzo) + len(tafsiri) <= 2 * max_herufi:
+        return [(chanzo, tafsiri, 0)], True
+    cl, tl = chanzo.split("\n"), tafsiri.split("\n")
+    if len(cl) == len(tl):
+        vipande, kc, kt, mwanzo, sasa = [], [], [], 0, 0
+        pos = 0
+        for c, t in zip(cl, tl):
+            if kc and sum(len(x) for x in kc) + sum(len(x) for x in kt) + len(c) + len(t) > 2 * max_herufi:
+                vipande.append(("\n".join(kc), "\n".join(kt), mwanzo))
+                kc, kt, mwanzo = [], [], pos
+            kc.append(c)
+            kt.append(t)
+            pos += len(t) + 1
+        if kc:
+            vipande.append(("\n".join(kc), "\n".join(kt), mwanzo))
+        return vipande, True
+    # Idadi ya mistari hailingani na maandishi ni marefu: kagua sehemu ya kwanza tu.
+    return [(chanzo[:2 * max_herufi], tafsiri[:2 * max_herufi], 0)], False
+
+
+def _ukaguzi_wa_ai(c, t, mwanzo, ita_ai, lugha_chanzo, lugha_lengwa, vidokezo):
+    ujumbe = (
+        f"LUGHA YA CHANZO: {lugha_chanzo}\nLUGHA YA TAFSIRI: {lugha_lengwa}\n"
+        f"{vidokezo}\n=== CHANZO ===\n{c}\n=== TAFSIRI ===\n{t}\n=== MWISHO ==="
+    )
+    jibu, injini = ita_ai(SYSTEM_UKAGUZI_TAFSIRI, ujumbe)
+    if not jibu:
+        return None
+    data = _toa_json(jibu)
+    if not isinstance(data, dict) or not isinstance(data.get("matatizo"), list):
+        return None
+    out = []
+    for x in data["matatizo"][:15]:
+        if not isinstance(x, dict):
+            continue
+        aina = str(x.get("aina") or "").lower().strip()
+        aina = aina if aina in AINA_ZA_AI else "mengineyo"
+        ukali = str(x.get("ukali") or "").lower().strip()
+        ukali = ukali if ukali in UKALI else "kati"
+        kt = str(x.get("kipande_cha_tafsiri") or "").strip()
+        sug = str(x.get("pendekezo") or "").strip()
+        maelezo = str(x.get("maelezo") or "").strip() or "Tatizo limeonekana kwenye tafsiri."
+        start = end = None
+        if kt:
+            p = _tafuta(t, kt)
+            if p:
+                kt = t[p[0]:p[1]]
+                start, end = mwanzo + p[0], mwanzo + p[1]
+            if sug == kt:
+                continue
+        elif aina != "kuacha" and not sug and not maelezo:
+            continue
+        out.append(_tatizo(aina, ukali, maelezo, original=kt if start is not None else kt,
+                           suggestion=sug, start=start, end=end,
+                           chanzo_kipande=str(x.get("kipande_cha_chanzo") or "").strip()[:200], na="ai"))
+    return out, injini
+
+
+# ---------------------------------------------------------------------------
+# C. MUHTASARI NA ALAMA
+# ---------------------------------------------------------------------------
+def hesabu_alama(matatizo):
+    return max(0, 100 - sum(_UZITO.get(x["ukali"], 6) for x in matatizo))
+
+
+def toa_hukumu(alama, idadi_ya_juu):
+    if idadi_ya_juu == 0 and alama >= 85:
+        return "Tafsiri ni nzuri"
+    if alama >= 60:
+        return "Inahitaji marekebisho madogo"
+    return "Inahitaji marekebisho makubwa"
+
+
+def kagua_tafsiri(chanzo, tafsiri, ita_ai, lugha_chanzo="en", lugha_lengwa="sw", kamusi=None,
+                  vidokezo="", ina_kiingereza=None, tumia_ai=True, max_workers=3):
+    """
+    Hurudisha: {"matatizo": [...], "alama": 0-100, "hukumu": str, "muhtasari": {...},
+                "ai": bool|None, "injini": [...], "ukaguzi_umekatwa": bool}
+    ai: True = AI imekagua yote; False = AI imeshindwa (kanuni za Python tu); None = AI haikuombwa.
+    """
+    lugha_chanzo, lugha_lengwa = (lugha_chanzo or "en").lower(), (lugha_lengwa or "sw").lower()
+    matatizo = kagua_kwa_kanuni(chanzo, tafsiri, lugha_chanzo, lugha_lengwa, kamusi, ina_kiingereza)
+
+    ai_ok, injini, kamilifu = None, set(), True
+    if tumia_ai:
+        vipande, kamilifu = _gawa_jozi(chanzo, tafsiri)
+        with ThreadPoolExecutor(max_workers=max(1, max_workers)) as mtambo:
+            majibu = list(mtambo.map(
+                lambda v: _ukaguzi_wa_ai(v[0], v[1], v[2], ita_ai, lugha_chanzo, lugha_lengwa, vidokezo),
+                vipande))
+        ai_ok = all(r is not None for r in majibu)
+        ona = {(x["aina"], x["original"]) for x in matatizo if x["original"]}
+        for r in majibu:
+            if r is None:
+                continue
+            orodha, jina = r
+            if jina:
+                injini.add(jina)
+            for x in orodha:
+                ufunguo = (x["aina"], x["original"])
+                if x["original"] and ufunguo in ona:
+                    continue
+                ona.add(ufunguo)
+                matatizo.append(x)
+
+    agizo = {k: i for i, k in enumerate(UKALI)}
+    matatizo.sort(key=lambda x: (agizo[x["ukali"]], x["start"] if x["start"] is not None else 10 ** 9))
+    for i, x in enumerate(matatizo):
+        x["id"] = i
+    alama = hesabu_alama(matatizo)
+    muhtasari = {k: sum(1 for x in matatizo if x["ukali"] == k) for k in UKALI}
+    muhtasari["jumla"] = len(matatizo)
+    return {
+        "matatizo": matatizo,
+        "alama": alama,
+        "hukumu": toa_hukumu(alama, muhtasari["juu"]),
+        "muhtasari": muhtasari,
+        "ai": ai_ok,
+        "injini": sorted(injini),
+        "ukaguzi_umekatwa": not kamilifu,
+    }
