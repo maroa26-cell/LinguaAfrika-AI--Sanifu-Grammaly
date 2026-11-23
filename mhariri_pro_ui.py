@@ -12,6 +12,9 @@ Matumizi kwenye app.py:
         st.session_state["freemium_words_used"] += r["maneno"]
         st.session_state["mhariri_billed_hash"] = r["text_hash"]
         onyesha_rada()
+
+Ukaguzi wa pili (ukaguzi_wa_pili.py) hufanyika baada ya mtumiaji kuchagua marekebisho
+na kabla ya kunakili. Hautumii salio la maneno.
 """
 
 import hashlib
@@ -20,6 +23,7 @@ import re
 import streamlit as st
 
 import mhariri_pro as mp
+import ukaguzi_wa_pili
 
 MAELEZO_YA_RANGI = ("🟥 Tahajia &nbsp; 🟧 Sarufi &nbsp; 🟪 Uakifishaji &nbsp; 🟩 Mtindo "
                     "— elea juu ya neno lililopakwa rangi kuona sababu.")
@@ -95,7 +99,11 @@ def onyesha_mhariri_pro(kamusi=None, piga_ai=None, piga_ai_kina=None,
 
     if not masuala:
         st.success("Hakuna makosa yaliyoonekana. Kumbuka: ukaguzi huu haoni kila aina ya kosa.")
-        st.code(maandishi, language=None)
+        # === UKAGUZI WA PILI === (kabla ya kunakili)
+        ukaguzi_wa_pili.onyesha_ukaguzi_wa_pili(
+            chanzo=maandishi, matokeo=maandishi, aina="uhariri", lugha="Kiswahili",
+            piga_ai=piga_ai, piga_ai_kina=piga_ai_kina,
+            ufunguo="mhariri", auto_awali=False)
         return bill
 
     st.markdown(MAELEZO_YA_RANGI, unsafe_allow_html=True)
@@ -137,7 +145,12 @@ def onyesha_mhariri_pro(kamusi=None, piga_ai=None, piga_ai_kina=None,
                 key=f"pro_mbadala_{m['id']}",
             )
 
-    st.markdown("**Maandishi yaliyosahihishwa** (bonyeza ikoni ya kunakili):")
-    st.code(mp.tumia_marekebisho(maandishi, masuala, chaguliwa, mbadala), language=None)
+    maandishi_yaliyosahihishwa = mp.tumia_marekebisho(maandishi, masuala, chaguliwa, mbadala)
+
+    # === UKAGUZI WA PILI === (baada ya kuchagua marekebisho, kabla ya kunakili)
+    ukaguzi_wa_pili.onyesha_ukaguzi_wa_pili(
+        chanzo=maandishi, matokeo=maandishi_yaliyosahihishwa, aina="uhariri",
+        lugha="Kiswahili", piga_ai=piga_ai, piga_ai_kina=piga_ai_kina,
+        ufunguo="mhariri", auto_awali=False)
 
     return bill
