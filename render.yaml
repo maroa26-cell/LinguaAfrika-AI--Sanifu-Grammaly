@@ -1,0 +1,48 @@
+# render.yaml — Blueprint ya huduma ya API kwenye Render
+#
+# Matumizi: weka faili hili kwenye mzizi wa repo, kisha Render →
+# "New +" → "Blueprint" → chagua repo. Render itasoma yote hapa chini.
+#
+# KUMBUKA: kama huduma yako ilishatengenezwa kwa mkono (srv-dbvuee142hec73864ob0),
+# usiunde Blueprint mpya — nakili tu "Start Command", "Health Check Path" na
+# env vars kutoka hapa kwenda kwenye Settings za huduma iliyopo.
+
+services:
+  - type: web
+    name: lingual-africa-sanifu-api
+    runtime: python
+    plan: free
+    branch: main
+    buildCommand: "pip install --upgrade pip && pip install -r requirements-api.txt"
+    startCommand: "gunicorn api_server:app --workers 1 --threads 4 --timeout 120 --bind 0.0.0.0:$PORT --access-logfile - --error-logfile -"
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.12.7"
+
+      # Siri: huingizwa kwenye dashboard, hazihifadhiwi kwenye git
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: GROQ_API_KEY
+        sync: false
+      - key: API_KEY
+        sync: false
+
+      # Mipangilio ya huduma
+      - key: ALLOWED_ORIGINS
+        value: "*"
+      - key: MAX_CHARS
+        value: "15000"
+      - key: MAX_WORKERS
+        value: "2"
+      - key: HATUA_MBILI
+        value: "1"
+      - key: KAGUA_HATUA_MBILI
+        value: "0"
+      - key: GEMINI_PUMZIKO_SEKUNDE
+        value: "120"
+      - key: RATE_LIMIT_PER_MINUTE
+        value: "60"
+      - key: MAX_BODY_BYTES
+        value: "300000"
