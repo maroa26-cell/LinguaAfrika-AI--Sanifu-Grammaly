@@ -502,9 +502,10 @@ if "mhariri" in chaguo_menyu:
         except Exception as e:
             onyesha_hitilafu("kuendesha Mhariri Pro", e)
 
-        # Muhtasari wa maandishi yaliyoandikwa kwenye Mhariri (hautozwi salio)
+        # Muhtasari wa maandishi ya mwisho (yaliyosahihishwa/kuhaririwa); kama hayapo bado, wa yaliyoandikwa (hautozwi salio)
         muhtasari.onyesha_muhtasari(
-            str_platform.session_state.get("pro_maandishi", ""),
+            str_platform.session_state.get("pro_maandishi_ya_mwisho")
+            or str_platform.session_state.get("pro_maandishi", ""),
             piga_ai=_piga_ai,
             piga_ai_kina=_piga_ai_kina if _UTHIBITISHO_WA_PRO else None,
             ufunguo="mhariri")
