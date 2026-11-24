@@ -14,7 +14,7 @@ Matumizi kwenye app.py:
         onyesha_rada()
 
 Ukaguzi wa pili (ukaguzi_wa_pili.py) hufanyika baada ya mtumiaji kuchagua marekebisho
-na kabla ya kunakili. Hautumii salio la maneno.
+na kabla ya kunakili. Hautozwi salio la maneno.
 """
 
 import hashlib
@@ -71,6 +71,7 @@ def onyesha_mhariri_pro(kamusi=None, piga_ai=None, piga_ai_kina=None,
 
     hali = st.session_state.get("pro_matokeo")
     if not hali:
+        st.session_state.pop("pro_maandishi_ya_mwisho", None)
         return None
 
     maandishi, r = hali["maandishi"], hali["r"]
@@ -100,7 +101,7 @@ def onyesha_mhariri_pro(kamusi=None, piga_ai=None, piga_ai_kina=None,
     if not masuala:
         st.success("Hakuna makosa yaliyoonekana. Kumbuka: ukaguzi huu haoni kila aina ya kosa.")
         # === UKAGUZI WA PILI === (kabla ya kunakili)
-        ukaguzi_wa_pili.onyesha_ukaguzi_wa_pili(
+        st.session_state["pro_maandishi_ya_mwisho"] = ukaguzi_wa_pili.onyesha_ukaguzi_wa_pili(
             chanzo=maandishi, matokeo=maandishi, aina="uhariri", lugha="Kiswahili",
             piga_ai=piga_ai, piga_ai_kina=piga_ai_kina,
             ufunguo="mhariri", auto_awali=False)
@@ -148,7 +149,7 @@ def onyesha_mhariri_pro(kamusi=None, piga_ai=None, piga_ai_kina=None,
     maandishi_yaliyosahihishwa = mp.tumia_marekebisho(maandishi, masuala, chaguliwa, mbadala)
 
     # === UKAGUZI WA PILI === (baada ya kuchagua marekebisho, kabla ya kunakili)
-    ukaguzi_wa_pili.onyesha_ukaguzi_wa_pili(
+    st.session_state["pro_maandishi_ya_mwisho"] = ukaguzi_wa_pili.onyesha_ukaguzi_wa_pili(
         chanzo=maandishi, matokeo=maandishi_yaliyosahihishwa, aina="uhariri",
         lugha="Kiswahili", piga_ai=piga_ai, piga_ai_kina=piga_ai_kina,
         ufunguo="mhariri", auto_awali=False)
