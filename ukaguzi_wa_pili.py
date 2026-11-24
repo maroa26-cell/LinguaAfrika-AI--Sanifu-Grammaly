@@ -258,6 +258,14 @@ def _ep_md(t):
     return re.sub(r"([\\`*_{}\[\]()#+\-.!~|>$])", r"\\\1", str(t))
 
 
+def _kisanduku_cha_kunakili(maandishi):
+    """Kisanduku chenye ikoni ya kunakili; mistari mirefu inakunjwa ili maandishi yote yaonekane."""
+    try:
+        st.code(maandishi, language=None, wrap_lines=True)
+    except TypeError:   # toleo la Streamlit la zamani lisilo na wrap_lines
+        st.code(maandishi, language=None)
+
+
 def _onyesha_tatizo(t):
     aina_t = _ep_md(t.get("aina", "tatizo"))
     lilipo, pendekezo = _ep_md(t.get("lilipo", "")), _ep_md(t.get("pendekezo", ""))
@@ -294,7 +302,7 @@ def onyesha_ukaguzi_wa_pili(chanzo, matokeo, aina="tafsiri", lugha="Kiswahili",
     washa = st.checkbox("Washa ukaguzi wa pili kabla ya kunakili", value=True, key=k("washa"))
     if not washa:
         st.markdown("**Maandishi ya mwisho** (bonyeza ikoni ya kunakili):")
-        st.code(toleo, language=None)
+        _kisanduku_cha_kunakili(toleo)
         return toleo
 
     auto = st.checkbox("Kagua moja kwa moja", value=auto_awali, key=k("auto"))
@@ -339,7 +347,7 @@ def onyesha_ukaguzi_wa_pili(chanzo, matokeo, aina="tafsiri", lugha="Kiswahili",
                 _onyesha_tatizo(t)
             if d["toleo_sahihi"].strip() != toleo.strip():
                 st.markdown("**Toleo lililosahihishwa** (bonyeza ikoni ya kunakili ukilikubali):")
-                st.code(d["toleo_sahihi"], language=None)
+                _kisanduku_cha_kunakili(d["toleo_sahihi"])
                 st.button("✔ Tumia toleo hili na ulikague tena", type="primary", key=k("tumia"),
                           on_click=_tumia_toleo, args=(k("toleo"), d["toleo_sahihi"]))
             else:
@@ -351,5 +359,5 @@ def onyesha_ukaguzi_wa_pili(chanzo, matokeo, aina="tafsiri", lugha="Kiswahili",
         st.caption("Maandishi ni marefu: sehemu ya kwanza tu ndiyo iliyokaguliwa na AI.")
     if nakili:
         st.markdown("**Maandishi ya mwisho** (bonyeza ikoni ya kunakili):")
-        st.code(toleo, language=None)
+        _kisanduku_cha_kunakili(toleo)
     return toleo
