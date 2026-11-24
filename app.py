@@ -15,6 +15,7 @@ from openai import OpenAI
 import database
 import mhariri
 import mhariri_pro_ui
+import muhtasari
 import sarufi_bridge
 import skin_appearance
 import ukaguzi_wa_pili
@@ -501,6 +502,13 @@ if "mhariri" in chaguo_menyu:
         except Exception as e:
             onyesha_hitilafu("kuendesha Mhariri Pro", e)
 
+        # Muhtasari wa maandishi yaliyoandikwa kwenye Mhariri (hautozwi salio)
+        muhtasari.onyesha_muhtasari(
+            str_platform.session_state.get("pro_maandishi", ""),
+            piga_ai=_piga_ai,
+            piga_ai_kina=_piga_ai_kina if _UTHIBITISHO_WA_PRO else None,
+            ufunguo="mhariri")
+
 
 elif "mtafsiri" in chaguo_menyu:
     str_platform.markdown(
@@ -633,6 +641,16 @@ elif "mtafsiri" in chaguo_menyu:
             ufunguo="tafsiri",
             auto_awali=True,
         )
+
+        # Muhtasari (hautozwi salio): wa tafsiri ya mwisho au wa maandishi asili
+        _muh_chanzo = str_platform.radio(
+            "Fanya muhtasari wa:", ["Tafsiri", "Maandishi asili"],
+            key="muh_mtafsiri_chanzo", horizontal=True)
+        muhtasari.onyesha_muhtasari(
+            _tafsiri_ya_kusema if _muh_chanzo == "Tafsiri" else _t_mwisho["asili"],
+            piga_ai=_piga_ai,
+            piga_ai_kina=_piga_ai_kina if _UTHIBITISHO_WA_PRO else None,
+            ufunguo="mtafsiri_" + ("t" if _muh_chanzo == "Tafsiri" else "a"))
 
         str_platform.caption("\U0001F50A Sikiliza jinsi maandishi yanavyotamkwa:")
         with str_platform.expander("\u2699\uFE0F Mipangilio ya Matamshi (lahaja, sauti, kasi)"):
