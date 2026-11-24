@@ -1,3 +1,4 @@
+
 """
 ukaguzi_wa_pili.py - Ukaguzi wa pili wa tafsiri na uhariri (muundo na sarufi).
 
@@ -336,9 +337,15 @@ def onyesha_ukaguzi_wa_pili(chanzo, matokeo, aina="tafsiri", lugha="Kiswahili",
                 st.caption(f"{d['hukumu']} (alama {d.get('alama')}/100)")
             for t in d["matatizo"]:
                 _onyesha_tatizo(t)
-            st.button("✔ Tumia toleo lililosahihishwa", type="primary", key=k("tumia"),
-                      on_click=_tumia_toleo, args=(k("toleo"), d["toleo_sahihi"]))
-            nakili = st.checkbox("Nakili bila kurekebisha", key=k("ruka"))
+            if d["toleo_sahihi"].strip() != toleo.strip():
+                st.markdown("**Toleo lililosahihishwa** (bonyeza ikoni ya kunakili ukilikubali):")
+                st.code(d["toleo_sahihi"], language=None)
+                st.button("✔ Tumia toleo hili na ulikague tena", type="primary", key=k("tumia"),
+                          on_click=_tumia_toleo, args=(k("toleo"), d["toleo_sahihi"]))
+            else:
+                st.info("Hakuna toleo la moja kwa moja la kuweka. Sahihisha mwenyewe kwa kufuata "
+                        "maelezo hapo juu, kisha bonyeza «Kagua Tena».")
+            nakili = st.checkbox("Nakili toleo la awali bila kurekebisha", key=k("ruka"))
 
     if ripoti is not None and ripoti["data"].get("ukaguzi_umekatwa"):
         st.caption("Maandishi ni marefu: sehemu ya kwanza tu ndiyo iliyokaguliwa na AI.")
