@@ -1,3 +1,4 @@
+
 """
 ukaguzi_wa_pili.py - Ukaguzi wa pili wa tafsiri na uhariri (muundo na sarufi).
 
@@ -265,7 +266,7 @@ def _kisanduku_cha_kunakili(maandishi):
         st.code(maandishi, language=None)
 
 
-def _sehemu_ya_kunakili(toleo, k):
+def _sehemu_ya_kunakili(toleo, k, kitufe_cha_kukagua=True):
     """
     Kabla ya kunakili, mwenye maandishi ana chaguo mbili:
       1. Nakili hivyo hivyo.
@@ -292,7 +293,7 @@ def _sehemu_ya_kunakili(toleo, k):
             key=ufunguo_hariri, height=260)
         maandishi = st.session_state.get(ufunguo_hariri, toleo)
         st.session_state[k("hariri_hifadhi")] = maandishi
-        if maandishi.strip() != toleo.strip():
+        if kitufe_cha_kukagua and maandishi.strip() != toleo.strip():
             st.button("🔍 Kagua maandishi niliyohariri", key=k("kagua_hariri"),
                       on_click=_tumia_toleo, args=(k("toleo"), maandishi))
         st.markdown("**Maandishi ya mwisho** (bonyeza ikoni ya kunakili):")
@@ -302,6 +303,11 @@ def _sehemu_ya_kunakili(toleo, k):
     st.markdown("**Maandishi ya mwisho** (bonyeza ikoni ya kunakili):")
     _kisanduku_cha_kunakili(toleo)
     return toleo
+
+
+def sehemu_ya_kunakili(maandishi, k, kitufe_cha_kukagua=False):
+    """Toleo la wazi kwa moduli nyingine (mf. muhtasari.py): chaguo la kunakili hivyo hivyo au kuhariri kwanza."""
+    return _sehemu_ya_kunakili(maandishi, k, kitufe_cha_kukagua)
 
 
 def _onyesha_tatizo(t):
