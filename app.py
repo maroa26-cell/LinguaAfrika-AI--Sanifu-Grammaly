@@ -483,7 +483,7 @@ if "mhariri" in chaguo_menyu:
         str_platform.error("\U0001F512 Salio LIMEISHA! Tafadhali fungua Lango la Mteja kulipia.")
     else:
         try:
-            # Ukaguzi wa pili (kabla ya kunakili) umo ndani ya mhariri_pro_ui
+            # Ukaguzi wa pili (kabla ya kunakili) umo ndani ya mhariri_pro_ui (hautozwi salio)
             matokeo_pro = mhariri_pro_ui.onyesha_mhariri_pro(
                 kamusi=_pata_kamusi_set(),
                 piga_ai=_piga_ai,
@@ -627,6 +627,7 @@ elif "mtafsiri" in chaguo_menyu:
             matokeo=_t_mwisho["tafsiri"],
             aina="tafsiri",
             lugha=_t_mwisho["lengo"],
+            lugha_chanzo=_t_mwisho["chanzo"],
             piga_ai=_piga_ai,
             piga_ai_kina=_piga_ai_kina if _UTHIBITISHO_WA_PRO else None,
             ufunguo="tafsiri",
