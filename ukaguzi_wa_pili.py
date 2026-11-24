@@ -1,4 +1,3 @@
-
 """
 ukaguzi_wa_pili.py - Ukaguzi wa pili wa tafsiri na uhariri (muundo na sarufi).
 
@@ -266,6 +265,45 @@ def _kisanduku_cha_kunakili(maandishi):
         st.code(maandishi, language=None)
 
 
+def _sehemu_ya_kunakili(toleo, k):
+    """
+    Kabla ya kunakili, mwenye maandishi ana chaguo mbili:
+      1. Nakili hivyo hivyo.
+      2. Hariri mwenyewe kwanza (kuongeza au kupunguza vipande vilivyobaki), kisha anakili.
+    Hurudisha maandishi ya mwisho (ya awali au yaliyohaririwa).
+    """
+    chaguo = st.radio(
+        "Kabla ya kunakili, ungependa:",
+        ["Nakili hivyo hivyo", "Hariri mwenyewe kwanza"],
+        key=k("chaguo_nakili"), horizontal=True)
+
+    if chaguo == "Hariri mwenyewe kwanza":
+        ufunguo_hariri, ufunguo_msingi = k("hariri_maandishi"), k("hariri_msingi")
+        # Maandishi mapya (toleo limebadilika): anza upya na toleo la sasa.
+        # Mtumiaji akibadili chaguo na kurudi, Streamlit hufuta kisanduku; tunarudisha alichohariri.
+        if st.session_state.get(ufunguo_msingi) != _hash(toleo):
+            st.session_state[ufunguo_hariri] = toleo
+            st.session_state[ufunguo_msingi] = _hash(toleo)
+        elif ufunguo_hariri not in st.session_state:
+            st.session_state[ufunguo_hariri] = st.session_state.get(k("hariri_hifadhi"), toleo)
+        st.text_area(
+            "Hariri maandishi: ongeza, punguza au rekebisha unavyotaka. "
+            "Mabadiliko yanaonekana kwenye kisanduku cha kunakili hapa chini.",
+            key=ufunguo_hariri, height=260)
+        maandishi = st.session_state.get(ufunguo_hariri, toleo)
+        st.session_state[k("hariri_hifadhi")] = maandishi
+        if maandishi.strip() != toleo.strip():
+            st.button("🔍 Kagua maandishi niliyohariri", key=k("kagua_hariri"),
+                      on_click=_tumia_toleo, args=(k("toleo"), maandishi))
+        st.markdown("**Maandishi ya mwisho** (bonyeza ikoni ya kunakili):")
+        _kisanduku_cha_kunakili(maandishi)
+        return maandishi
+
+    st.markdown("**Maandishi ya mwisho** (bonyeza ikoni ya kunakili):")
+    _kisanduku_cha_kunakili(toleo)
+    return toleo
+
+
 def _onyesha_tatizo(t):
     aina_t = _ep_md(t.get("aina", "tatizo"))
     lilipo, pendekezo = _ep_md(t.get("lilipo", "")), _ep_md(t.get("pendekezo", ""))
@@ -284,7 +322,8 @@ def onyesha_ukaguzi_wa_pili(chanzo, matokeo, aina="tafsiri", lugha="Kiswahili",
     """
     Onyesha sehemu ya ukaguzi wa pili na kisanduku cha kunakili.
     Kisanduku cha kunakili kinaonekana tu baada ya ukaguzi kukamilika,
-    au mtumiaji akichagua kuruka, au ukaguzi ukizimwa.
+    au mtumiaji akichagua kuruka, au ukaguzi ukizimwa. Kabla ya kunakili, mtumiaji huchagua:
+    kunakili hivyo hivyo, au kuhariri mwenyewe kwanza (kuongeza/kupunguza), kisha kunakili.
     Hurudisha maandishi ya sasa ya mwisho (yanayoweza kuwa yamesahihishwa).
     """
     def k(s):
@@ -301,9 +340,7 @@ def onyesha_ukaguzi_wa_pili(chanzo, matokeo, aina="tafsiri", lugha="Kiswahili",
     st.markdown("**\U0001F50D Ukaguzi wa Pili (muundo na sarufi)**")
     washa = st.checkbox("Washa ukaguzi wa pili kabla ya kunakili", value=True, key=k("washa"))
     if not washa:
-        st.markdown("**Maandishi ya mwisho** (bonyeza ikoni ya kunakili):")
-        _kisanduku_cha_kunakili(toleo)
-        return toleo
+        return _sehemu_ya_kunakili(toleo, k)
 
     auto = st.checkbox("Kagua moja kwa moja", value=auto_awali, key=k("auto"))
     h = _hash(chanzo, toleo, aina, lugha)
@@ -358,6 +395,5 @@ def onyesha_ukaguzi_wa_pili(chanzo, matokeo, aina="tafsiri", lugha="Kiswahili",
     if ripoti is not None and ripoti["data"].get("ukaguzi_umekatwa"):
         st.caption("Maandishi ni marefu: sehemu ya kwanza tu ndiyo iliyokaguliwa na AI.")
     if nakili:
-        st.markdown("**Maandishi ya mwisho** (bonyeza ikoni ya kunakili):")
-        _kisanduku_cha_kunakili(toleo)
+        return _sehemu_ya_kunakili(toleo, k)
     return toleo
