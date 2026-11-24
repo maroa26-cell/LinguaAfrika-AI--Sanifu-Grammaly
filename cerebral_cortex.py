@@ -2,6 +2,18 @@
 cerebral_cortex.py — Ubongo Mkuu wa Kuchakata Lugha, Tafsiri, Sauti na Dataset.
 Kipaumbele: 1. Google Gemini -> 2. Groq -> 3. OpenAI (Chaguo la Mwisho).
 
+Toleo 2.3 (marekebisho ya logi za Streamlit Cloud, 2026-11-24):
+- BUG KUBWA: 'timeout' haikubaliki ndani ya GenerateContentConfig (google-genai mpya inatoa
+  ValidationError "Extra inputs are not permitted"), kwa hiyo Gemini ilishindwa KILA MARA:
+  maandishi (_piga_gemini), imla (chakata_sauti_na_imla) na TTS (_gemini_tts). Sasa timeout
+  inawekwa kupitia HttpOptions (kitendakazi _config_ya_gemini), ikirukwa kwa usalama kama SDK
+  haikubali.
+- HttpOptions(timeout=...) inapima MILISEKUNDE, si sekunde. Thamani ya awali (25.0) ilikuwa
+  sawa na milisekunde 25 tu. Sasa: mteja = 60,000 ms; maandishi = 25 s; sauti = 90 s kwa ombi.
+- GROQ_MODEL ya chaguo-msingi: 'llama-3.3-70b-versatile' (haipatikani tena, 404) ->
+  'openai/gpt-oss-120b'. Modeli za Gemini zinalingana na api_server.py (GEMINI_MODEL).
+  Zote bado zinabadilika kwa Secrets: GEMINI_MODEL, GROQ_MODEL, GEMINI_TTS_MODEL.
+
 Toleo 2.2 (maboresho ya v3.4.2 ya Kiswahili):
 - KANUNI_ZA_V342: kanuni za '-ingi' kwa ngeli, 'akina mama/baba wengi', 'wakati/muda mwingi' na
   marudio halali ('polepole', 'kidogo kidogo'...) zinaongezwa kwenye maelekezo ya AI:
@@ -12,7 +24,7 @@ Toleo 2.2 (maboresho ya v3.4.2 ya Kiswahili):
 
 Toleo 2.1 (marekebisho ya ukaguzi):
 - Bug 1: _piga_gemini ina 'timeout' (sekunde 25) kwenye GenerateContentConfig;
-         SDK isiyounga mkono inarukwa kwa heshima (retry bila timeout).
+         SDK isiyounga mkono inarukwa kwa heshima (retry bila timeout).  [v2.3: imerekebishwa]
 - Bug 2: _piga_gemini inaandika kila kosa kwenye logi (bila maandishi ya mtumiaji)
          ili debugging iwezekane.
 - Bug 3: LUGHA_ZA_WHISPER inaongeza 'zu' (isiZulu) na 'tn' (Setswana).
@@ -65,8 +77,25 @@ MBAO_ZA_MAKOSA_YA_PARAMETA = ("temperature", "response_format", "unsupported", "
 # v2.1: 'zu' (isiZulu) na 'tn' (Setswana) zimeongezwa — Whisper inaunga mkono zote mbili.
 LUGHA_ZA_WHISPER = {"sw", "en", "fr", "ar", "zh", "pt", "ln", "zu", "tn"}
 
-# Sekunde 25 inatosha kwa tafsiri ndefu; Gemini ikikwama, Groq/OpenAI huchukua nafasi.
-GEMINI_TIMEOUT_S = 25.0
+# Muda wa kusubiri Gemini kwa kila ombi (SEKUNDE). Gemini ikikwama, Groq/OpenAI huchukua nafasi.
+# v2.3: 'timeout' haiwekwi tena ndani ya GenerateContentConfig; angalia _config_ya_gemini().
+GEMINI_TIMEOUT_S = 25.0          # maandishi (tafsiri, uhariri, JSON)
+GEMINI_SAUTI_TIMEOUT_S = 90.0    # sauti (imla ya sauti ndefu na TTS huchukua muda zaidi)
+GEMINI_MTEJA_TIMEOUT_MS = 60_000  # kikomo cha juu cha mteja; HttpOptions inapima MILISEKUNDE
+
+
+def _config_ya_gemini(timeout_s: Optional[float] = None, **kwargs):
+    """Tengeneza GenerateContentConfig. Timeout (sekunde) huwekwa kupitia http_options (milisekunde);
+    SDK isiyokubali hilo, timeout inarukwa na config ya kawaida inatumika (mteja ana timeout yake)."""
+    if timeout_s:
+        try:
+            return types.GenerateContentConfig(
+                http_options=types.HttpOptions(timeout=int(timeout_s * 1000)), **kwargs)
+        except Exception as e:
+            logger.info("_config_ya_gemini: http_options haikubaliki (%s); naendelea bila timeout ya ombi",
+                        type(e).__name__)
+    return types.GenerateContentConfig(**kwargs)
+
 
 # ------------------------------------------------------------------ #
 #  KANUNI ZA V3.4.2 (Kiswahili): ngeli ya -ingi, nahau, marudio halali
@@ -368,13 +397,12 @@ class CerebralCortex:
         self.gemini_client = None
         if genai and self.gemini_key:
             try:
-                # v2.1: weka timeout pia kwenye client (HttpOptions), kwa usalama wa ziada.
-                # Hii inatumika kama SDK haikubali 'timeout' kwenye GenerateContentConfig.
-                http_options = None
+                # v2.3: HttpOptions(timeout=...) inapima MILISEKUNDE (int). Hii ni kikomo cha juu cha mteja;
+                # maombi ya maandishi na sauti yanaweka timeout yake kupitia _config_ya_gemini().
                 try:
-                    http_options = types.HttpOptions(timeout=GEMINI_TIMEOUT_S)
+                    http_options = types.HttpOptions(timeout=GEMINI_MTEJA_TIMEOUT_MS)
                 except Exception:
-                    pass  # toleo la SDK halikubali HttpOptions; endelea bila
+                    http_options = None  # toleo la SDK halikubali HttpOptions; endelea bila
                 if http_options is not None:
                     self.gemini_client = genai.Client(api_key=self.gemini_key, http_options=http_options)
                 else:
@@ -382,7 +410,9 @@ class CerebralCortex:
             except Exception as e:
                 logger.warning("__init__: genai.Client imeshindwa: %s: %s", type(e).__name__, str(e)[:120])
                 self.gemini_client = None
-        self.gemini_modeli = str(_siri("GEMINI_MODEL") or "gemini-2.5-flash").strip()
+        # v2.3: chaguo-msingi zinalingana na api_server.py (zibadilishe kwa Secret GEMINI_MODEL / GEMINI_TTS_MODEL)
+        self.gemini_modeli = str(_siri("GEMINI_MODEL") or "gemini-3.8-flash").strip()
+        self.gemini_tts_modeli = str(_siri("GEMINI_TTS_MODEL") or "gemini-2.5-flash-preview-tts").strip()
         # Modeli kubwa ya kuthibitisha mapendekezo ya mhariri (hiari). Tupu = uthibitisho umezimwa.
         self.gemini_pro_modeli = str(_siri("GEMINI_PRO_MODEL") or "").strip()
 
@@ -394,7 +424,8 @@ class CerebralCortex:
                 self.groq_client = OpenAI(api_key=self.groq_key, base_url="https://api.groq.com/openai/v1")
             except Exception:
                 self.groq_client = None
-        self.groq_modeli = str(_siri("GROQ_MODEL") or "llama-3.3-70b-versatile").strip()
+        # v2.3: 'llama-3.3-70b-versatile' haipatikani tena (404). Hakiki orodha ya sasa kwenye console.groq.com/docs/models
+        self.groq_modeli = str(_siri("GROQ_MODEL") or "openai/gpt-oss-120b").strip()
         self.groq_whisper_modeli = str(_siri("GROQ_WHISPER_MODEL") or "whisper-large-v3-turbo").strip()
 
         # 3. Chaguo la Mwisho (Fallback): OpenAI
@@ -413,11 +444,9 @@ class CerebralCortex:
                      modeli: Optional[str] = None) -> Optional[str]:
         """Hujaribu kutumia Gemini kwanza. Ikishindwa, inarudisha None ili mtoa huduma anayefuata achukue nafasi.
 
-        v2.1:
-        - Inapitisha 'timeout' kwenye GenerateContentConfig (Bug 1). SDK isiyounga mkono
-          inarukwa kwa heshima: jaribio la pili bila timeout.
-        - Kila kosa linaandikwa kwenye logi (Bug 2) — aina na ujumbe mfupi tu,
-          BILA maandishi ya mtumiaji (faragha).
+        v2.3: timeout (GEMINI_TIMEOUT_S) inawekwa kupitia http_options ndani ya _config_ya_gemini(),
+        si kama 'timeout=' ndani ya GenerateContentConfig (hiyo ilitoa ValidationError kila ombi).
+        Kila kosa linaandikwa kwenye logi (aina na ujumbe mfupi tu, BILA maandishi ya mtumiaji).
         """
         if not self.gemini_client:
             return None
@@ -425,36 +454,17 @@ class CerebralCortex:
             config_kwargs = {
                 "system_instruction": mfumo,
                 "temperature": temperature,
-                "timeout": GEMINI_TIMEOUT_S,
             }
             if json_mode:
                 config_kwargs["response_mime_type"] = "application/json"
 
-            try:
-                jibu = self.gemini_client.models.generate_content(
-                    model=modeli or self.gemini_modeli,
-                    contents=mtumiaji,
-                    config=types.GenerateContentConfig(**config_kwargs),
-                )
-            except Exception as e_param:
-                # SDK isiyounga mkono 'timeout' kwenye GenerateContentConfig:
-                # jaribu tena bila timeout (Badiliko la v2.1 linaendelea kufanya kazi).
-                err = str(e_param).lower()
-                if "timeout" in err and any(
-                    x in err for x in ("unknown", "unsupported", "unexpected", "invalid", "not a valid")
-                ):
-                    logger.info("_piga_gemini: SDK haikubali 'timeout' kwenye config; narudia bila timeout")
-                    config_kwargs.pop("timeout", None)
-                    jibu = self.gemini_client.models.generate_content(
-                        model=modeli or self.gemini_modeli,
-                        contents=mtumiaji,
-                        config=types.GenerateContentConfig(**config_kwargs),
-                    )
-                else:
-                    raise
+            jibu = self.gemini_client.models.generate_content(
+                model=modeli or self.gemini_modeli,
+                contents=mtumiaji,
+                config=_config_ya_gemini(GEMINI_TIMEOUT_S, **config_kwargs),
+            )
             return jibu.text
         except Exception as e:
-            # Bug 2: andika aina na ujumbe mfupi wa kosa (BILA maandishi ya mtumiaji).
             logger.warning("_piga_gemini imeshindwa: %s: %s", type(e).__name__, str(e)[:120])
             return None  # Rudi kwenye mtoa huduma anayefuata
 
@@ -779,7 +789,7 @@ class CerebralCortex:
                 jibu = self.gemini_client.models.generate_content(
                     model=self.gemini_modeli,
                     contents=[types.Part.from_bytes(data=data, mime_type=aina), maelekezo],
-                    config=types.GenerateContentConfig(temperature=0.0, timeout=GEMINI_TIMEOUT_S),
+                    config=_config_ya_gemini(GEMINI_SAUTI_TIMEOUT_S, temperature=0.0),
                 )
                 if jibu.text and jibu.text.strip():
                     return jibu.text.strip()
@@ -815,11 +825,11 @@ class CerebralCortex:
     # ============================================================
     def _gemini_tts(self, maelekezo_kamili: str, sauti: str) -> Optional[bytes]:
         jibu = self.gemini_client.models.generate_content(
-            model="gemini-2.5-flash-preview-tts",
+            model=self.gemini_tts_modeli,
             contents=maelekezo_kamili,
-            config=types.GenerateContentConfig(
+            config=_config_ya_gemini(
+                GEMINI_SAUTI_TIMEOUT_S,
                 response_modalities=["AUDIO"],
-                timeout=GEMINI_TIMEOUT_S,
                 speech_config=types.SpeechConfig(
                     voice_config=types.VoiceConfig(
                         prebuilt_voice_config=types.PrebuiltVoiceConfig(voice_name=sauti)
