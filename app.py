@@ -405,6 +405,21 @@ def _futa_pc():
         del str_platform.session_state[k]
 
 
+def _tafsiri_ya_video(maandishi, kutoka, kwenda):
+    """Tafsiri ya matini ya video ya YouTube kutoka kwenye sehemu ya Muhtasari. Inakata salio la maneno."""
+    maneno = hesabu_maneno(maandishi)
+    baki = max(0, 600 - str_platform.session_state["freemium_words_used"])
+    if maneno > baki:
+        raise ValueError(
+            f"Matini yana maneno {maneno}, lakini salio lako ni {baki}. Tumia Muhtasari (hautozwi salio), "
+            "punguza matini, au fungua Lango la Mteja.")
+    vipande = muhtasari.gawa_kwa_maneno(maandishi, 400)
+    matokeo = [ubongo.chakata_tafsiri_pacha(v, kutoka, kwenda, "Kawaida") for v in vipande]
+    str_platform.session_state["freemium_words_used"] += maneno
+    onyesha_rada()
+    return "\n\n".join(matokeo)
+
+
 def _fanya_tafsiri(maandishi_t, lugha_chanzo, lugha_lengwa, muktadha_chaguo):
     maneno = hesabu_maneno(maandishi_t)
     baki = max(0, 600 - str_platform.session_state["freemium_words_used"])
@@ -508,7 +523,8 @@ if "mhariri" in chaguo_menyu:
             or str_platform.session_state.get("pro_maandishi", ""),
             piga_ai=_piga_ai,
             piga_ai_kina=_piga_ai_kina if _UTHIBITISHO_WA_PRO else None,
-            ufunguo="mhariri")
+            ufunguo="mhariri",
+            tafsiri_fn=_tafsiri_ya_video)
 
 
 elif "mtafsiri" in chaguo_menyu:
@@ -645,13 +661,14 @@ elif "mtafsiri" in chaguo_menyu:
 
         # Muhtasari (hautozwi salio): wa tafsiri ya mwisho au wa maandishi asili
         _muh_chanzo = str_platform.radio(
-            "Fanya muhtasari wa:", ["Tafsiri", "Maandishi asili"],
+            "Maandishi ya ukurasa yatakayofanyiwa muhtasari:", ["Tafsiri", "Maandishi asili"],
             key="muh_mtafsiri_chanzo", horizontal=True)
         muhtasari.onyesha_muhtasari(
             _tafsiri_ya_kusema if _muh_chanzo == "Tafsiri" else _t_mwisho["asili"],
             piga_ai=_piga_ai,
             piga_ai_kina=_piga_ai_kina if _UTHIBITISHO_WA_PRO else None,
-            ufunguo="mtafsiri_" + ("t" if _muh_chanzo == "Tafsiri" else "a"))
+            ufunguo="mtafsiri_" + ("t" if _muh_chanzo == "Tafsiri" else "a"),
+            tafsiri_fn=_tafsiri_ya_video)
 
         str_platform.caption("\U0001F50A Sikiliza jinsi maandishi yanavyotamkwa:")
         with str_platform.expander("\u2699\uFE0F Mipangilio ya Matamshi (lahaja, sauti, kasi)"):
