@@ -11,6 +11,10 @@ Kinga zilizomo (maandishi yanaweza kuwa ya kitiba, kisheria au kibiashara):
   - Namba iliyo kwenye muhtasari lakini haipo kwenye maandishi asili inatolewa kama onyo.
   - Muhtasari mrefu kuliko maandishi asili unakataliwa.
 Muhtasari HAUTOZWI salio la maneno la mtumiaji.
+
+Video ya YouTube: mtumiaji anaweza kuweka kiungo/msimbo wa video, matini (manukuu) yanachukuliwa kupitia
+youtube_matini.py, kisha yanafanyiwa muhtasari (hata kwa lugha tofauti) au kutafsiriwa kupitia tafsiri_fn
+(ambayo app.py inaiunganisha na salio la maneno). Video ndefu hufanyiwa muhtasari kwa vipande.
 """
 
 import hashlib
@@ -21,6 +25,7 @@ from collections import Counter
 import streamlit as st
 
 import ukaguzi_wa_pili
+import youtube_matini
 
 MANENO_CHINI = 25   # maandishi mafupi kuliko haya hayafanyiwi muhtasari
 
@@ -41,6 +46,13 @@ MUUNDO = {
     "Vitone": "Write 3 to 7 bullet points, each on its own line starting with '- '.",
 }
 LUGHA_YA_MATOKEO = ["Sawa na maandishi", "Kiswahili", "Kiingereza (English)"]
+LUGHA_ZA_TAFSIRI = [
+    "Kiswahili", "Kiingereza (English)", "Kifaransa", "Kiarabu", "Kichina (Mandarin)",
+    "Kireno (Portugu\u00eas)", "Kizulu (isiZulu)", "Setswana (Botswana)", "Kinyarwanda",
+    "Kiganda (Luganda)", "Lingala", "Kichewa",
+]
+MANENO_YA_KIPANDE = 1500     # video ndefu: maneno kwa kila kipande cha muhtasari
+UPEO_WA_VIPANDE = 8          # video ndefu sana: vipande vya kwanza tu (karibu maneno 12,000)
 
 _KANUNI_ZA_KISWAHILI = (
     " Write in standard Swahili (Kiswahili Sanifu) with correct noun-class agreement "
@@ -151,6 +163,48 @@ def fanya_muhtasari(maandishi, urefu="Wastani (aya moja)", muundo="Aya",
             "maneno_asili": maneno, "maneno_muhtasari": _hesabu_maneno(muhtasari)}
 
 
+def gawa_kwa_maneno(maandishi, maneno_kwa_kipande):
+    """Gawa matini katika vipande vya idadi ileile ya maneno (manukuu ya YouTube mara nyingi hayana alama za uandishi)."""
+    m = str(maandishi or "").split()
+    return [" ".join(m[i:i + maneno_kwa_kipande]) for i in range(0, len(m), maneno_kwa_kipande)]
+
+
+def fanya_muhtasari_refu(maandishi, urefu="Wastani (aya moja)", muundo="Aya",
+                         lugha="Sawa na maandishi", piga_ai=None, piga_ai_kina=None):
+    """
+    Matini marefu (mf. video ya saa nzima): kwanza muhtasari wa kila kipande, kisha muhtasari wa muhtasari huo.
+    Matini mafupi hupita moja kwa moja kwenye fanya_muhtasari().
+    """
+    vipande = gawa_kwa_maneno(maandishi, MANENO_YA_KIPANDE)
+    if len(vipande) <= 2:
+        return fanya_muhtasari(maandishi, urefu, muundo, lugha, piga_ai, piga_ai_kina)
+
+    onyo = []
+    if len(vipande) > UPEO_WA_VIPANDE:
+        onyo.append(f"Matini ni marefu sana: sehemu ya kwanza tu (vipande {UPEO_WA_VIPANDE} kati ya {len(vipande)}) "
+                    "ndiyo iliyofanyiwa muhtasari.")
+        vipande = vipande[:UPEO_WA_VIPANDE]
+
+    muhtasari_za_vipande, zilizoshindwa = [], 0
+    for kipande in vipande:
+        r = fanya_muhtasari(kipande, "Kina (maelezo marefu)", "Aya", lugha, piga_ai, piga_ai_kina)
+        if r["ok"]:
+            muhtasari_za_vipande.append(r["muhtasari"])
+            onyo.extend(o for o in r["onyo"] if o not in onyo)
+        else:
+            zilizoshindwa += 1
+    if not muhtasari_za_vipande:
+        return {"ok": False, "muhtasari": "", "onyo": [], "kosa": "Huduma ya AI haipatikani kwa sasa. Jaribu tena baadaye.",
+                "maneno_asili": _hesabu_maneno(maandishi), "maneno_muhtasari": 0}
+    if zilizoshindwa:
+        onyo.append(f"Vipande {zilizoshindwa} havikufanyiwa muhtasari; huenda baadhi ya mada zimekosekana.")
+
+    mwisho = fanya_muhtasari("\n\n".join(muhtasari_za_vipande), urefu, muundo, lugha, piga_ai, piga_ai_kina)
+    mwisho["maneno_asili"] = _hesabu_maneno(maandishi)
+    mwisho["onyo"] = onyo + mwisho.get("onyo", [])
+    return mwisho
+
+
 # ---------------------------------------------------------------------------
 # Kiolesura cha Streamlit
 # ---------------------------------------------------------------------------
@@ -158,14 +212,89 @@ def _hash(*vipande):
     return hashlib.sha256("\x1f".join(str(v) for v in vipande).encode("utf-8")).hexdigest()
 
 
-def onyesha_muhtasari(maandishi, piga_ai=None, piga_ai_kina=None, ufunguo="muh"):
-    """Onyesha kitufe cha Muhtasari. Hurudisha maandishi ya muhtasari wa sasa, au None."""
+def _siri(jina):
+    try:
+        return str(st.secrets.get(jina) or "").strip() or None
+    except Exception:
+        return None
+
+
+def _sehemu_ya_youtube(tafsiri_fn=None):
+    """
+    Kiungo cha YouTube -> matini. Matini yanaweza pia kubandikwa mwenyewe (YouTube inapozuia seva).
+    Hurudisha matini ya sasa (yanaweza kuwa yamerekebishwa na mtumiaji).
+    """
+    kiungo = st.text_input("Weka kiungo (link) au msimbo wa video ya YouTube:", key="muh_yt_kiungo",
+                           placeholder="https://www.youtube.com/watch?v=XXXXXXXXXXX")
+    if st.button("▶ Pata matini ya video", key="muh_yt_pata"):
+        with st.spinner("Inachukua matini ya video..."):
+            r = youtube_matini.pata_matini(kiungo, proxy_url=_siri("YOUTUBE_PROXY_URL"))
+        st.session_state["muh_yt_ripoti"] = r
+        if r["ok"]:
+            st.session_state["muh_yt_maandishi"] = r["matini"]   # kabla ya kisanduku kuundwa kwenye ombi hili
+
+    r = st.session_state.get("muh_yt_ripoti")
+    if r:
+        if r["ok"]:
+            aina = "ya kiotomatiki ya YouTube (inaweza kuwa na makosa)" if r["ni_ya_kiotomatiki"] else "iliyoandikwa na mwenye video"
+            st.caption(f"Lugha: {r['lugha_jina'] or r['lugha_msimbo']} • Manukuu {aina} • Maneno {r['maneno']}")
+            if len(r["lugha_zilizopo"]) > 1:
+                st.caption("Lugha zilizopo: " + ", ".join(r["lugha_zilizopo"][:8]))
+        else:
+            st.warning(r["kosa"])
+
+    matini = st.text_area("Matini ya video (unaweza kurekebisha au kubandika mwenyewe):",
+                          key="muh_yt_maandishi", height=200)
+
+    if tafsiri_fn and len(matini.split()) >= 1:
+        with st.expander("\U0001F30D Tafsiri matini ya video"):
+            msimbo = (st.session_state.get("muh_yt_ripoti") or {}).get("lugha_msimbo")
+            jina = youtube_matini.jina_la_lugha(msimbo)
+            kutoka_awali = LUGHA_ZA_TAFSIRI.index(jina) if jina in LUGHA_ZA_TAFSIRI else 1
+            c1, c2 = st.columns(2)
+            kutoka = c1.selectbox("Kutoka lugha:", LUGHA_ZA_TAFSIRI, index=kutoka_awali, key="muh_yt_tr_kutoka")
+            kwenda = c2.selectbox("Kwenda lugha:", LUGHA_ZA_TAFSIRI, index=0, key="muh_yt_tr_kwenda")
+            st.caption(f"Matini yana maneno {len(matini.split())}. Tafsiri hutoza salio lako la maneno "
+                       "(Muhtasari hautozwi).")
+            h = _hash(matini, kutoka, kwenda)
+            if st.button("\U0001F30D Tafsiri matini", key="muh_yt_tr_kitufe"):
+                with st.spinner("Inatafsiri..."):
+                    try:
+                        st.session_state["muh_yt_tr"] = {"h": h, "tafsiri": tafsiri_fn(matini, kutoka, kwenda), "kosa": None}
+                    except ValueError as e:      # mf. salio halitoshi
+                        st.session_state["muh_yt_tr"] = {"h": h, "tafsiri": None, "kosa": str(e)}
+                    except Exception as e:
+                        print(f"[muhtasari] tafsiri ya video imeshindwa: {type(e).__name__}: {e}")
+                        st.session_state["muh_yt_tr"] = {"h": h, "tafsiri": None,
+                                                         "kosa": "Tafsiri imeshindikana. Tafadhali jaribu tena."}
+            tr = st.session_state.get("muh_yt_tr")
+            if tr and tr["h"] == h:
+                if tr["kosa"]:
+                    st.warning(tr["kosa"])
+                else:
+                    ukaguzi_wa_pili.sehemu_ya_kunakili(tr["tafsiri"], lambda s: f"muh_yt_tr_{s}")
+    return matini
+
+
+def onyesha_muhtasari(maandishi, piga_ai=None, piga_ai_kina=None, ufunguo="muh", tafsiri_fn=None):
+    """
+    Onyesha kitufe cha Muhtasari. Mtumiaji anaweza kuchagua maandishi ya ukurasa au video ya YouTube.
+    tafsiri_fn(matini, kutoka, kwenda) -> maandishi (hiari): huwasha tafsiri ya matini ya video.
+    Hurudisha maandishi ya muhtasari wa sasa, au None.
+    """
+    st.markdown("---")
+    st.markdown("**\U0001F4DD Muhtasari (Summary)**")
+
+    chanzo = st.radio("Chanzo cha muhtasari:", ["Maandishi ya ukurasa huu", "Video ya YouTube"],
+                      key=f"muh_{ufunguo}_chanzo", horizontal=True)
+    if chanzo == "Video ya YouTube":
+        maandishi = _sehemu_ya_youtube(tafsiri_fn)
+        ufunguo = ufunguo + "_yt"
+
     def k(s):
         return f"muh_{ufunguo}_{s}"
 
     maandishi = (maandishi or "").strip()
-    st.markdown("---")
-    st.markdown("**\U0001F4DD Muhtasari (Summary)**")
     if _hesabu_maneno(maandishi) < MANENO_CHINI:
         st.caption(f"Muhtasari unapatikana maandishi yakiwa na angalau maneno {MANENO_CHINI}.")
         return None
@@ -177,8 +306,9 @@ def onyesha_muhtasari(maandishi, piga_ai=None, piga_ai_kina=None, ufunguo="muh")
 
     h = _hash(maandishi, urefu, muundo, lugha)
     if st.button("\U0001F4DD Fanya Muhtasari", key=k("kitufe")):
-        with st.spinner("Inaandaa muhtasari..."):
-            r = fanya_muhtasari(maandishi, urefu, muundo, lugha, piga_ai, piga_ai_kina)
+        refu = _hesabu_maneno(maandishi) > MANENO_YA_KIPANDE * 2
+        with st.spinner("Video ndefu: inaandaa muhtasari kwa vipande..." if refu else "Inaandaa muhtasari..."):
+            r = fanya_muhtasari_refu(maandishi, urefu, muundo, lugha, piga_ai, piga_ai_kina)
         st.session_state[k("ripoti")] = {"h": h, "r": r}
 
     ripoti = st.session_state.get(k("ripoti"))
