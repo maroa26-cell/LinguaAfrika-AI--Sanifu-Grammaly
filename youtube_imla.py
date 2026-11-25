@@ -1,3 +1,4 @@
+
 """youtube_imla.py  v1.0
 Kipengele cha Lingual Africa Sanifu: mteja anaweka kiungo cha YouTube, mfumo unaandika
 maneno yote ya video, UNAYAHARIRI kabla ya kumpa matokeo, kisha anapata kitufe cha kunakili.
@@ -30,6 +31,14 @@ LUGHA_ZA_MANUKUU = {
     "Kiarabu": ["ar"],
     "Kireno (Portugu\u00eas)": ["pt", "pt-BR", "pt-PT"],
 }
+
+ORODHA_YA_TAFSIRI = [
+    "Kiswahili", "Kiingereza (English)", "Kifaransa", "Kiarabu",
+    "Kichina (Mandarin)", "Kireno (Portugu\u00eas)", "Kizulu (isiZulu)", "Setswana (Botswana)",
+    "Kinyarwanda", "Kiganda (Luganda)", "Lingala", "Kichewa",
+]
+_MAJINA_YA_LUGHA = {"sw": "Kiswahili", "en": "Kiingereza (English)", "fr": "Kifaransa",
+                    "ar": "Kiarabu", "pt": "Kireno (Portugu\u00eas)", "zh": "Kichina (Mandarin)"}
 
 MANENO_KWA_KIPANDE = 350      # ukubwa wa kipande kimoja cha uhariri
 KIKOMO_CHA_MANENO = 30000     # kinga ya video ndefu mno
@@ -218,7 +227,7 @@ def kitufe_cha_kunakili(matini, ufunguo):
 # ----------------------------------------------------------------------------------------
 # 5. Kiolesura
 # ----------------------------------------------------------------------------------------
-def onyesha_youtube_imla(piga_ai, piga_ai_kina=None, ufunguo="yt"):
+def onyesha_youtube_imla(piga_ai, piga_ai_kina=None, tafsiri_fn=None, ufunguo="yt"):
     k = lambda n: f"{_MUHURI}{ufunguo}_{n}"
     st.caption("Weka kiungo cha video ya YouTube. Mfumo utaandika maneno yote ya video, "
                "utayahariri, kisha utakupa nafasi ya kunakili. Hautozwi salio la maneno.")
@@ -294,6 +303,13 @@ def onyesha_youtube_imla(piga_ai, piga_ai_kina=None, ufunguo="yt"):
             st.warning(f"Vipande {m['vimehaririwa']} kati ya {m['vipande']} ndivyo vimehaririwa; "
                        "vingine vimebaki vya asili.")
 
+    if st.button("\u270F\uFE0F Hariri tena kwa AI", key=k("hariri_tena"),
+                 help="Inahariri tena maandishi yaliyo kwenye kisanduku hapa chini."):
+        _sasa = st.session_state.get(k("eneo"), m["mhariri"])
+        with st.spinner("Inahariri..."):
+            _vp = [hariri_kipande(v, m["lugha"], sanifu, piga_ai)[0] for v in gawa_vipande(_sasa)]
+        st.session_state[k("eneo")] = "\n\n".join(_vp)
+
     toleo = st.text_area("Maandishi (unaweza kuyarekebisha moja kwa moja):",
                          key=k("eneo"), height=380)
     kb1, kb2 = st.columns([1, 1])
@@ -304,3 +320,38 @@ def onyesha_youtube_imla(piga_ai, piga_ai_kina=None, ufunguo="yt"):
                            file_name=f"youtube_{m['vid']}.txt", key=k("pakua"))
     with st.expander("Angalia maandishi ya asili (kabla ya uhariri)"):
         st.text_area("Asili:", m["asili"], height=200, key=k("asili_eneo"), disabled=True)
+
+
+    # --- Tafsiri ---
+    st.markdown("---")
+    st.markdown("**\U0001F500 Tafsiri maandishi haya**")
+    if tafsiri_fn is None:
+        st.caption("Tafsiri haijaunganishwa (pitisha tafsiri_fn kwenye app.py).")
+        return
+    jina_la_chanzo = next((j for kd, j in _MAJINA_YA_LUGHA.items()
+                           if str(m["lugha"]).lower().startswith(kd)), "Kiswahili")
+    lengo_msingi = "Kiingereza (English)" if jina_la_chanzo == "Kiswahili" else "Kiswahili"
+    t1, t2 = st.columns(2)
+    with t1:
+        st.text_input("Kutoka lugha:", jina_la_chanzo, disabled=True, key=k("t_chanzo"))
+    with t2:
+        lengo = st.selectbox("Kwenda lugha:", ORODHA_YA_TAFSIRI,
+                             index=ORODHA_YA_TAFSIRI.index(lengo_msingi), key=k("t_lengo"))
+    st.caption("Tafsiri inakata salio la maneno 600 (kama Mtafsiri wa kawaida).")
+    if st.button("\U0001F500 Tafsiri sasa", key=k("t_kitufe")):
+        with st.spinner("Inatafsiri..."):
+            try:
+                st.session_state[k("tafsiri")] = tafsiri_fn(toleo, jina_la_chanzo, lengo)
+                st.session_state[k("tafsiri_lengo")] = lengo
+            except Exception as e:
+                st.session_state.pop(k("tafsiri"), None)
+                st.error(str(e))
+    if st.session_state.get(k("tafsiri")):
+        st.text_area(f"Tafsiri ({st.session_state.get(k('tafsiri_lengo'), '')}):",
+                     st.session_state[k("tafsiri")], height=300, key=k("t_eneo"))
+        tb1, tb2 = st.columns(2)
+        with tb1:
+            kitufe_cha_kunakili(st.session_state[k("tafsiri")], "t" + ufunguo)
+        with tb2:
+            st.download_button("\u2B07\uFE0F Pakua tafsiri (.txt)", st.session_state[k("tafsiri")],
+                               file_name=f"youtube_{m['vid']}_tafsiri.txt", key=k("t_pakua"))
