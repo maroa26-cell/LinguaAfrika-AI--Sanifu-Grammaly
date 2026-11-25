@@ -19,6 +19,7 @@ import muhtasari
 import sarufi_bridge
 import skin_appearance
 import ukaguzi_wa_pili
+import youtube_imla
 from cerebral_cortex import CerebralCortex, orodha_ya_lahaja, SAUTI_ZA_GEMINI, KASI_ZA_SAUTI
 
 muda_mwanzo = time.time()
@@ -756,8 +757,9 @@ elif "sauti" in chaguo_menyu:
     str_platform.markdown(
         "<h3 style='color: #D97706;'>\U0001F399\uFE0F Roboti wa Sauti, Imla (Transcription) & Jifunze Lugha Suite</h3>",
         unsafe_allow_html=True)
-    t_imla, t_jifunze = str_platform.tabs([
+    t_imla, t_youtube, t_jifunze = str_platform.tabs([
         "\U0001F399\uFE0F Imla na Nakala (Transcription)",
+        "\u25B6\uFE0F YouTube kuwa Maandishi",
         "\U0001F50A Jifunze Lugha kwa Sauti"])
 
     with t_imla:
@@ -832,6 +834,13 @@ elif "sauti" in chaguo_menyu:
                     onyesha_jibu(res_sauti)
                     str_platform.download_button("Pakua Notes (.txt)", res_sauti,
                                                 file_name="imla_notes.txt", key="pakua_imla_notes")
+
+    with t_youtube:
+        youtube_imla.onyesha_youtube_imla(
+            piga_ai=_piga_ai,
+            piga_ai_kina=_piga_ai_kina if _UTHIBITISHO_WA_PRO else None,
+            tafsiri_fn=_tafsiri_ya_video,
+        )
 
     with t_jifunze:
         maandishi_sauti = str_platform.text_area(
