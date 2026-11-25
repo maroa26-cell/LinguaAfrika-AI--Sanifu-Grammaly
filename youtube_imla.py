@@ -1,4 +1,3 @@
-
 """youtube_imla.py  v1.0
 Kipengele cha Lingual Africa Sanifu: mteja anaweka kiungo cha YouTube, mfumo unaandika
 maneno yote ya video, UNAYAHARIRI kabla ya kumpa matokeo, kisha anapata kitufe cha kunakili.
@@ -246,7 +245,12 @@ def onyesha_youtube_imla(piga_ai, piga_ai_kina=None, tafsiri_fn=None, ufunguo="y
         vid = toa_video_id(kiungo)
         st.session_state.pop(k("matokeo"), None)
         if not vid:
-            st.warning("Kiungo hakionekani kuwa cha YouTube. Angalia kisha ujaribu tena.")
+            if "list=" in str(kiungo) and "youtu" in str(kiungo):
+                st.warning("Hiki ni kiungo cha orodha (playlist), si cha video moja. "
+                           "Fungua video unayotaka kwenye YouTube, kisha nakili kiungo chake "
+                           "(kinachoonekana kama youtube.com/watch?v=... au youtu.be/...).")
+            else:
+                st.warning("Kiungo hakionekani kuwa cha video ya YouTube. Angalia kisha ujaribu tena.")
         else:
             upau = st.progress(0.0, text="Inavuta maneno ya video...")
             try:
