@@ -1,4 +1,3 @@
-
 """
 muhtasari.py - Kitufe cha Muhtasari (Summary) cha Lingual Africa Sanifu.
 
@@ -25,7 +24,12 @@ from collections import Counter
 import streamlit as st
 
 import ukaguzi_wa_pili
-import youtube_matini
+
+try:
+    import youtube_matini
+except Exception as _e:   # faili halipo kwenye repo: Muhtasari wa kawaida ubaki ukifanya kazi
+    youtube_matini = None
+    print(f"[muhtasari] youtube_matini haijapakiwa: {type(_e).__name__}: {_e}")
 
 MANENO_CHINI = 25   # maandishi mafupi kuliko haya hayafanyiwi muhtasari
 
@@ -285,8 +289,11 @@ def onyesha_muhtasari(maandishi, piga_ai=None, piga_ai_kina=None, ufunguo="muh",
     st.markdown("---")
     st.markdown("**\U0001F4DD Muhtasari (Summary)**")
 
-    chanzo = st.radio("Chanzo cha muhtasari:", ["Maandishi ya ukurasa huu", "Video ya YouTube"],
-                      key=f"muh_{ufunguo}_chanzo", horizontal=True)
+    if youtube_matini is None:
+        chanzo = "Maandishi ya ukurasa huu"   # sehemu ya YouTube haipatikani (faili halipo)
+    else:
+        chanzo = st.radio("Chanzo cha muhtasari:", ["Maandishi ya ukurasa huu", "Video ya YouTube"],
+                          key=f"muh_{ufunguo}_chanzo", horizontal=True)
     if chanzo == "Video ya YouTube":
         maandishi = _sehemu_ya_youtube(tafsiri_fn)
         ufunguo = ufunguo + "_yt"
