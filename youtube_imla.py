@@ -153,11 +153,21 @@ def vuta_manukuu(video_id, lugha=None):
 # ----------------------------------------------------------------------------------------
 # 2b. Akiba: Gemini isikilize video moja kwa moja (inafanya kazi hata YouTube ikizuia seva)
 # ----------------------------------------------------------------------------------------
-def _gemini_key():
+def _secret(jina):
     try:
-        return str(st.secrets.get("GEMINI_API_KEY") or "").strip()
+        return str(st.secrets.get(jina) or "").strip()
     except Exception:
         return ""
+
+
+def _gemini_key_ya_youtube():
+    """Ufunguo wa pekee wa YouTube (salio lake lenyewe). Tupu kama haujawekwa."""
+    return _secret("GEMINI_API_KEY_YOUTUBE")
+
+
+def _gemini_key():
+    # Ufunguo wa YouTube ukiwekwa, ndio pekee unaotumika (hakuna kurudi kwenye ufunguo mkuu).
+    return _gemini_key_ya_youtube() or _secret("GEMINI_API_KEY")
 
 
 def _gemini_modeli():
@@ -194,11 +204,33 @@ def _ni_ufikiaji(t):
     return any(x in t for x in ("private", "unlisted", "permission", "invalid_argument", "failed_precondition"))
 
 
+def _piga_ai_ya_youtube(mfumo, mtumiaji):
+    """Uhariri kwa ufunguo wa YouTube pekee. Hurudisha maandishi ya JSON. Ikishindwa, hutupa kosa
+    (hariri_kipande kisha hurudisha kipande asili; hakuna matumizi ya ufunguo mkuu)."""
+    from google import genai
+    from google.genai import types
+    client = genai.Client(api_key=_gemini_key_ya_youtube())
+    config = types.GenerateContentConfig(system_instruction=mfumo,
+                                         response_mime_type="application/json")
+    modeli = _gemini_modeli()
+    try:
+        jibu = client.models.generate_content(model=modeli, contents=mtumiaji, config=config)
+    except Exception as e:
+        t = str(e).lower()
+        if _ni_kikomo(t) or not any(x in t for x in ("404", "not found", "no longer", "deprecat", "not supported")):
+            raise
+        mbadala = _modeli_ya_flash_ya_hivi_karibuni(client)
+        if not mbadala or mbadala == modeli:
+            raise
+        jibu = client.models.generate_content(model=mbadala, contents=mtumiaji, config=config)
+    return jibu.text
+
+
 def nakili_kwa_gemini(video_id, lugha_jina="Tambua yenyewe"):
     """Gemini inapokea kiungo cha video ya umma na kuandika maneno yote. Hurudisha (matini, msimbo_wa_lugha)."""
     key = _gemini_key()
     if not key:
-        raise KosaLaYouTube("Ufunguo wa GEMINI_API_KEY haupo kwenye Secrets, kwa hiyo siwezi kusikiliza video moja kwa moja.")
+        raise KosaLaYouTube("Ufunguo wa Gemini wa YouTube (GEMINI_API_KEY_YOUTUBE) haupo kwenye Secrets, kwa hiyo siwezi kusikiliza video moja kwa moja.")
     try:
         from google import genai
         from google.genai import types
@@ -358,6 +390,8 @@ def kitufe_cha_kunakili(matini, ufunguo):
 # ----------------------------------------------------------------------------------------
 def onyesha_youtube_imla(piga_ai, piga_ai_kina=None, tafsiri_fn=None, ufunguo="yt"):
     k = lambda n: f"{_MUHURI}{ufunguo}_{n}"
+    # Ufunguo wa YouTube ukiwekwa, uhariri nao unatumia salio lake (si la ufunguo mkuu)
+    ai_hariri = _piga_ai_ya_youtube if _gemini_key_ya_youtube() else piga_ai
     st.caption("Weka kiungo cha video ya YouTube. Mfumo utaandika maneno yote ya video, "
                "utayahariri, kisha utakupa nafasi ya kunakili. Hautozwi salio la maneno.")
 
@@ -408,7 +442,7 @@ def onyesha_youtube_imla(piga_ai, piga_ai_kina=None, tafsiri_fn=None, ufunguo="y
                     if hariri_wazi:
                         upau.progress((n - 1) / len(vipande),
                                       text=f"Inahariri kipande {n} kati ya {len(vipande)}...")
-                        mpya, sawa = hariri_kipande(kp, msimbo, sanifu, piga_ai)
+                        mpya, sawa = hariri_kipande(kp, msimbo, sanifu, ai_hariri)
                         yaliyohaririwa += int(sawa)
                     else:
                         mpya = kp
@@ -454,7 +488,7 @@ def onyesha_youtube_imla(piga_ai, piga_ai_kina=None, tafsiri_fn=None, ufunguo="y
                  help="Inahariri tena maandishi yaliyo kwenye kisanduku hapa chini."):
         _sasa = st.session_state.get(k("eneo"), m["mhariri"])
         with st.spinner("Inahariri..."):
-            _vp = [hariri_kipande(v, m["lugha"], sanifu, piga_ai)[0] for v in gawa_vipande(_sasa)]
+            _vp = [hariri_kipande(v, m["lugha"], sanifu, ai_hariri)[0] for v in gawa_vipande(_sasa)]
         st.session_state[k("eneo")] = "\n\n".join(_vp)
 
     toleo = st.text_area("Maandishi (unaweza kuyarekebisha moja kwa moja):",
