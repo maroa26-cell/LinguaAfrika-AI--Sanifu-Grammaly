@@ -151,6 +151,85 @@ def vuta_manukuu(video_id, lugha=None):
 
 
 # ----------------------------------------------------------------------------------------
+# 2b. Akiba: Gemini isikilize video moja kwa moja (inafanya kazi hata YouTube ikizuia seva)
+# ----------------------------------------------------------------------------------------
+def _gemini_key():
+    try:
+        return str(st.secrets.get("GEMINI_API_KEY") or "").strip()
+    except Exception:
+        return ""
+
+
+def _gemini_modeli():
+    try:
+        m = str(st.secrets.get("GEMINI_MODEL_YOUTUBE") or "").strip()
+    except Exception:
+        m = ""
+    return m or "gemini-2.5-flash"
+
+
+def nakili_kwa_gemini(video_id, lugha_jina="Tambua yenyewe"):
+    """Gemini inapokea kiungo cha video ya umma na kuandika maneno yote. Hurudisha (matini, msimbo_wa_lugha)."""
+    key = _gemini_key()
+    if not key:
+        raise KosaLaYouTube("Ufunguo wa GEMINI_API_KEY haupo kwenye Secrets, kwa hiyo siwezi kusikiliza video moja kwa moja.")
+    try:
+        from google import genai
+        from google.genai import types
+    except ImportError:
+        raise KosaLaYouTube("Kifurushi cha google-genai hakijawekwa kwenye requirements.txt.")
+
+    url = f"https://www.youtube.com/watch?v={video_id}"
+    kidokezo_cha_lugha = (f"Lugha inayozungumzwa inatarajiwa kuwa {lugha_jina}. "
+                          if lugha_jina and lugha_jina != "Tambua yenyewe" else "")
+    maelekezo = (
+        "Andika neno kwa neno maneno yote yanayosemwa kwenye video hii (transcription kamili). "
+        + kidokezo_cha_lugha +
+        "USIFUPISHE, USITAFSIRI, na USIONGEZE maelezo yako. Baki kwenye lugha ile ile inayozungumzwa. "
+        "Weka vituo na aya. Usiandike muziki, makofi wala maelezo ya picha. Usitaje majina ya wasemaji. "
+        "Mstari wa kwanza wa jibu lako uwe huu tu: LUGHA=<msimbo wa ISO 639-1 wa lugha kuu, mfano sw au en>. "
+        "Kisha acha mstari mtupu na uandike maandishi yote."
+    )
+    try:
+        client = genai.Client(api_key=key)
+        maudhui = types.Content(parts=[
+            types.Part(file_data=types.FileData(file_uri=url)),
+            types.Part(text=maelekezo),
+        ])
+        try:  # azimio la chini: tunahitaji sauti tu, inapunguza gharama
+            config = types.GenerateContentConfig(
+                media_resolution=types.MediaResolution.MEDIA_RESOLUTION_LOW)
+        except Exception:
+            config = None
+        jibu = client.models.generate_content(
+            model=_gemini_modeli(), contents=maudhui, **({"config": config} if config else {}))
+        maandishi = (jibu.text or "").strip()
+    except KosaLaYouTube:
+        raise
+    except Exception as e:
+        t = str(e).lower()
+        print(f"[youtube_imla] Gemini imeshindwa: {type(e).__name__}: {e}")
+        if "429" in t or "quota" in t or "resource_exhausted" in t:
+            raise KosaLaYouTube("Kikomo cha matumizi ya Gemini kimefikiwa kwa sasa. Jaribu tena baadaye.")
+        if any(x in t for x in ("private", "unlisted", "permission", "not found", "invalid_argument", "400")):
+            raise KosaLaYouTube("Gemini haikuweza kufikia video hii. Video lazima iwe ya umma "
+                                "(si ya faragha wala unlisted) na isiwe na kikomo cha umri.")
+        raise KosaLaYouTube("Imeshindikana kusikiliza video kupitia Gemini. Jaribu tena au tumia video nyingine.")
+
+    if not maandishi:
+        raise KosaLaYouTube("Gemini haikurudisha maandishi kwa video hii (huenda haina hotuba).")
+    msimbo = "und"
+    mstari1 = re.match(r"^\s*LUGHA\s*=\s*([A-Za-z]{2,3})\b[^\n]*\n?", maandishi)
+    if mstari1:
+        msimbo = mstari1.group(1).lower()
+        maandishi = maandishi[mstari1.end():].strip()
+    maandishi = re.sub(r"\n{3,}", "\n\n", maandishi)
+    if len(maandishi.split()) < 3:
+        raise KosaLaYouTube("Gemini haikupata hotuba ya kutosha kwenye video hii.")
+    return maandishi, msimbo
+
+
+# ----------------------------------------------------------------------------------------
 # 3. Uhariri wa AI (kwa vipande, bila kufupisha)
 # ----------------------------------------------------------------------------------------
 def gawa_vipande(matini, ukubwa=MANENO_KWA_KIPANDE):
@@ -253,12 +332,20 @@ def onyesha_youtube_imla(piga_ai, piga_ai_kina=None, tafsiri_fn=None, ufunguo="y
                 st.warning("Kiungo hakionekani kuwa cha video ya YouTube. Angalia kisha ujaribu tena.")
         else:
             upau = st.progress(0.0, text="Inavuta maneno ya video...")
+            asili, chanzo = None, "manukuu"
             try:
                 asili, msimbo, ya_mashine = vuta_manukuu(vid, LUGHA_ZA_MANUKUU[lugha_jina])
-            except KosaLaYouTube as e:
-                upau.empty()
-                st.error(str(e))
-                asili = None
+            except KosaLaYouTube as e1:
+                print(f"[youtube_imla] manukuu hayakupatikana: {e1}")
+                upau.progress(0.1, text="Manukuu hayapatikani. Inasikiliza sauti ya video kupitia Gemini "
+                                        "(inaweza kuchukua dakika chache kwa video ndefu)...")
+                try:
+                    asili, msimbo = nakili_kwa_gemini(vid, lugha_jina)
+                    ya_mashine, chanzo = False, "gemini"
+                except KosaLaYouTube as e2:
+                    upau.empty()
+                    st.error(str(e2))
+                    asili = None
             if asili:
                 maneno = len(asili.split())
                 if maneno > KIKOMO_CHA_MANENO:
@@ -279,7 +366,7 @@ def onyesha_youtube_imla(piga_ai, piga_ai_kina=None, tafsiri_fn=None, ufunguo="y
                 upau.empty()
                 st.session_state[k("matokeo")] = {
                     "vid": vid, "kichwa": _kichwa_cha_video(vid), "lugha": msimbo,
-                    "mashine": ya_mashine, "asili": asili,
+                    "mashine": ya_mashine, "chanzo": chanzo, "asili": asili,
                     "mhariri": "\n\n".join(matokeo),
                     "vipande": len(vipande), "vimehaririwa": yaliyohaririwa,
                     "ilihaririwa": hariri_wazi,
@@ -293,10 +380,15 @@ def onyesha_youtube_imla(piga_ai, piga_ai_kina=None, tafsiri_fn=None, ufunguo="y
     st.markdown("---")
     if m["kichwa"]:
         st.markdown(f"**\U0001F3AC {html.escape(m['kichwa'])}**")
-    st.caption(f"Lugha ya manukuu: {m['lugha']} \u2022 "
-               + ("yametengenezwa na mashine ya YouTube (yanaweza kuwa na makosa)"
-                  if m["mashine"] else "yameandikwa na mmiliki wa video")
-               + f" \u2022 maneno {len(m['asili'].split())}")
+    if m.get("chanzo") == "gemini":
+        maelezo_ya_chanzo = ("imeandikwa kwa kusikiliza sauti ya video (Gemini); "
+                             "inaweza kuwa na makosa madogo")
+        lugha_txt = f"Lugha: {m['lugha']}" if m["lugha"] != "und" else "Lugha: imetambuliwa kiotomatiki"
+    else:
+        maelezo_ya_chanzo = ("manukuu yametengenezwa na mashine ya YouTube (yanaweza kuwa na makosa)"
+                             if m["mashine"] else "manukuu yameandikwa na mmiliki wa video")
+        lugha_txt = f"Lugha ya manukuu: {m['lugha']}"
+    st.caption(f"{lugha_txt} \u2022 {maelezo_ya_chanzo} \u2022 maneno {len(m['asili'].split())}")
     if m["ilihaririwa"]:
         if m["vimehaririwa"] == m["vipande"]:
             st.success("\u2728 Maandishi yamehaririwa. Pitia hapa chini kisha unakili.")
