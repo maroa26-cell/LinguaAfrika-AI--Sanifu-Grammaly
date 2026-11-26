@@ -39,7 +39,7 @@ ORODHA_YA_TAFSIRI = [
 _MAJINA_YA_LUGHA = {"sw": "Kiswahili", "en": "Kiingereza (English)", "fr": "Kifaransa",
                     "ar": "Kiarabu", "pt": "Kireno (Portugu\u00eas)", "zh": "Kichina (Mandarin)"}
 
-MANENO_KWA_KIPANDE = 350      # ukubwa wa kipande kimoja cha uhariri
+MANENO_KWA_KIPANDE = 800     # ukubwa wa kipande kimoja cha uhariri (vipande vichache = simu chache za AI)
 KIKOMO_CHA_MANENO = 30000     # kinga ya video ndefu mno
 _MUHURI = "yt_imla_"
 
@@ -168,6 +168,32 @@ def _gemini_modeli():
     return m or "gemini-2.5-flash"
 
 
+def _debug_imewashwa():
+    try:
+        return str(st.secrets.get("AI_DEBUG") or "").strip().lower() in ("1", "true", "yes", "ndiyo")
+    except Exception:
+        return False
+
+
+def _modeli_ya_flash_ya_hivi_karibuni(client):
+    """Inatafuta modeli ya 'gemini-X.Y-flash' ya toleo la juu kabisa inayopatikana kwenye akaunti."""
+    bora, toleo_bora = None, -1.0
+    for m in client.models.list():
+        jina = str(getattr(m, "name", "") or "")
+        r = re.fullmatch(r"(?:models/)?(gemini-(\d+(?:\.\d+)?)-flash)", jina)
+        if r and float(r.group(2)) > toleo_bora:
+            bora, toleo_bora = r.group(1), float(r.group(2))
+    return bora
+
+
+def _ni_kikomo(t):
+    return "429" in t or "quota" in t or "resource_exhausted" in t
+
+
+def _ni_ufikiaji(t):
+    return any(x in t for x in ("private", "unlisted", "permission", "invalid_argument", "failed_precondition"))
+
+
 def nakili_kwa_gemini(video_id, lugha_jina="Tambua yenyewe"):
     """Gemini inapokea kiungo cha video ya umma na kuandika maneno yote. Hurudisha (matini, msimbo_wa_lugha)."""
     key = _gemini_key()
@@ -201,23 +227,49 @@ def nakili_kwa_gemini(video_id, lugha_jina="Tambua yenyewe"):
                 media_resolution=types.MediaResolution.MEDIA_RESOLUTION_LOW)
         except Exception:
             config = None
-        jibu = client.models.generate_content(
-            model=_gemini_modeli(), contents=maudhui, **({"config": config} if config else {}))
+        modeli = _gemini_modeli()
+        jibu, kosa_la_mwisho = None, None
+        for jaribio in range(3):
+            try:
+                kw = {"config": config} if config is not None else {}
+                jibu = client.models.generate_content(model=modeli, contents=maudhui, **kw)
+                break
+            except Exception as e:
+                kosa_la_mwisho = e
+                t = str(e).lower()
+                print(f"[youtube_imla] jaribio {jaribio + 1} (modeli={modeli}, config={config is not None}) "
+                      f"limeshindwa: {type(e).__name__}: {e}")
+                if _ni_kikomo(t):
+                    raise
+                if config is not None:      # jaribu tena bila mpangilio wa azimio
+                    config = None
+                    continue
+                if any(x in t for x in ("404", "not found", "no longer", "deprecat", "not supported")):
+                    mbadala = _modeli_ya_flash_ya_hivi_karibuni(client)
+                    if mbadala and mbadala != modeli:
+                        print(f"[youtube_imla] naajaribu modeli mbadala: {mbadala}")
+                        modeli = mbadala
+                        continue
+                raise
+        if jibu is None:
+            raise kosa_la_mwisho
         maandishi = (jibu.text or "").strip()
     except KosaLaYouTube:
         raise
     except Exception as e:
         t = str(e).lower()
         print(f"[youtube_imla] Gemini imeshindwa: {type(e).__name__}: {e}")
-        if "429" in t or "quota" in t or "resource_exhausted" in t:
-            raise KosaLaYouTube("Kikomo cha matumizi ya Gemini kimefikiwa kwa sasa. Jaribu tena baadaye.")
-        if any(x in t for x in ("private", "unlisted", "permission", "not found", "invalid_argument", "400")):
+        ziada = f" [{type(e).__name__}: {str(e)[:300]}]" if _debug_imewashwa() else ""
+        if _ni_kikomo(t):
+            raise KosaLaYouTube("Kikomo cha matumizi ya Gemini kimefikiwa kwa sasa. Jaribu tena baadaye." + ziada)
+        if _ni_ufikiaji(t):
             raise KosaLaYouTube("Gemini haikuweza kufikia video hii. Video lazima iwe ya umma "
-                                "(si ya faragha wala unlisted) na isiwe na kikomo cha umri.")
-        raise KosaLaYouTube("Imeshindikana kusikiliza video kupitia Gemini. Jaribu tena au tumia video nyingine.")
+                                "(si ya faragha wala unlisted) na isiwe na kikomo cha umri." + ziada)
+        raise KosaLaYouTube("Imeshindikana kusikiliza video kupitia Gemini "
+                            f"(aina ya kosa: {type(e).__name__}). Jaribu tena au tumia video nyingine." + ziada)
 
     if not maandishi:
-        raise KosaLaYouTube("Gemini haikurudisha maandishi kwa video hii (huenda haina hotuba).")
+        raise KosaLaYouTube("Gemini haikurudisha maandishi kwa video hii (huenda haina hotuba au maudhui yamezuiwa).")
     msimbo = "und"
     mstari1 = re.match(r"^\s*LUGHA\s*=\s*([A-Za-z]{2,3})\b[^\n]*\n?", maandishi)
     if mstari1:
@@ -227,7 +279,6 @@ def nakili_kwa_gemini(video_id, lugha_jina="Tambua yenyewe"):
     if len(maandishi.split()) < 3:
         raise KosaLaYouTube("Gemini haikupata hotuba ya kutosha kwenye video hii.")
     return maandishi, msimbo
-
 
 # ----------------------------------------------------------------------------------------
 # 3. Uhariri wa AI (kwa vipande, bila kufupisha)
