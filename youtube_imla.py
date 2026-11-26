@@ -171,12 +171,27 @@ def _gemini_key():
     return _gemini_key_ya_youtube() or _secret("GEMINI_API_KEY")
 
 
-def _gemini_modeli():
+_MODELI_CACHE = {}
+_MODELI_YA_MSINGI = "gemini-2.5-flash"
+
+
+def _chagua_modeli(client):
+    """Secret GEMINI_MODEL_YOUTUBE ikiwekwa, ndiyo inayotumika. Vinginevyo: flash ya toleo la juu kabisa
+    inayopatikana kwenye akaunti (inakumbukwa), na gemini-2.5-flash kama kila kitu kikishindwa."""
+    m = _secret("GEMINI_MODEL_YOUTUBE")
+    if m:
+        return m
+    if "flash" in _MODELI_CACHE:
+        return _MODELI_CACHE["flash"]
     try:
-        m = str(st.secrets.get("GEMINI_MODEL_YOUTUBE") or "").strip()
-    except Exception:
-        m = ""
-    return m or "gemini-2.5-flash"
+        bora = _modeli_ya_flash_ya_hivi_karibuni(client)
+    except Exception as e:
+        print(f"[youtube_imla] imeshindwa kuorodhesha modeli: {type(e).__name__}: {e}")
+        bora = None
+    if bora:
+        _MODELI_CACHE["flash"] = bora
+        return bora
+    return _MODELI_YA_MSINGI
 
 
 def _debug_imewashwa():
@@ -218,7 +233,7 @@ def _piga_ai_ya_youtube(mfumo, mtumiaji):
     client = genai.Client(api_key=_gemini_key_ya_youtube())
     config = types.GenerateContentConfig(system_instruction=mfumo,
                                          response_mime_type="application/json")
-    modeli = _gemini_modeli()
+    modeli = _chagua_modeli(client)
     try:
         jibu = client.models.generate_content(model=modeli, contents=mtumiaji, config=config)
     except Exception as e:
@@ -268,7 +283,7 @@ def nakili_kwa_gemini(video_id, lugha_jina="Tambua yenyewe"):
                 media_resolution=types.MediaResolution.MEDIA_RESOLUTION_LOW)
         except Exception:
             config = None
-        modeli = _gemini_modeli()
+        modeli = _chagua_modeli(client)
         jibu, kosa_la_mwisho = None, None
         for jaribio in range(5):
             try:
