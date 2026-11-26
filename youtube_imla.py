@@ -15,6 +15,7 @@ Matumizi kwenye app.py:
         )
 """
 import html
+import time
 import json
 import re
 
@@ -200,6 +201,11 @@ def _ni_kikomo(t):
     return "429" in t or "quota" in t or "resource_exhausted" in t
 
 
+def _ni_hitilafu_ya_seva(e):
+    """Hitilafu za 5xx kutoka kwa seva za Google (mara nyingi za muda)."""
+    return type(e).__name__ == "ServerError" or bool(re.match(r"^\s*5\d\d\b", str(e)))
+
+
 def _ni_ufikiaji(t):
     return any(x in t for x in ("private", "unlisted", "permission", "invalid_argument", "failed_precondition"))
 
@@ -249,7 +255,10 @@ def nakili_kwa_gemini(video_id, lugha_jina="Tambua yenyewe"):
         "Kisha acha mstari mtupu na uandike maandishi yote."
     )
     try:
-        client = genai.Client(api_key=key)
+        try:  # video ndefu huchukua muda: ruhusu hadi dakika 10 kwa ombi moja
+            client = genai.Client(api_key=key, http_options=types.HttpOptions(timeout=600_000))
+        except Exception:
+            client = genai.Client(api_key=key)
         maudhui = types.Content(parts=[
             types.Part(file_data=types.FileData(file_uri=url)),
             types.Part(text=maelekezo),
@@ -261,7 +270,7 @@ def nakili_kwa_gemini(video_id, lugha_jina="Tambua yenyewe"):
             config = None
         modeli = _gemini_modeli()
         jibu, kosa_la_mwisho = None, None
-        for jaribio in range(3):
+        for jaribio in range(5):
             try:
                 kw = {"config": config} if config is not None else {}
                 jibu = client.models.generate_content(model=modeli, contents=maudhui, **kw)
@@ -273,6 +282,17 @@ def nakili_kwa_gemini(video_id, lugha_jina="Tambua yenyewe"):
                       f"limeshindwa: {type(e).__name__}: {e}")
                 if _ni_kikomo(t):
                     raise
+                if _ni_hitilafu_ya_seva(e):
+                    # hitilafu ya seva za Google: subiri kidogo kisha jaribu tena (hadi mara 4)
+                    if jaribio >= 3:
+                        raise
+                    if jaribio == 2:  # jaribu modeli mbadala kabla ya jaribio la mwisho
+                        mbadala = _modeli_ya_flash_ya_hivi_karibuni(client)
+                        if mbadala and mbadala != modeli:
+                            print(f"[youtube_imla] naajaribu modeli mbadala: {mbadala}")
+                            modeli = mbadala
+                    time.sleep(3 * (jaribio + 1))
+                    continue
                 if config is not None:      # jaribu tena bila mpangilio wa azimio
                     config = None
                     continue
@@ -297,6 +317,15 @@ def nakili_kwa_gemini(video_id, lugha_jina="Tambua yenyewe"):
         if _ni_ufikiaji(t):
             raise KosaLaYouTube("Gemini haikuweza kufikia video hii. Video lazima iwe ya umma "
                                 "(si ya faragha wala unlisted) na isiwe na kikomo cha umri." + ziada)
+        if _ni_hitilafu_ya_seva(e):
+            if "504" in t or "deadline" in t:
+                maelezo = "Gemini ilichukua muda mrefu mno kuchakata video hii. Jaribu video fupi zaidi."
+            elif "503" in t or "unavailable" in t or "overloaded" in t:
+                maelezo = "Seva za Gemini zina msongamano kwa sasa. Jaribu tena baada ya dakika chache."
+            else:
+                maelezo = ("Seva za Gemini zimekumbwa na hitilafu ya muda. Jaribu tena baada ya dakika chache, "
+                           "au tumia video fupi zaidi.")
+            raise KosaLaYouTube(f"{maelezo} (aina ya kosa: {type(e).__name__})" + ziada)
         raise KosaLaYouTube("Imeshindikana kusikiliza video kupitia Gemini "
                             f"(aina ya kosa: {type(e).__name__}). Jaribu tena au tumia video nyingine." + ziada)
 
