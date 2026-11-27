@@ -595,6 +595,9 @@ elif "mtafsiri" in chaguo_menyu:
             if imla_matini:
                 str_platform.session_state["trans_v14_clean_box"] = imla_matini[:MAX_CHARS]
                 str_platform.success(tr("dictation_done"))
+                _inj = getattr(ubongo, "injini_ya_imla", None)
+                if _inj:
+                    str_platform.caption(tr("imla_engine", injini=_inj))
 
     maandishi_t = str_platform.text_area(
         tr("translate_input"), key="trans_v14_clean_box",
@@ -802,6 +805,7 @@ elif "sauti" in chaguo_menyu:
             str_platform.audio(audio_file.getvalue(), format=aina_sauti)
             if str_platform.button(tr("whisper_btn"), key="zindua_whisper_v3_btn"):
                 res_sauti = None
+                injini_za_imla = []
                 try:
                     data_sauti = audio_file.getvalue()
                     jina_sauti = getattr(audio_file, "name", "sauti.wav") or "sauti.wav"
@@ -824,6 +828,9 @@ elif "sauti" in chaguo_menyu:
                         matini_zote.append(ubongo.chakata_sauti_na_imla(
                             faili_kipande, MISIMBO_YA_IMLA.get(_lugha_imla_tab, "sw"),
                             lahaja=lahaja_imla_tab, sanifisha=sanifisha_imla_tab))
+                        _inj = getattr(ubongo, "injini_ya_imla", None)
+                        if _inj and _inj not in injini_za_imla:
+                            injini_za_imla.append(_inj)
                         upau.progress(n / len(vipande),
                                      text=tr("chunk_done", n=n, jumla=len(vipande)))
                     upau.empty()
@@ -833,6 +840,8 @@ elif "sauti" in chaguo_menyu:
                     onyesha_hitilafu("kuandika imla", e)
                 if res_sauti:
                     str_platform.success(tr("dictation_complete"))
+                    if injini_za_imla:
+                        str_platform.caption(tr("imla_engine", injini=", ".join(injini_za_imla)))
                     onyesha_jibu(res_sauti)
                     str_platform.download_button(tr("download_notes"), res_sauti,
                                                 file_name="imla_notes.txt", key="pakua_imla_notes")
