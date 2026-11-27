@@ -92,5 +92,6 @@
   "tts_language": "Langue de prononciation :",
   "dialect_short": "Dialecte :",
   "gen_btn": "Générer la voix Pro",
-  "voice_engine": "Moteur vocal utilisé : {injini}"
+  "voice_engine": "Moteur vocal utilisé : {injini}",
+  "imla_engine": "Moteur de dictée utilisé : {injini}"
 }
