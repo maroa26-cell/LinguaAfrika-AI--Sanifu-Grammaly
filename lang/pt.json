@@ -92,5 +92,6 @@
   "tts_language": "Idioma de pronúncia:",
   "dialect_short": "Dialeto:",
   "gen_btn": "Gerar voz Pro",
-  "voice_engine": "Motor de voz utilizado: {injini}"
+  "voice_engine": "Motor de voz utilizado: {injini}",
+  "imla_engine": "Motor de ditado utilizado: {injini}"
 }
