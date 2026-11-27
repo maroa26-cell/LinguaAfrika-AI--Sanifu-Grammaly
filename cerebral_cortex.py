@@ -2,6 +2,10 @@
 cerebral_cortex.py — Ubongo Mkuu wa Kuchakata Lugha, Tafsiri, Sauti na Dataset.
 Kipaumbele: 1. Google Gemini -> 2. Groq -> 3. OpenAI (Chaguo la Mwisho).
 
+Toleo 2.4 (2026-11-27):
+- chakata_sauti_na_imla sasa inaandika injini iliyotumika kwenye self.injini_ya_imla
+  (Gemini, Groq Whisper au OpenAI Whisper) ili app.py iionyeshe chini ya matokeo ya imla.
+
 Toleo 2.3 (marekebisho ya logi za Streamlit Cloud, 2026-11-24):
 - BUG KUBWA: 'timeout' haikubaliki ndani ya GenerateContentConfig (google-genai mpya inatoa
   ValidationError "Extra inputs are not permitted"), kwa hiyo Gemini ilishindwa KILA MARA:
@@ -436,6 +440,7 @@ class CerebralCortex:
         self.azure_key = (_siri("AZURE_SPEECH_KEY") or "").strip()
         self.azure_region = (_siri("AZURE_SPEECH_REGION") or "").strip().lower()
         self.injini_ya_sauti = None  # injini iliyotumika mara ya mwisho kuzalisha sauti
+        self.injini_ya_imla = None   # v2.4: injini iliyotumika mara ya mwisho kunukuu sauti
 
         # 4. Injini ya Sheria za Sarufi ya Kiswahili
         self.kanuni = KanuniZaSarufiKiswahili()
@@ -750,6 +755,8 @@ class CerebralCortex:
     # ============================================================
     def chakata_sauti_na_imla(self, audio_file, lugha: str = "sw", lahaja: Optional[str] = None,
                               muktadha: Optional[str] = None, sanifisha: bool = False) -> str:
+        # v2.4: anza upya; injini itawekwa pale nukuu inapofanikiwa.
+        self.injini_ya_imla = None
         # v2.1 (Bug 4): rudisha pointer mwanzoni kabla ya .read().
         # Streamlit UploadedFile ni file-like; mwitaji anaweza kuwa amesoma kwa ukubwa.
         try:
@@ -792,6 +799,7 @@ class CerebralCortex:
                     config=_config_ya_gemini(GEMINI_SAUTI_TIMEOUT_S, temperature=0.0),
                 )
                 if jibu.text and jibu.text.strip():
+                    self.injini_ya_imla = f"Gemini ({self.gemini_modeli})"
                     return jibu.text.strip()
             except Exception as e:
                 logger.warning("chakata_sauti (Gemini) imeshindwa: %s: %s", type(e).__name__, str(e)[:120])
@@ -808,6 +816,7 @@ class CerebralCortex:
                     model=self.groq_whisper_modeli, file=(jina, data, aina), **kw,
                 )
                 if jg.text and jg.text.strip():
+                    self.injini_ya_imla = f"Groq Whisper ({self.groq_whisper_modeli})"
                     return jg.text.strip()
             except Exception as e:
                 logger.warning("chakata_sauti (Groq) imeshindwa: %s: %s", type(e).__name__, str(e)[:120])
@@ -818,6 +827,7 @@ class CerebralCortex:
         j = self.openai_client.audio.transcriptions.create(
             model="whisper-1", file=(jina, data, aina), **kw,
         )
+        self.injini_ya_imla = "OpenAI Whisper (whisper-1)"
         return j.text.strip()
 
     # ============================================================
