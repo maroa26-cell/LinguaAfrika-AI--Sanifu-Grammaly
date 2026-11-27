@@ -92,5 +92,6 @@
   "tts_language": "发音语言：",
   "dialect_short": "方言：",
   "gen_btn": "生成语音 Pro",
-  "voice_engine": "使用的语音引擎：{injini}"
+  "voice_engine": "使用的语音引擎：{injini}",
+  "imla_engine": "使用的听写引擎：{injini}"
 }
