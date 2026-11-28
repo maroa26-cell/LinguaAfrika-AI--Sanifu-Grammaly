@@ -72,6 +72,7 @@ from kanuni_ya_sarufi import (
     KIKOMO_CHA_SAUTI_MB,
     KIKOMO_CHA_HERUFI_ZA_SAUTI,
 )
+from imla_sw import sahihisha_imla, ELEKEZO_SW
 
 logger = logging.getLogger(__name__)
 
@@ -430,7 +431,7 @@ class CerebralCortex:
                 self.groq_client = None
         # v2.3: 'llama-3.3-70b-versatile' haipatikani tena (404). Hakiki orodha ya sasa kwenye console.groq.com/docs/models
         self.groq_modeli = str(_siri("GROQ_MODEL") or "openai/gpt-oss-120b").strip()
-        self.groq_whisper_modeli = str(_siri("GROQ_WHISPER_MODEL") or "whisper-large-v3-turbo").strip()
+        self.groq_whisper_modeli = str(_siri("GROQ_WHISPER_MODEL") or "whisper-large-v3").strip()
 
         # 3. Chaguo la Mwisho (Fallback): OpenAI
         self.openai_client = client
@@ -790,8 +791,16 @@ class CerebralCortex:
             maelekezo += f"Topic: {muktadha}. Terms likely to appear: {msamiati}. "
         maelekezo += "Output only the transcript text."
 
-        # Hatua ya 1: Gemini kwanza
-        if self.gemini_client:
+        # Whisper: lugha + elekezo la Kiswahili (husaidia tahajia na alama za uandishi)
+        kw = {"language": lugha} if lugha in LUGHA_ZA_WHISPER else {}
+        elekezo_whisper = " ".join(x for x in (ELEKEZO_SW if lugha == "sw" else "", msamiati) if x)
+        if elekezo_whisper:
+            kw["prompt"] = elekezo_whisper
+        kw["temperature"] = 0
+
+        def _kwa_gemini():
+            if not self.gemini_client:
+                return None
             try:
                 jibu = self.gemini_client.models.generate_content(
                     model=self.gemini_modeli,
@@ -803,14 +812,11 @@ class CerebralCortex:
                     return jibu.text.strip()
             except Exception as e:
                 logger.warning("chakata_sauti (Gemini) imeshindwa: %s: %s", type(e).__name__, str(e)[:120])
+            return None
 
-        # v2.1 (Bug 3): lugha zote zinazoungwa na Whisper zinatumwa; zisizo na code hapa zinajitambua.
-        kw = {"language": lugha} if lugha in LUGHA_ZA_WHISPER else {}
-        if msamiati:
-            kw["prompt"] = msamiati  # husaidia Whisper kuandika istilahi za muktadha kwa usahihi
-
-        # Hatua ya 2: Groq Whisper
-        if self.groq_client:
+        def _kwa_groq():
+            if not self.groq_client:
+                return None
             try:
                 jg = self.groq_client.audio.transcriptions.create(
                     model=self.groq_whisper_modeli, file=(jina, data, aina), **kw,
@@ -820,15 +826,24 @@ class CerebralCortex:
                     return jg.text.strip()
             except Exception as e:
                 logger.warning("chakata_sauti (Groq) imeshindwa: %s: %s", type(e).__name__, str(e)[:120])
+            return None
 
-        # Hatua ya 3: OpenAI Whisper kama akiba ya mwisho
+        # Secret IMLA_INJINI_KWANZA = "groq" huweka Groq kwanza; chaguo-msingi ni Gemini kwanza
+        kwanza = str(_siri("IMLA_INJINI_KWANZA") or "gemini").strip().lower()
+        hatua = [_kwa_groq, _kwa_gemini] if kwanza == "groq" else [_kwa_gemini, _kwa_groq]
+        for h in hatua:
+            t = h()
+            if t:
+                return sahihisha_imla(t, lugha)
+
+        # OpenAI Whisper kama akiba ya mwisho
         if not self.openai_client:
             raise RuntimeError("Gemini na Groq zimeshindwa, na hakuna ufunguo wa OpenAI wa akiba.")
         j = self.openai_client.audio.transcriptions.create(
             model="whisper-1", file=(jina, data, aina), **kw,
         )
         self.injini_ya_imla = "OpenAI Whisper (whisper-1)"
-        return j.text.strip()
+        return sahihisha_imla(j.text.strip(), lugha)
 
     # ============================================================
     # SEHEMU YA KUZALISHA SAUTI (TTS) - Inarudisha bytes za WAV
